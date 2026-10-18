@@ -39,6 +39,80 @@ void main() {
     sessionStore: sessions,
   );
 
+  test('late graph response cannot cross account switch', () async {
+    final pending = Completer<http.Response>();
+    final started = Completer<void>();
+    final repo = repository((request) {
+      started.complete();
+      return pending.future;
+    });
+    final result = repo.fetchGraphs(7);
+    await started.future;
+    await sessions.saveSession(
+      origin: 'https://example.test',
+      accessToken: 'other',
+      refreshToken: 'other-refresh',
+      sessionId: 's2',
+      accountId: 'other-account',
+      expiresInSeconds: 3600,
+    );
+    pending.complete(
+      http.Response(
+        '[{"activity_id":7,"stream_type":1,"stream_waypoints":[{"hr":123}]}]',
+        200,
+      ),
+    );
+    await expectLater(result, throwsA(isA<AppException>()));
+  });
+
+  test(
+    'graphs reject wrong activity ids and malformed metric arrays',
+    () async {
+      final wrongOwner = repository(
+        (_) async => http.Response(
+          '[{"activity_id":8,"stream_type":1,"stream_waypoints":[]}]',
+          200,
+        ),
+      );
+      await expectLater(
+        wrongOwner.fetchGraphs(7),
+        throwsA(isA<AppException>()),
+      );
+      final malformed = repository(
+        (_) async => http.Response(
+          '[{"activity_id":7,"stream_type":1,"stream_waypoints":{}}]',
+          200,
+        ),
+      );
+      await expectLater(malformed.fetchGraphs(7), throwsA(isA<AppException>()));
+    },
+  );
+
+  test(
+    'loads exact stream and lap endpoints and validates account ownership',
+    () async {
+      final repo = repository((request) async {
+        if (request.url.path ==
+            '/api/v1/activities_streams/activity_id/7/all') {
+          return http.Response(
+            '[{"activity_id":7,"stream_type":1,"stream_waypoints":[{"time":"2026-10-18T10:00:00Z","hr":123}]}]',
+            200,
+          );
+        }
+        expect(request.url.path, '/api/v1/activities_laps/activity_id/7/all');
+        return http.Response(
+          '[{"activity_id":7,"total_distance":1000,"total_timer_time":300,"avg_heart_rate":145}]',
+          200,
+        );
+      });
+      expect((await repo.fetchGraphs(7)).single.points().single.value, 123);
+      final lap = (await repo.fetchLaps(7)).single;
+      expect(lap.distanceMeters, 1000);
+      expect(lap.speed, closeTo(3.333333, 0.000001));
+      expect(lap.heartRate, 145);
+    },
+  );
+
   test('uses numeric profile id and identical encoded filters for count and page; keeps missing metrics null', () async {
     final paths = <String>[];
     final repo = repository((request) async {

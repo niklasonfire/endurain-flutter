@@ -1,3 +1,5 @@
+import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
+import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/api_client.dart';
@@ -8,7 +10,8 @@ import 'package:endurain/features/server_activities/models/server_activity_query
 import 'package:endurain/features/server_activities/models/server_route_point.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
 
-class ApiServerActivitiesRepository implements ServerActivitiesRepository {
+class ApiServerActivitiesRepository
+    implements ServerActivitiesRepository, ServerActivityGraphRepository {
   ApiServerActivitiesRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
@@ -167,6 +170,51 @@ class ApiServerActivitiesRepository implements ServerActivitiesRepository {
       }
     }
     return List.unmodifiable(route);
+  }
+
+  @override
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
+    final rows = await _detailRows('activities_streams', activityId);
+    final graphs = <ServerActivityGraph>[];
+    for (final row in rows) {
+      if (!ServerGraphMetric.values.any(
+        (metric) => metric.streamType == row['stream_type'],
+      )) {
+        continue;
+      }
+      if (row['stream_waypoints'] is! List) _invalid();
+      final graph = ServerActivityGraph.fromJson(row);
+      if (graph.hasValues) graphs.add(graph);
+    }
+    return List.unmodifiable(graphs);
+  }
+
+  @override
+  Future<List<ServerActivityLap>> fetchLaps(int activityId) async =>
+      List.unmodifiable(
+        (await _detailRows(
+          'activities_laps',
+          activityId,
+        )).map(ServerActivityLap.fromJson),
+      );
+
+  Future<List<Map<String, dynamic>>> _detailRows(
+    String resource,
+    int activityId,
+  ) async {
+    _validateId(activityId);
+    final profile = await _connection();
+    final result = await _get(
+      '/api/v1/$resource/activity_id/$activityId/all',
+      profile,
+    );
+    if (result == null) return const [];
+    if (result is! List) _invalid();
+    return result.map((value) {
+      final row = _object(value);
+      if (row['activity_id'] != activityId) _invalid();
+      return row;
+    }).toList();
   }
 
   static ServerActivity _activity(Object? value) {

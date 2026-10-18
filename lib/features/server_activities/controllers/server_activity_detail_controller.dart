@@ -1,3 +1,5 @@
+import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
+import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
 import 'package:endurain/features/server_activities/models/server_route_point.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
@@ -21,6 +23,14 @@ class ServerActivityDetailController extends SafeNotifier {
   final int activityId;
   final ServerActivitiesRepository _repository;
   final ValueListenable<String?> _connection;
+  List<ServerActivityGraph> _graphs = const [];
+  List<ServerActivityLap> _laps = const [];
+  Object? _graphError;
+  Object? _lapError;
+  bool _isGraphLoading = false;
+  bool _isLapLoading = false;
+  int _graphGeneration = 0;
+  int _lapGeneration = 0;
   ServerActivity? _activity;
   List<ServerRoutePoint> _route = const [];
   Object? _error;
@@ -30,6 +40,13 @@ class ServerActivityDetailController extends SafeNotifier {
   bool _accountChanged = false;
   int _detailGeneration = 0;
   int _routeGeneration = 0;
+
+  List<ServerActivityGraph> get graphs => _graphs;
+  List<ServerActivityLap> get laps => _laps;
+  Object? get graphError => _graphError;
+  Object? get lapError => _lapError;
+  bool get isGraphLoading => _isGraphLoading;
+  bool get isLapLoading => _isLapLoading;
 
   ServerActivity? get activity => _activity;
   List<ServerRoutePoint> get route => _route;
@@ -41,7 +58,7 @@ class ServerActivityDetailController extends SafeNotifier {
 
   Future<void> load() async {
     if (isDisposed || _accountChanged) return;
-    await Future.wait([_loadDetail(), loadRoute()]);
+    await Future.wait([_loadDetail(), loadRoute(), loadGraphs(), loadLaps()]);
   }
 
   Future<void> _loadDetail() async {
@@ -83,12 +100,66 @@ class ServerActivityDetailController extends SafeNotifier {
     }
   }
 
+  Future<void> loadGraphs() async {
+    final repository = _repository;
+    if (!_valid || repository is! ServerActivityGraphRepository) return;
+    final generation = ++_graphGeneration;
+    _isGraphLoading = true;
+    _graphError = null;
+    notify();
+    try {
+      final result = await (repository as ServerActivityGraphRepository)
+          .fetchGraphs(activityId);
+      if (_valid && generation == _graphGeneration) {
+        _graphs = List.unmodifiable(result);
+      }
+    } catch (error) {
+      if (_valid && generation == _graphGeneration) _graphError = error;
+    } finally {
+      if (_valid && generation == _graphGeneration) {
+        _isGraphLoading = false;
+        notify();
+      }
+    }
+  }
+
+  Future<void> loadLaps() async {
+    final repository = _repository;
+    if (!_valid || repository is! ServerActivityGraphRepository) return;
+    final generation = ++_lapGeneration;
+    _isLapLoading = true;
+    _lapError = null;
+    notify();
+    try {
+      final result = await (repository as ServerActivityGraphRepository)
+          .fetchLaps(activityId);
+      if (_valid && generation == _lapGeneration) {
+        _laps = List.unmodifiable(result);
+      }
+    } catch (error) {
+      if (_valid && generation == _lapGeneration) _lapError = error;
+    } finally {
+      if (_valid && generation == _lapGeneration) {
+        _isLapLoading = false;
+        notify();
+      }
+    }
+  }
+
   bool get _valid => !isDisposed && !_accountChanged;
 
   void _invalidate() {
     _accountChanged = true;
     _detailGeneration++;
     _routeGeneration++;
+    _graphGeneration++;
+    _lapGeneration++;
+    _graphs = const [];
+    _laps = const [];
+    _graphError = null;
+    _lapError = null;
+    _isGraphLoading = false;
+    _isLapLoading = false;
     _activity = null;
     _route = const [];
     _error = null;

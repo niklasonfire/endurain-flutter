@@ -1,3 +1,5 @@
+import 'package:endurain/features/server_activities/widgets/server_activity_charts.dart';
+
 import 'dart:async';
 
 import 'package:endurain/core/constants/map_constants.dart';
@@ -133,6 +135,30 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
                     tileServerUrl: _tiles!,
                     startLabel: l10n.activityHistoryStartedAt,
                     finishLabel: l10n.activityHistoryEndedAt,
+                  ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.chartTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                if (_controller.isGraphLoading)
+                  const Center(child: AdaptiveLoadingIndicator())
+                else if (_controller.graphError != null)
+                  _retry(l10n.chartLoadFailed, _controller.loadGraphs)
+                else
+                  ServerActivityCharts(
+                    graphs: _controller.graphs,
+                    activityType: _controller.activity!.activityType,
+                  ),
+                const SizedBox(height: 20),
+                if (_controller.isLapLoading)
+                  const Center(child: AdaptiveLoadingIndicator())
+                else if (_controller.lapError != null)
+                  _retry(l10n.chartLapsFailed, _controller.loadLaps)
+                else
+                  ServerActivityLaps(
+                    laps: _controller.laps,
+                    activityType: _controller.activity!.activityType,
                   ),
                 if (_controller.activity!.description?.trim().isNotEmpty ??
                     false) ...[

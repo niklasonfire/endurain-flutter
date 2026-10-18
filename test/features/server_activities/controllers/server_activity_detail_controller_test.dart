@@ -1,3 +1,6 @@
+import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
+import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
+
 import 'dart:async';
 
 import 'package:endurain/features/server_activities/controllers/server_activity_detail_controller.dart';
@@ -10,6 +13,56 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'graphs and laps retry independently and clear on account change',
+    () async {
+      final connection = ValueNotifier<String?>('a');
+      final repository = _GraphRepository();
+      final controller = ServerActivityDetailController(
+        activityId: 1,
+        repository: repository,
+        connection: connection,
+      );
+      final loading = controller.load();
+      repository.details.complete(
+        const ServerActivity(id: 1, name: 'Run', activityType: 1),
+      );
+      repository.routes.single.complete(const []);
+      repository.graphRequests.single.completeError(Exception('offline'));
+      repository.lapRequests.single.complete(const []);
+      await loading;
+      expect(controller.graphError, isNotNull);
+      expect(controller.lapError, isNull);
+      final retry = controller.loadGraphs();
+      final graph = ServerActivityGraph.fromJson({
+        'stream_type': 1,
+        'stream_waypoints': [
+          {'hr': 120},
+        ],
+      });
+      repository.graphRequests.last.complete([graph]);
+      await retry;
+      expect(controller.graphs, [graph]);
+      expect(repository.lapRequests, hasLength(1));
+      final pending = controller.loadLaps();
+      connection.value = null;
+      expect(controller.graphs, isEmpty);
+      repository.lapRequests.last.complete([
+        const ServerActivityLap(
+          distanceMeters: 1000,
+          seconds: 300,
+          speed: 3,
+          heartRate: 120,
+          isRest: false,
+        ),
+      ]);
+      await pending;
+      expect(controller.laps, isEmpty);
+      controller.dispose();
+      connection.dispose();
+    },
+  );
+
   test(
     'detail remains visible when route fails and route can retry alone',
     () async {
@@ -96,4 +149,23 @@ class _Repository implements ServerActivitiesRepository {
     int page = 1,
     int pageSize = 20,
   }) => throw UnimplementedError();
+}
+
+class _GraphRepository extends _Repository
+    implements ServerActivityGraphRepository {
+  final graphRequests = <Completer<List<ServerActivityGraph>>>[];
+  final lapRequests = <Completer<List<ServerActivityLap>>>[];
+  @override
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) {
+    final request = Completer<List<ServerActivityGraph>>();
+    graphRequests.add(request);
+    return request.future;
+  }
+
+  @override
+  Future<List<ServerActivityLap>> fetchLaps(int activityId) {
+    final request = Completer<List<ServerActivityLap>>();
+    lapRequests.add(request);
+    return request.future;
+  }
 }
