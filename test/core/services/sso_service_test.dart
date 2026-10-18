@@ -16,6 +16,30 @@ void main() {
   });
 
   group('SsoService', () {
+    test('local SSO callback cannot open the original app', () async {
+      final service = SsoService(storage: SecureStorageService());
+      final login = Uri.parse(
+        await service.initiateOAuth('oidc', serverUrl: 'https://example.test'),
+      );
+      expect(
+        login.queryParameters['redirect'],
+        'endurain://local-auth/sso/callback',
+      );
+      expect(
+        SsoService.matchesCallback(
+          Uri.parse('endurain://local-auth/sso/callback?session_id=session-1'),
+        ),
+        isTrue,
+      );
+      expect(
+        SsoService.matchesCallback(
+          Uri.parse('endurain://auth/sso/callback?session_id=session-1'),
+        ),
+        isFalse,
+      );
+      expect(login.queryParameters['code_challenge_method'], 'S256');
+    });
+
     test('rejects successful token exchange with missing token fields', () async {
       final storage = SecureStorageService();
       final service = SsoService(

@@ -47,7 +47,7 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 
     <application
-        android:label="Endurain"
+        android:label="Endurain Local"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
@@ -81,7 +81,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="endurain"
-                    android:host="auth"
+                    android:host="local-auth"
                     android:path="/sso/callback" />
             </intent-filter>
         </activity>

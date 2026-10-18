@@ -64,7 +64,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.endurain.endurain"
+        applicationId = "com.endurain.endurain.local"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 26
@@ -83,6 +83,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Use the same persistent local identity for debug and release updates.
+            if (configuredReleaseStoreFile?.isFile == true) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
         release {
             // Never publish a debug-signed artifact. The release task checks
             // required upload-key inputs before this variant is configured.

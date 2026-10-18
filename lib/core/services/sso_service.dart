@@ -40,7 +40,9 @@ class _SsoPkceState {
 
 /// Service for SSO/OAuth authentication
 class SsoService {
-  static const callbackUrl = 'endurain://auth/sso/callback';
+  // v0.19.4 permits the endurain scheme and preserves custom callback hosts.
+  // A separate host keeps the original installed app out of this login flow.
+  static const callbackUrl = 'endurain://local-auth/sso/callback';
 
   /// Parsed form of [callbackUrl], the single source of truth for the SSO
   /// deep-link contract. Use [matchesCallback] instead of hardcoding the

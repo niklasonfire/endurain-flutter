@@ -125,7 +125,7 @@ void main() {
         serverUrl: 'https://example.test',
       );
       appLinks.add(
-        Uri.parse('endurain://auth/sso/callback?session_id=session-1'),
+        Uri.parse('endurain://local-auth/sso/callback?session_id=session-1'),
       );
       await loginCompleted.future.timeout(const Duration(seconds: 1));
 
@@ -155,7 +155,7 @@ void main() {
       );
 
       appLinks.add(
-        Uri.parse('endurain://auth/sso/callback?error=access_denied'),
+        Uri.parse('endurain://local-auth/sso/callback?error=access_denied'),
       );
       await Future<void>.delayed(Duration.zero);
 
@@ -183,7 +183,7 @@ void main() {
         onError: errors.add,
       );
 
-      appLinks.add(Uri.parse('endurain://auth/sso/callback'));
+      appLinks.add(Uri.parse('endurain://local-auth/sso/callback'));
       await Future<void>.delayed(Duration.zero);
 
       expect(
@@ -496,7 +496,7 @@ void main() {
       );
 
       appLinks.add(
-        Uri.parse('endurain://auth/sso/callback?session_id=session-1'),
+        Uri.parse('endurain://local-auth/sso/callback?session_id=session-1'),
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
