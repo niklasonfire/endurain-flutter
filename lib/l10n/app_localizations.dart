@@ -2251,6 +2251,156 @@ abstract class AppLocalizations {
     String lapMetric,
     String overallMetric,
   );
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get activitiesTab;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Search name or location'**
+  String get serverActivitiesSearch;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'All sports'**
+  String get serverActivitiesAllSports;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get serverActivitiesDateFilter;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get serverActivitiesClearFilters;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No activities yet. Your server activities will appear here.'**
+  String get serverActivitiesEmpty;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No activities match your filters.'**
+  String get serverActivitiesNoMatches;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Activities could not be loaded. Pull to refresh or try again.'**
+  String get serverActivitiesLoadFailed;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'More activities could not be loaded. Your loaded activities are still available.'**
+  String get serverActivitiesMoreFailed;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get serverActivitiesRetry;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get serverActivitiesLoadMore;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your activities, together'**
+  String get serverActivitiesGuestTitle;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Endurain account to browse the activities saved on your server.'**
+  String get serverActivitiesGuestMessage;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connect account'**
+  String get serverActivitiesSignIn;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get serverActivitiesStartDate;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get serverActivitiesEndDate;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get serverActivitiesNewestFirst;
+
+  /// Server activities list - Used in: server_activities_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Clear date range'**
+  String get serverActivitiesClearDates;
+
+  /// Server sport type label, using Endurain activity type code.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, 1 {Run} 2 {Trail run} 3 {Virtual run} 4 {Ride} 5 {Gravel ride} 6 {Mountain bike} 7 {Virtual ride} 8 {Pool swim} 9 {Open water swim} 10 {Workout} 11 {Walk} 12 {Hike} 13 {Rowing} 14 {Yoga} 15 {Alpine ski} 16 {Nordic ski} 17 {Snowboard} 18 {Transition} 19 {Strength training} 20 {Crossfit} 21 {Tennis} 22 {Table tennis} 23 {Badminton} 24 {Squash} 25 {Racquetball} 26 {Pickleball} 27 {Commuting ride} 28 {Indoor ride} 29 {Mixed surface ride} 30 {Windsurf} 31 {Indoor walk} 32 {Stand up paddling} 33 {Surf} 34 {Track run} 35 {E-bike ride} 36 {E-mountain bike} 37 {Ice skating} 38 {Soccer} 39 {Padel} 40 {Treadmill run} 41 {Cardio training} 42 {Kayaking} 43 {Sailing} 44 {Snowshoeing} 45 {Inline skating} 46 {HIIT} 47 {Jump rope} other {Other}}'**
+  String serverActivitySport(String code);
+
+  /// Server activity request failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Server activities could not be loaded.'**
+  String get errorServerActivitiesFetchFailed;
+
+  /// Sport-specific server activity measurement unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} min/100m'**
+  String serverActivityUnitMinutesPer100Meters(String value);
+
+  /// Sport-specific server activity measurement unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} min/100yd'**
+  String serverActivityUnitMinutesPer100Yards(String value);
+
+  /// Sport-specific server activity measurement unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} min/500m'**
+  String serverActivityUnitMinutesPer500Meters(String value);
+
+  /// Sport-specific server activity measurement unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} yd'**
+  String serverActivityUnitYard(String value);
+
+  /// Sport-specific server activity measurement unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kn'**
+  String serverActivityUnitKnots(String value);
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -17,6 +19,11 @@ class AuthSessionStore {
   final SecureStorageService _storage;
   final AppConfig _config;
   final SerialTaskQueue _queue = SerialTaskQueue();
+  final ValueNotifier<String?> _connectionChanges = ValueNotifier(null);
+
+  /// Active origin-qualified account identity. Logout clears this immediately
+  /// after credentials are removed; token refresh keeps the same identity.
+  ValueListenable<String?> get connectionChanges => _connectionChanges;
 
   Future<AuthSession?> readSession() => _serialize(_readSessionUnlocked);
 
@@ -50,6 +57,7 @@ class AuthSessionStore {
       if (needsMigration || normalized.origin != session.origin) {
         await _writeCanonicalSession(normalized);
       }
+      _connectionChanges.value = normalized.profileId;
       return normalized;
     } on FormatException catch (_) {
       await _clearUnlocked();
@@ -190,6 +198,7 @@ class AuthSessionStore {
     await _storage.setServerUrl(session.origin);
     await _storage.setAuthSession(jsonEncode(session.toJson()));
     await _storage.clearLegacyAuthTokens();
+    _connectionChanges.value = session.profileId;
     if (session.username != null) {
       await _storage.setUsername(session.username!);
     }
@@ -197,7 +206,10 @@ class AuthSessionStore {
 
   Future<void> clear() => _mutate(_clearUnlocked);
 
-  Future<void> _clearUnlocked() => _storage.clearAuthTokens();
+  Future<void> _clearUnlocked() async {
+    await _storage.clearAuthTokens();
+    _connectionChanges.value = null;
+  }
 
   Future<void> _mutate(Future<void> Function() action) {
     return _serialize(() async {

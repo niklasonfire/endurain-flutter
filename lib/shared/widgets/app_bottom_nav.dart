@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:endurain/features/server_activities/screens/server_activities_screen.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/navigation/app_routes.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -34,6 +35,13 @@ class AppBottomNav extends StatelessWidget {
           materialIcon: Icons.map,
           cupertinoIcon: CupertinoIcons.map,
           builder: (context) => const MapScreen(),
+        ),
+        AdaptiveTab(
+          routeName: AppRoutes.activities,
+          label: l10n.activitiesTab,
+          materialIcon: Icons.directions_run,
+          cupertinoIcon: CupertinoIcons.list_bullet,
+          builder: (context) => ServerActivitiesScreen(onSignIn: onSignIn),
         ),
         AdaptiveTab(
           routeName: AppRoutes.settings,

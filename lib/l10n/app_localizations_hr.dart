@@ -1231,4 +1231,146 @@ class AppLocalizationsHr extends AppLocalizations {
   ) {
     return 'Udaljenost $distance. Vrijeme $duration. Krug: $lapMetric. Ukupno: $overallMetric.';
   }
+
+  @override
+  String get activitiesTab => 'Activities';
+
+  @override
+  String get serverActivitiesSearch => 'Search name or location';
+
+  @override
+  String get serverActivitiesAllSports => 'All sports';
+
+  @override
+  String get serverActivitiesDateFilter => 'Date range';
+
+  @override
+  String get serverActivitiesClearFilters => 'Clear filters';
+
+  @override
+  String get serverActivitiesEmpty =>
+      'No activities yet. Your server activities will appear here.';
+
+  @override
+  String get serverActivitiesNoMatches => 'No activities match your filters.';
+
+  @override
+  String get serverActivitiesLoadFailed =>
+      'Activities could not be loaded. Pull to refresh or try again.';
+
+  @override
+  String get serverActivitiesMoreFailed =>
+      'More activities could not be loaded. Your loaded activities are still available.';
+
+  @override
+  String get serverActivitiesRetry => 'Try again';
+
+  @override
+  String get serverActivitiesLoadMore => 'Load more';
+
+  @override
+  String get serverActivitiesGuestTitle => 'Your activities, together';
+
+  @override
+  String get serverActivitiesGuestMessage =>
+      'Connect your Endurain account to browse the activities saved on your server.';
+
+  @override
+  String get serverActivitiesSignIn => 'Connect account';
+
+  @override
+  String get serverActivitiesStartDate => 'Start date';
+
+  @override
+  String get serverActivitiesEndDate => 'End date';
+
+  @override
+  String get serverActivitiesNewestFirst => 'Newest first';
+
+  @override
+  String get serverActivitiesClearDates => 'Clear date range';
+
+  @override
+  String serverActivitySport(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      '1': 'Run',
+      '2': 'Trail run',
+      '3': 'Virtual run',
+      '4': 'Ride',
+      '5': 'Gravel ride',
+      '6': 'Mountain bike',
+      '7': 'Virtual ride',
+      '8': 'Pool swim',
+      '9': 'Open water swim',
+      '10': 'Workout',
+      '11': 'Walk',
+      '12': 'Hike',
+      '13': 'Rowing',
+      '14': 'Yoga',
+      '15': 'Alpine ski',
+      '16': 'Nordic ski',
+      '17': 'Snowboard',
+      '18': 'Transition',
+      '19': 'Strength training',
+      '20': 'Crossfit',
+      '21': 'Tennis',
+      '22': 'Table tennis',
+      '23': 'Badminton',
+      '24': 'Squash',
+      '25': 'Racquetball',
+      '26': 'Pickleball',
+      '27': 'Commuting ride',
+      '28': 'Indoor ride',
+      '29': 'Mixed surface ride',
+      '30': 'Windsurf',
+      '31': 'Indoor walk',
+      '32': 'Stand up paddling',
+      '33': 'Surf',
+      '34': 'Track run',
+      '35': 'E-bike ride',
+      '36': 'E-mountain bike',
+      '37': 'Ice skating',
+      '38': 'Soccer',
+      '39': 'Padel',
+      '40': 'Treadmill run',
+      '41': 'Cardio training',
+      '42': 'Kayaking',
+      '43': 'Sailing',
+      '44': 'Snowshoeing',
+      '45': 'Inline skating',
+      '46': 'HIIT',
+      '47': 'Jump rope',
+      'other': 'Other',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get errorServerActivitiesFetchFailed =>
+      'Server activities could not be loaded.';
+
+  @override
+  String serverActivityUnitMinutesPer100Meters(String value) {
+    return '$value min/100m';
+  }
+
+  @override
+  String serverActivityUnitMinutesPer100Yards(String value) {
+    return '$value min/100yd';
+  }
+
+  @override
+  String serverActivityUnitMinutesPer500Meters(String value) {
+    return '$value min/500m';
+  }
+
+  @override
+  String serverActivityUnitYard(String value) {
+    return '$value yd';
+  }
+
+  @override
+  String serverActivityUnitKnots(String value) {
+    return '$value kn';
+  }
 }

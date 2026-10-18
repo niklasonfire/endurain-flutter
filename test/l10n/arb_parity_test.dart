@@ -90,12 +90,46 @@ Set<String> _messageKeys(Map<String, dynamic> arb) {
   return arb.keys.where((key) => !key.startsWith('@')).toSet();
 }
 
-/// The set of ICU `{placeholder}` names referenced by a message. The app only
-/// uses simple placeholders (no plural/select), so a token scan is sufficient
-/// and, unlike reading `@`-metadata, works for lean translation catalogs.
+/// Extracts argument names, recursing into ICU select/plural branches while
+/// treating branch contents as text. Sport labels such as `{Run}` are branch
+/// messages, not placeholder arguments.
 Set<String> _tokens(String message) {
-  return RegExp(r'\{(\w+)\}')
-      .allMatches(message)
-      .map((match) => match.group(1)!)
-      .toSet();
+  final result = <String>{};
+  var position = 0;
+  while (position < message.length) {
+    if (message[position] != '{') {
+      position++;
+      continue;
+    }
+    final start = ++position;
+    var depth = 1;
+    while (position < message.length && depth > 0) {
+      if (message[position] == '{') depth++;
+      if (message[position] == '}') depth--;
+      position++;
+    }
+    final body = message.substring(start, position - 1);
+    final comma = body.indexOf(',');
+    if (comma < 0) {
+      result.add(body.trim());
+      continue;
+    }
+    result.add(body.substring(0, comma).trim());
+    final branchesStart = body.indexOf(',', comma + 1);
+    if (branchesStart < 0) continue;
+    var branchPosition = branchesStart + 1;
+    while (branchPosition < body.length) {
+      final open = body.indexOf('{', branchPosition);
+      if (open < 0) break;
+      branchPosition = open + 1;
+      var branchDepth = 1;
+      while (branchPosition < body.length && branchDepth > 0) {
+        if (body[branchPosition] == '{') branchDepth++;
+        if (body[branchPosition] == '}') branchDepth--;
+        branchPosition++;
+      }
+      result.addAll(_tokens(body.substring(open + 1, branchPosition - 1)));
+    }
+  }
+  return result;
 }

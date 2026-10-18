@@ -1243,4 +1243,147 @@ class AppLocalizationsDe extends AppLocalizations {
   ) {
     return 'Distanz $distance. Zeit $duration. Runde: $lapMetric. Gesamt: $overallMetric.';
   }
+
+  @override
+  String get activitiesTab => 'Aktivitäten';
+
+  @override
+  String get serverActivitiesSearch => 'Name oder Ort suchen';
+
+  @override
+  String get serverActivitiesAllSports => 'Alle Sportarten';
+
+  @override
+  String get serverActivitiesDateFilter => 'Zeitraum';
+
+  @override
+  String get serverActivitiesClearFilters => 'Filter zurücksetzen';
+
+  @override
+  String get serverActivitiesEmpty =>
+      'Noch keine Aktivitäten. Deine Serveraktivitäten erscheinen hier.';
+
+  @override
+  String get serverActivitiesNoMatches =>
+      'Keine Aktivitäten passen zu deinen Filtern.';
+
+  @override
+  String get serverActivitiesLoadFailed =>
+      'Aktivitäten konnten nicht geladen werden. Ziehe zum Aktualisieren oder versuche es erneut.';
+
+  @override
+  String get serverActivitiesMoreFailed =>
+      'Weitere Aktivitäten konnten nicht geladen werden. Bereits geladene Aktivitäten bleiben verfügbar.';
+
+  @override
+  String get serverActivitiesRetry => 'Erneut versuchen';
+
+  @override
+  String get serverActivitiesLoadMore => 'Mehr laden';
+
+  @override
+  String get serverActivitiesGuestTitle => 'Deine Aktivitäten an einem Ort';
+
+  @override
+  String get serverActivitiesGuestMessage =>
+      'Verbinde deinen Endurain-Account, um die auf deinem Server gespeicherten Aktivitäten anzusehen.';
+
+  @override
+  String get serverActivitiesSignIn => 'Account verbinden';
+
+  @override
+  String get serverActivitiesStartDate => 'Startdatum';
+
+  @override
+  String get serverActivitiesEndDate => 'Enddatum';
+
+  @override
+  String get serverActivitiesNewestFirst => 'Neueste zuerst';
+
+  @override
+  String get serverActivitiesClearDates => 'Zeitraum zurücksetzen';
+
+  @override
+  String serverActivitySport(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      '1': 'Laufen',
+      '2': 'Traillauf',
+      '3': 'Virtueller Lauf',
+      '4': 'Radfahren',
+      '5': 'Gravelbike',
+      '6': 'Mountainbike',
+      '7': 'Virtuelles Radfahren',
+      '8': 'Schwimmen (Becken)',
+      '9': 'Freiwasserschwimmen',
+      '10': 'Training',
+      '11': 'Gehen',
+      '12': 'Wandern',
+      '13': 'Rudern',
+      '14': 'Yoga',
+      '15': 'Ski Alpin',
+      '16': 'Langlauf',
+      '17': 'Snowboard',
+      '18': 'Wechsel',
+      '19': 'Krafttraining',
+      '20': 'Crossfit',
+      '21': 'Tennis',
+      '22': 'Tischtennis',
+      '23': 'Badminton',
+      '24': 'Squash',
+      '25': 'Racquetball',
+      '26': 'Pickleball',
+      '27': 'Pendeln (Rad)',
+      '28': 'Indoor-Radfahren',
+      '29': 'Radfahren (gemischt)',
+      '30': 'Windsurfen',
+      '31': 'Indoor-Gehen',
+      '32': 'Stand-up-Paddeln',
+      '33': 'Surfen',
+      '34': 'Bahnlauf',
+      '35': 'E-Bike',
+      '36': 'E-Mountainbike',
+      '37': 'Eislaufen',
+      '38': 'Fußball',
+      '39': 'Padel',
+      '40': 'Laufband',
+      '41': 'Cardiotraining',
+      '42': 'Kajakfahren',
+      '43': 'Segeln',
+      '44': 'Schneeschuhwandern',
+      '45': 'Inlineskaten',
+      '46': 'HIIT',
+      '47': 'Seilspringen',
+      'other': 'Sonstige',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get errorServerActivitiesFetchFailed =>
+      'Serveraktivitäten konnten nicht geladen werden.';
+
+  @override
+  String serverActivityUnitMinutesPer100Meters(String value) {
+    return '$value min/100m';
+  }
+
+  @override
+  String serverActivityUnitMinutesPer100Yards(String value) {
+    return '$value min/100yd';
+  }
+
+  @override
+  String serverActivityUnitMinutesPer500Meters(String value) {
+    return '$value min/500m';
+  }
+
+  @override
+  String serverActivityUnitYard(String value) {
+    return '$value yd';
+  }
+
+  @override
+  String serverActivityUnitKnots(String value) {
+    return '$value kn';
+  }
 }

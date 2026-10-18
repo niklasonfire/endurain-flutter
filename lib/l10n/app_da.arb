@@ -543,5 +543,135 @@
         "example": "Pace 5:30 min/km"
       }
     }
+  },
+  "activitiesTab": "Activities",
+  "@activitiesTab": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesSearch": "Search name or location",
+  "@serverActivitiesSearch": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesAllSports": "All sports",
+  "@serverActivitiesAllSports": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesDateFilter": "Date range",
+  "@serverActivitiesDateFilter": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesClearFilters": "Clear filters",
+  "@serverActivitiesClearFilters": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesEmpty": "No activities yet. Your server activities will appear here.",
+  "@serverActivitiesEmpty": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesNoMatches": "No activities match your filters.",
+  "@serverActivitiesNoMatches": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesLoadFailed": "Activities could not be loaded. Pull to refresh or try again.",
+  "@serverActivitiesLoadFailed": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesMoreFailed": "More activities could not be loaded. Your loaded activities are still available.",
+  "@serverActivitiesMoreFailed": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesRetry": "Try again",
+  "@serverActivitiesRetry": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesLoadMore": "Load more",
+  "@serverActivitiesLoadMore": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesGuestTitle": "Your activities, together",
+  "@serverActivitiesGuestTitle": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesGuestMessage": "Connect your Endurain account to browse the activities saved on your server.",
+  "@serverActivitiesGuestMessage": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesSignIn": "Connect account",
+  "@serverActivitiesSignIn": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesStartDate": "Start date",
+  "@serverActivitiesStartDate": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesEndDate": "End date",
+  "@serverActivitiesEndDate": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesNewestFirst": "Newest first",
+  "@serverActivitiesNewestFirst": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitiesClearDates": "Clear date range",
+  "@serverActivitiesClearDates": {
+    "description": "Server activities list - Used in: server_activities_screen.dart"
+  },
+  "serverActivitySport": "{code, select, 1 {Run} 2 {Trail run} 3 {Virtual run} 4 {Ride} 5 {Gravel ride} 6 {Mountain bike} 7 {Virtual ride} 8 {Pool swim} 9 {Open water swim} 10 {Workout} 11 {Walk} 12 {Hike} 13 {Rowing} 14 {Yoga} 15 {Alpine ski} 16 {Nordic ski} 17 {Snowboard} 18 {Transition} 19 {Strength training} 20 {Crossfit} 21 {Tennis} 22 {Table tennis} 23 {Badminton} 24 {Squash} 25 {Racquetball} 26 {Pickleball} 27 {Commuting ride} 28 {Indoor ride} 29 {Mixed surface ride} 30 {Windsurf} 31 {Indoor walk} 32 {Stand up paddling} 33 {Surf} 34 {Track run} 35 {E-bike ride} 36 {E-mountain bike} 37 {Ice skating} 38 {Soccer} 39 {Padel} 40 {Treadmill run} 41 {Cardio training} 42 {Kayaking} 43 {Sailing} 44 {Snowshoeing} 45 {Inline skating} 46 {HIIT} 47 {Jump rope} other {Other}}",
+  "@serverActivitySport": {
+    "description": "Server sport type label, using Endurain activity type code.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "errorServerActivitiesFetchFailed": "Server activities could not be loaded.",
+  "@errorServerActivitiesFetchFailed": {
+    "description": "Server activity request failed."
+  },
+  "serverActivityUnitMinutesPer100Meters": "{value} min/100m",
+  "@serverActivityUnitMinutesPer100Meters": {
+    "description": "Sport-specific server activity measurement unit.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "serverActivityUnitMinutesPer100Yards": "{value} min/100yd",
+  "@serverActivityUnitMinutesPer100Yards": {
+    "description": "Sport-specific server activity measurement unit.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "serverActivityUnitMinutesPer500Meters": "{value} min/500m",
+  "@serverActivityUnitMinutesPer500Meters": {
+    "description": "Sport-specific server activity measurement unit.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "serverActivityUnitYard": "{value} yd",
+  "@serverActivityUnitYard": {
+    "description": "Sport-specific server activity measurement unit.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "serverActivityUnitKnots": "{value} kn",
+  "@serverActivityUnitKnots": {
+    "description": "Sport-specific server activity measurement unit.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   }
 }
