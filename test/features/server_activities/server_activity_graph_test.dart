@@ -2,6 +2,21 @@ import 'package:endurain/features/server_activities/models/server_activity_graph
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('reciprocal overflow is missing data in graphs and laps', () {
+    final graph = ServerActivityGraph.fromJson({
+      'stream_type': 5,
+      'stream_waypoints': [
+        {'vel': 1e-320},
+      ],
+    }).paceFromSpeed();
+    expect(graph.points().single.value, isNull);
+    final lap = ServerActivityLap.fromJson({
+      'total_distance': 1000,
+      'enhanced_avg_pace': 1e-320,
+    });
+    expect(lap.speed, isNull);
+  });
+
   test('large streams preserve peaks and gaps with bounded painting and exact readout', () {
     final graph = ServerActivityGraph.fromJson({
       'stream_type': 1,

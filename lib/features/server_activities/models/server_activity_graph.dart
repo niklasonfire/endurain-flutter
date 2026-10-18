@@ -83,7 +83,7 @@ class ServerActivityGraph {
         _points.map(
           (point) => ServerGraphPoint(
             point.x,
-            point.value != null && point.value! > 0 ? 1 / point.value! : null,
+            point.value != null ? _positiveRatio(1, point.value!) : null,
             startsSegment: point.startsSegment,
           ),
         ),
@@ -172,9 +172,9 @@ class ServerActivityLap {
       speed: speed != null && speed > 0
           ? speed
           : pace != null && pace > 0
-          ? 1 / pace
+          ? _positiveRatio(1, pace)
           : distance != null && distance > 0 && seconds != null && seconds > 0
-          ? distance / seconds
+          ? _positiveRatio(distance, seconds)
           : null,
       heartRate: serverGraphNumber(json['avg_heart_rate']),
       isRest: json['intensity'] == 'rest',
@@ -196,4 +196,11 @@ DateTime? serverGraphTimestamp(Object? value) {
     caseSensitive: false,
   ).hasMatch(value);
   return DateTime.tryParse(zoned ? value : '${value}Z')?.toUtc();
+}
+
+/// Invalid derived values are gaps, just like invalid wire measurements.
+double? _positiveRatio(double numerator, double denominator) {
+  if (denominator <= 0) return null;
+  final value = numerator / denominator;
+  return value.isFinite && value > 0 ? value : null;
 }
