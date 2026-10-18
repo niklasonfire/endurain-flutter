@@ -94,14 +94,16 @@ void main() {
             {'lat': 91, 'lon': 13},
             {'lat': 50, 'lon': 181},
             {'lat': '52', 'lon': '13'},
+            {'lat': 51, 'lon': 12},
           ],
         }),
         200,
       );
     });
     final route = await repo.fetchRoute(7);
-    expect(route.map((p) => p.latitude), [52.5, 0]);
-    expect(route.map((p) => p.longitude), [13.4, 0]);
+    expect(route.map((p) => p.latitude), [52.5, 0, 51]);
+    expect(route.map((p) => p.longitude), [13.4, 0, 12]);
+    expect(route.map((p) => p.startsSegment), [false, false, true]);
   });
 
   test('late detail response from previous account is rejected', () async {
@@ -194,6 +196,84 @@ void main() {
       );
     },
   );
+
+  test('guest activity requests fail before contacting a server', () async {
+    await sessions.clear();
+    var requests = 0;
+    final repo = repository((request) async {
+      requests++;
+      return http.Response('{}', 200);
+    });
+    for (final operation in [
+      () => repo.fetchPage(),
+      () => repo.fetchActivityTypes(),
+      () => repo.fetchDetail(7),
+      () => repo.fetchRoute(7),
+    ]) {
+      await expectLater(
+        operation(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.notAuthenticated,
+          ),
+        ),
+      );
+    }
+    expect(requests, 0);
+  });
+
+  test(
+    'logout during count rejects the result before loading private rows',
+    () async {
+      final countStarted = Completer<void>();
+      final countResponse = Completer<http.Response>();
+      final paths = <String>[];
+      final repo = repository((request) {
+        paths.add(request.url.path);
+        if (request.url.path.endsWith('/profile')) {
+          return Future.value(http.Response('{"id":42}', 200));
+        }
+        countStarted.complete();
+        return countResponse.future;
+      });
+      final page = repo.fetchPage();
+      await countStarted.future;
+      await sessions.clear();
+      countResponse.complete(http.Response('1', 200));
+      await expectLater(
+        page,
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.sessionExpired,
+          ),
+        ),
+      );
+      expect(paths, ['/api/v1/profile', '/api/v1/activities/number']);
+    },
+  );
+
+  test('route rejects a stream belonging to another activity', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"activity_id":8,"stream_type":7,"stream_waypoints":[]}',
+        200,
+      ),
+    );
+    await expectLater(
+      repo.fetchRoute(7),
+      throwsA(
+        isA<AppException>().having(
+          (error) => error.code,
+          'code',
+          AppErrorCode.unexpectedResponseFormat,
+        ),
+      ),
+    );
+  });
 
   test('transport failures surface a typed activity load error', () async {
     final repo = repository(
