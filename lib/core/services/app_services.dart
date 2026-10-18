@@ -19,6 +19,9 @@ import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
+import 'package:endurain/features/server_activities/controllers/server_activities_controller.dart';
+import 'package:endurain/features/server_activities/repositories/api_server_activities_repository.dart';
+import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -108,6 +111,19 @@ class AppServices {
   SsoService get sso => _auth.sso;
   ServerSettingsService get serverSettings => _auth.serverSettings;
   ApiClient get apiClient => _auth.apiClient;
+
+  late final ServerActivitiesRepository serverActivities =
+      ApiServerActivitiesRepository(
+        apiClient: apiClient,
+        sessionStore: authSession,
+      );
+
+  ServerActivitiesController createServerActivitiesController({
+    ServerActivitiesRepository? repository,
+  }) => ServerActivitiesController(
+    repository: repository ?? serverActivities,
+    connection: authSession.connectionChanges,
+  );
 
   // ── Activity ───────────────────────────────────────────────────────────────
 
