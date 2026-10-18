@@ -1,3 +1,4 @@
+import 'package:endurain/features/statistics/screens/statistics_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:endurain/features/server_activities/screens/server_activities_screen.dart';
 import 'package:endurain/features/server_activities/screens/server_activity_detail_screen.dart';
@@ -49,6 +50,13 @@ class AppBottomNav extends StatelessWidget {
               (_) => ServerActivityDetailScreen(activityId: activity.id),
             ),
           ),
+        ),
+        AdaptiveTab(
+          routeName: AppRoutes.statistics,
+          label: l10n.statsTab,
+          materialIcon: Icons.bar_chart,
+          cupertinoIcon: CupertinoIcons.chart_bar,
+          builder: (context) => StatisticsScreen(onSignIn: onSignIn),
         ),
         AdaptiveTab(
           routeName: AppRoutes.settings,

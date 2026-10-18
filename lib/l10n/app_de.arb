@@ -681,5 +681,149 @@
   "serverActivityNoRoute": "Keine GPS-Strecke verfügbar.",
   "serverActivityDescription": "Beschreibung",
   "serverActivityElapsedTime": "Verstrichene Zeit",
-  "serverActivityCalories": "Kalorien"
+  "serverActivityCalories": "Kalorien",
+  "statsTab": "Statistik",
+  "statsWeek": "Woche",
+  "statsMonth": "Monat",
+  "statsYear": "Jahr",
+  "statsPrevious": "Vorheriger Zeitraum",
+  "statsNext": "Nächster Zeitraum",
+  "statsGuest": "Verbinde dein Konto, um deine Trainingsstatistik zu sehen.",
+  "statsLoadFailed": "Statistik konnte nicht geladen werden. Zum Aktualisieren ziehen oder erneut versuchen.",
+  "statsDistance": "Gesamtdistanz",
+  "statsDuration": "Dauer",
+  "statsCount": "Aktivitäten",
+  "statsElevation": "Höhenmeter",
+  "statsEmpty": "Keine Aktivitäten in diesem Zeitraum.",
+  "statsDistanceTrend": "Distanzverlauf",
+  "statsDurationTrend": "Dauerverlauf",
+  "statsSports": "Nach Sportart",
+  "statsCalendarNote": "Serverkalender (UTC), mit deinem Wochenbeginn aus dem Web. Distanz enthält nur distanzbasierte Sportarten.",
+  "statsPartialWeeks": "Wochen innerhalb dieses Monats, einschließlich Teilwochen. Nur Wochen mit Aktivitäten werden gezeigt.",
+  "statsWeekContaining": "Woche um den {date}",
+  "statsWeekNumber": "Woche {number}",
+  "@statsWeekContaining": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@statsWeekNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "chartTitle": "Diagramme",
+  "chartNoData": "Keine Messreihen verfügbar.",
+  "chartLoadFailed": "Diagramme konnten nicht geladen werden.",
+  "chartLaps": "Aufgezeichnete Runden",
+  "chartLapsEmpty": "Keine aufgezeichneten Runden verfügbar.",
+  "chartLapsFailed": "Runden konnten nicht geladen werden.",
+  "chartTimeAxis": "Zeit ab erster Messung",
+  "chartSampleAxis": "Messpunktnummer (Zeitstempel fehlen)",
+  "chartReadHint": "Diagramm antippen oder den Regler nutzen, um Messwerte abzulesen.",
+  "chartCadence": "Kadenz",
+  "chartTemperature": "Temperatur",
+  "chartRest": "Erholung",
+  "chartLap": "Runde",
+  "chartSpm": "Schritte/min",
+  "@statsTab": {
+    "description": "Training statistics: statsTab"
+  },
+  "@statsWeek": {
+    "description": "Training statistics: statsWeek"
+  },
+  "@statsMonth": {
+    "description": "Training statistics: statsMonth"
+  },
+  "@statsYear": {
+    "description": "Training statistics: statsYear"
+  },
+  "@statsPrevious": {
+    "description": "Training statistics: statsPrevious"
+  },
+  "@statsNext": {
+    "description": "Training statistics: statsNext"
+  },
+  "@statsGuest": {
+    "description": "Training statistics: statsGuest"
+  },
+  "@statsLoadFailed": {
+    "description": "Training statistics: statsLoadFailed"
+  },
+  "@statsDistance": {
+    "description": "Training statistics: statsDistance"
+  },
+  "@statsDuration": {
+    "description": "Training statistics: statsDuration"
+  },
+  "@statsCount": {
+    "description": "Training statistics: statsCount"
+  },
+  "@statsElevation": {
+    "description": "Training statistics: statsElevation"
+  },
+  "@statsEmpty": {
+    "description": "Training statistics: statsEmpty"
+  },
+  "@statsDistanceTrend": {
+    "description": "Training statistics: statsDistanceTrend"
+  },
+  "@statsDurationTrend": {
+    "description": "Training statistics: statsDurationTrend"
+  },
+  "@statsSports": {
+    "description": "Training statistics: statsSports"
+  },
+  "@statsCalendarNote": {
+    "description": "Training statistics: statsCalendarNote"
+  },
+  "@statsPartialWeeks": {
+    "description": "Training statistics: statsPartialWeeks"
+  },
+  "@chartTitle": {
+    "description": "Activity chart: chartTitle"
+  },
+  "@chartNoData": {
+    "description": "Activity chart: chartNoData"
+  },
+  "@chartLoadFailed": {
+    "description": "Activity chart: chartLoadFailed"
+  },
+  "@chartLaps": {
+    "description": "Activity chart: chartLaps"
+  },
+  "@chartLapsEmpty": {
+    "description": "Activity chart: chartLapsEmpty"
+  },
+  "@chartLapsFailed": {
+    "description": "Activity chart: chartLapsFailed"
+  },
+  "@chartTimeAxis": {
+    "description": "Activity chart: chartTimeAxis"
+  },
+  "@chartSampleAxis": {
+    "description": "Activity chart: chartSampleAxis"
+  },
+  "@chartReadHint": {
+    "description": "Activity chart: chartReadHint"
+  },
+  "@chartCadence": {
+    "description": "Activity chart: chartCadence"
+  },
+  "@chartTemperature": {
+    "description": "Activity chart: chartTemperature"
+  },
+  "@chartRest": {
+    "description": "Activity chart: chartRest"
+  },
+  "@chartLap": {
+    "description": "Activity chart: chartLap"
+  },
+  "@chartSpm": {
+    "description": "Activity chart: chartSpm"
+  }
 }

@@ -1816,5 +1816,149 @@
   "serverActivityCalories": "Calories",
   "@serverActivityCalories": {
     "description": "Read-only server activity detail screen."
+  },
+  "statsTab": "Statistics",
+  "statsWeek": "Week",
+  "statsMonth": "Month",
+  "statsYear": "Year",
+  "statsPrevious": "Previous period",
+  "statsNext": "Next period",
+  "statsGuest": "Connect your account to see your training statistics.",
+  "statsLoadFailed": "Statistics could not be loaded. Pull to refresh or try again.",
+  "statsDistance": "Total distance",
+  "statsDuration": "Duration",
+  "statsCount": "Activities",
+  "statsElevation": "Elevation gain",
+  "statsEmpty": "No activities in this period.",
+  "statsDistanceTrend": "Distance over time",
+  "statsDurationTrend": "Duration over time",
+  "statsSports": "By sport",
+  "statsCalendarNote": "Server calendar (UTC), using your web week-start setting. Distance includes distance-based sports only.",
+  "statsPartialWeeks": "Weeks within this month, including partial weeks. Only weeks with activities are shown.",
+  "statsWeekContaining": "Week containing {date}",
+  "statsWeekNumber": "Week {number}",
+  "@statsWeekContaining": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@statsWeekNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "chartTitle": "Charts",
+  "chartNoData": "No measurement streams available.",
+  "chartLoadFailed": "Could not load charts.",
+  "chartLaps": "Recorded laps",
+  "chartLapsEmpty": "No recorded laps available.",
+  "chartLapsFailed": "Could not load laps.",
+  "chartTimeAxis": "Time from first measurement",
+  "chartSampleAxis": "Measurement number (timestamps unavailable)",
+  "chartReadHint": "Tap the chart or use the slider to read measurements.",
+  "chartCadence": "Cadence",
+  "chartTemperature": "Temperature",
+  "chartRest": "Recovery",
+  "chartLap": "Lap",
+  "chartSpm": "spm",
+  "@statsTab": {
+    "description": "Training statistics: statsTab"
+  },
+  "@statsWeek": {
+    "description": "Training statistics: statsWeek"
+  },
+  "@statsMonth": {
+    "description": "Training statistics: statsMonth"
+  },
+  "@statsYear": {
+    "description": "Training statistics: statsYear"
+  },
+  "@statsPrevious": {
+    "description": "Training statistics: statsPrevious"
+  },
+  "@statsNext": {
+    "description": "Training statistics: statsNext"
+  },
+  "@statsGuest": {
+    "description": "Training statistics: statsGuest"
+  },
+  "@statsLoadFailed": {
+    "description": "Training statistics: statsLoadFailed"
+  },
+  "@statsDistance": {
+    "description": "Training statistics: statsDistance"
+  },
+  "@statsDuration": {
+    "description": "Training statistics: statsDuration"
+  },
+  "@statsCount": {
+    "description": "Training statistics: statsCount"
+  },
+  "@statsElevation": {
+    "description": "Training statistics: statsElevation"
+  },
+  "@statsEmpty": {
+    "description": "Training statistics: statsEmpty"
+  },
+  "@statsDistanceTrend": {
+    "description": "Training statistics: statsDistanceTrend"
+  },
+  "@statsDurationTrend": {
+    "description": "Training statistics: statsDurationTrend"
+  },
+  "@statsSports": {
+    "description": "Training statistics: statsSports"
+  },
+  "@statsCalendarNote": {
+    "description": "Training statistics: statsCalendarNote"
+  },
+  "@statsPartialWeeks": {
+    "description": "Training statistics: statsPartialWeeks"
+  },
+  "@chartTitle": {
+    "description": "Activity chart: chartTitle"
+  },
+  "@chartNoData": {
+    "description": "Activity chart: chartNoData"
+  },
+  "@chartLoadFailed": {
+    "description": "Activity chart: chartLoadFailed"
+  },
+  "@chartLaps": {
+    "description": "Activity chart: chartLaps"
+  },
+  "@chartLapsEmpty": {
+    "description": "Activity chart: chartLapsEmpty"
+  },
+  "@chartLapsFailed": {
+    "description": "Activity chart: chartLapsFailed"
+  },
+  "@chartTimeAxis": {
+    "description": "Activity chart: chartTimeAxis"
+  },
+  "@chartSampleAxis": {
+    "description": "Activity chart: chartSampleAxis"
+  },
+  "@chartReadHint": {
+    "description": "Activity chart: chartReadHint"
+  },
+  "@chartCadence": {
+    "description": "Activity chart: chartCadence"
+  },
+  "@chartTemperature": {
+    "description": "Activity chart: chartTemperature"
+  },
+  "@chartRest": {
+    "description": "Activity chart: chartRest"
+  },
+  "@chartLap": {
+    "description": "Activity chart: chartLap"
+  },
+  "@chartSpm": {
+    "description": "Activity chart: chartSpm"
   }
 }

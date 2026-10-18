@@ -1386,4 +1386,115 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get serverActivityCalories => 'Calories';
+
+  @override
+  String get statsTab => 'Statistics';
+
+  @override
+  String get statsWeek => 'Week';
+
+  @override
+  String get statsMonth => 'Month';
+
+  @override
+  String get statsYear => 'Year';
+
+  @override
+  String get statsPrevious => 'Previous period';
+
+  @override
+  String get statsNext => 'Next period';
+
+  @override
+  String get statsGuest =>
+      'Connect your account to see your training statistics.';
+
+  @override
+  String get statsLoadFailed =>
+      'Statistics could not be loaded. Pull to refresh or try again.';
+
+  @override
+  String get statsDistance => 'Total distance';
+
+  @override
+  String get statsDuration => 'Duration';
+
+  @override
+  String get statsCount => 'Activities';
+
+  @override
+  String get statsElevation => 'Elevation gain';
+
+  @override
+  String get statsEmpty => 'No activities in this period.';
+
+  @override
+  String get statsDistanceTrend => 'Distance over time';
+
+  @override
+  String get statsDurationTrend => 'Duration over time';
+
+  @override
+  String get statsSports => 'By sport';
+
+  @override
+  String get statsCalendarNote =>
+      'Server calendar (UTC), using your web week-start setting. Distance includes distance-based sports only.';
+
+  @override
+  String get statsPartialWeeks =>
+      'Weeks within this month, including partial weeks. Only weeks with activities are shown.';
+
+  @override
+  String statsWeekContaining(String date) {
+    return 'Week containing $date';
+  }
+
+  @override
+  String statsWeekNumber(int number) {
+    return 'Week $number';
+  }
+
+  @override
+  String get chartTitle => 'Charts';
+
+  @override
+  String get chartNoData => 'No measurement streams available.';
+
+  @override
+  String get chartLoadFailed => 'Could not load charts.';
+
+  @override
+  String get chartLaps => 'Recorded laps';
+
+  @override
+  String get chartLapsEmpty => 'No recorded laps available.';
+
+  @override
+  String get chartLapsFailed => 'Could not load laps.';
+
+  @override
+  String get chartTimeAxis => 'Time from first measurement';
+
+  @override
+  String get chartSampleAxis => 'Measurement number (timestamps unavailable)';
+
+  @override
+  String get chartReadHint =>
+      'Tap the chart or use the slider to read measurements.';
+
+  @override
+  String get chartCadence => 'Cadence';
+
+  @override
+  String get chartTemperature => 'Temperature';
+
+  @override
+  String get chartRest => 'Recovery';
+
+  @override
+  String get chartLap => 'Lap';
+
+  @override
+  String get chartSpm => 'spm';
 }

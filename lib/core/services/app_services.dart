@@ -1,3 +1,6 @@
+import 'package:endurain/features/statistics/controllers/statistics_controller.dart';
+import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
+import 'package:endurain/features/statistics/repositories/api_statistics_repository.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/app_infrastructure.dart';
@@ -122,6 +125,18 @@ class AppServices {
     ServerActivitiesRepository? repository,
   }) => ServerActivitiesController(
     repository: repository ?? serverActivities,
+    connection: authSession.connectionChanges,
+  );
+
+  late final StatisticsRepository statistics = ApiStatisticsRepository(
+    apiClient: apiClient,
+    sessionStore: authSession,
+  );
+
+  StatisticsController createStatisticsController({
+    StatisticsRepository? repository,
+  }) => StatisticsController(
+    repository: repository ?? statistics,
     connection: authSession.connectionChanges,
   );
 

@@ -2449,6 +2449,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Calories'**
   String get serverActivityCalories;
+
+  /// Training statistics: statsTab
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statsTab;
+
+  /// Training statistics: statsWeek
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get statsWeek;
+
+  /// Training statistics: statsMonth
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get statsMonth;
+
+  /// Training statistics: statsYear
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get statsYear;
+
+  /// Training statistics: statsPrevious
+  ///
+  /// In en, this message translates to:
+  /// **'Previous period'**
+  String get statsPrevious;
+
+  /// Training statistics: statsNext
+  ///
+  /// In en, this message translates to:
+  /// **'Next period'**
+  String get statsNext;
+
+  /// Training statistics: statsGuest
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your account to see your training statistics.'**
+  String get statsGuest;
+
+  /// Training statistics: statsLoadFailed
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics could not be loaded. Pull to refresh or try again.'**
+  String get statsLoadFailed;
+
+  /// Training statistics: statsDistance
+  ///
+  /// In en, this message translates to:
+  /// **'Total distance'**
+  String get statsDistance;
+
+  /// Training statistics: statsDuration
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get statsDuration;
+
+  /// Training statistics: statsCount
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get statsCount;
+
+  /// Training statistics: statsElevation
+  ///
+  /// In en, this message translates to:
+  /// **'Elevation gain'**
+  String get statsElevation;
+
+  /// Training statistics: statsEmpty
+  ///
+  /// In en, this message translates to:
+  /// **'No activities in this period.'**
+  String get statsEmpty;
+
+  /// Training statistics: statsDistanceTrend
+  ///
+  /// In en, this message translates to:
+  /// **'Distance over time'**
+  String get statsDistanceTrend;
+
+  /// Training statistics: statsDurationTrend
+  ///
+  /// In en, this message translates to:
+  /// **'Duration over time'**
+  String get statsDurationTrend;
+
+  /// Training statistics: statsSports
+  ///
+  /// In en, this message translates to:
+  /// **'By sport'**
+  String get statsSports;
+
+  /// Training statistics: statsCalendarNote
+  ///
+  /// In en, this message translates to:
+  /// **'Server calendar (UTC), using your web week-start setting. Distance includes distance-based sports only.'**
+  String get statsCalendarNote;
+
+  /// Training statistics: statsPartialWeeks
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks within this month, including partial weeks. Only weeks with activities are shown.'**
+  String get statsPartialWeeks;
+
+  /// No description provided for @statsWeekContaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Week containing {date}'**
+  String statsWeekContaining(String date);
+
+  /// No description provided for @statsWeekNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {number}'**
+  String statsWeekNumber(int number);
+
+  /// Activity chart: chartTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Charts'**
+  String get chartTitle;
+
+  /// Activity chart: chartNoData
+  ///
+  /// In en, this message translates to:
+  /// **'No measurement streams available.'**
+  String get chartNoData;
+
+  /// Activity chart: chartLoadFailed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load charts.'**
+  String get chartLoadFailed;
+
+  /// Activity chart: chartLaps
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded laps'**
+  String get chartLaps;
+
+  /// Activity chart: chartLapsEmpty
+  ///
+  /// In en, this message translates to:
+  /// **'No recorded laps available.'**
+  String get chartLapsEmpty;
+
+  /// Activity chart: chartLapsFailed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load laps.'**
+  String get chartLapsFailed;
+
+  /// Activity chart: chartTimeAxis
+  ///
+  /// In en, this message translates to:
+  /// **'Time from first measurement'**
+  String get chartTimeAxis;
+
+  /// Activity chart: chartSampleAxis
+  ///
+  /// In en, this message translates to:
+  /// **'Measurement number (timestamps unavailable)'**
+  String get chartSampleAxis;
+
+  /// Activity chart: chartReadHint
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the chart or use the slider to read measurements.'**
+  String get chartReadHint;
+
+  /// Activity chart: chartCadence
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence'**
+  String get chartCadence;
+
+  /// Activity chart: chartTemperature
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature'**
+  String get chartTemperature;
+
+  /// Activity chart: chartRest
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery'**
+  String get chartRest;
+
+  /// Activity chart: chartLap
+  ///
+  /// In en, this message translates to:
+  /// **'Lap'**
+  String get chartLap;
+
+  /// Activity chart: chartSpm
+  ///
+  /// In en, this message translates to:
+  /// **'spm'**
+  String get chartSpm;
 }
 
 class _AppLocalizationsDelegate

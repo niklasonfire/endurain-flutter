@@ -6,5 +6,6 @@ class AppRoutes {
   static const home = '/home';
   static const map = '/map';
   static const activities = '/activities';
+  static const statistics = '/statistics';
   static const settings = '/settings';
 }

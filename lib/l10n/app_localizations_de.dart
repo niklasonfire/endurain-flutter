@@ -1413,4 +1413,115 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get serverActivityCalories => 'Kalorien';
+
+  @override
+  String get statsTab => 'Statistik';
+
+  @override
+  String get statsWeek => 'Woche';
+
+  @override
+  String get statsMonth => 'Monat';
+
+  @override
+  String get statsYear => 'Jahr';
+
+  @override
+  String get statsPrevious => 'Vorheriger Zeitraum';
+
+  @override
+  String get statsNext => 'Nächster Zeitraum';
+
+  @override
+  String get statsGuest =>
+      'Verbinde dein Konto, um deine Trainingsstatistik zu sehen.';
+
+  @override
+  String get statsLoadFailed =>
+      'Statistik konnte nicht geladen werden. Zum Aktualisieren ziehen oder erneut versuchen.';
+
+  @override
+  String get statsDistance => 'Gesamtdistanz';
+
+  @override
+  String get statsDuration => 'Dauer';
+
+  @override
+  String get statsCount => 'Aktivitäten';
+
+  @override
+  String get statsElevation => 'Höhenmeter';
+
+  @override
+  String get statsEmpty => 'Keine Aktivitäten in diesem Zeitraum.';
+
+  @override
+  String get statsDistanceTrend => 'Distanzverlauf';
+
+  @override
+  String get statsDurationTrend => 'Dauerverlauf';
+
+  @override
+  String get statsSports => 'Nach Sportart';
+
+  @override
+  String get statsCalendarNote =>
+      'Serverkalender (UTC), mit deinem Wochenbeginn aus dem Web. Distanz enthält nur distanzbasierte Sportarten.';
+
+  @override
+  String get statsPartialWeeks =>
+      'Wochen innerhalb dieses Monats, einschließlich Teilwochen. Nur Wochen mit Aktivitäten werden gezeigt.';
+
+  @override
+  String statsWeekContaining(String date) {
+    return 'Woche um den $date';
+  }
+
+  @override
+  String statsWeekNumber(int number) {
+    return 'Woche $number';
+  }
+
+  @override
+  String get chartTitle => 'Diagramme';
+
+  @override
+  String get chartNoData => 'Keine Messreihen verfügbar.';
+
+  @override
+  String get chartLoadFailed => 'Diagramme konnten nicht geladen werden.';
+
+  @override
+  String get chartLaps => 'Aufgezeichnete Runden';
+
+  @override
+  String get chartLapsEmpty => 'Keine aufgezeichneten Runden verfügbar.';
+
+  @override
+  String get chartLapsFailed => 'Runden konnten nicht geladen werden.';
+
+  @override
+  String get chartTimeAxis => 'Zeit ab erster Messung';
+
+  @override
+  String get chartSampleAxis => 'Messpunktnummer (Zeitstempel fehlen)';
+
+  @override
+  String get chartReadHint =>
+      'Diagramm antippen oder den Regler nutzen, um Messwerte abzulesen.';
+
+  @override
+  String get chartCadence => 'Kadenz';
+
+  @override
+  String get chartTemperature => 'Temperatur';
+
+  @override
+  String get chartRest => 'Erholung';
+
+  @override
+  String get chartLap => 'Runde';
+
+  @override
+  String get chartSpm => 'Schritte/min';
 }
