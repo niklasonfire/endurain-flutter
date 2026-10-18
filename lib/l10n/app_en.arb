@@ -1784,5 +1784,37 @@
         "type": "String"
       }
     }
+  },
+  "serverActivityAccountChanged": "The account has changed. Return to activities to open a detail.",
+  "@serverActivityAccountChanged": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityDetailFailed": "Could not load activity details.",
+  "@serverActivityDetailFailed": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityRoute": "Route",
+  "@serverActivityRoute": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityRouteFailed": "Could not load the route.",
+  "@serverActivityRouteFailed": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityNoRoute": "No GPS route available.",
+  "@serverActivityNoRoute": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityDescription": "Description",
+  "@serverActivityDescription": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityElapsedTime": "Elapsed time",
+  "@serverActivityElapsedTime": {
+    "description": "Read-only server activity detail screen."
+  },
+  "serverActivityCalories": "Calories",
+  "@serverActivityCalories": {
+    "description": "Read-only server activity detail screen."
   }
 }

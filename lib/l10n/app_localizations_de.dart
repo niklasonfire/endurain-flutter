@@ -1386,4 +1386,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String serverActivityUnitKnots(String value) {
     return '$value kn';
   }
+
+  @override
+  String get serverActivityAccountChanged =>
+      'Der Account wurde gewechselt. Öffne die Details erneut über die Aktivitäten.';
+
+  @override
+  String get serverActivityDetailFailed =>
+      'Aktivitätsdetails konnten nicht geladen werden.';
+
+  @override
+  String get serverActivityRoute => 'Strecke';
+
+  @override
+  String get serverActivityRouteFailed =>
+      'Die Strecke konnte nicht geladen werden.';
+
+  @override
+  String get serverActivityNoRoute => 'Keine GPS-Strecke verfügbar.';
+
+  @override
+  String get serverActivityDescription => 'Beschreibung';
+
+  @override
+  String get serverActivityElapsedTime => 'Verstrichene Zeit';
+
+  @override
+  String get serverActivityCalories => 'Kalorien';
 }

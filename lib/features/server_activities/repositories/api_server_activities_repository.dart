@@ -140,8 +140,12 @@ class ApiServerActivitiesRepository implements ServerActivitiesRepository {
     final points = data['stream_waypoints'];
     if (points is! List) _invalid();
     final route = <ServerRoutePoint>[];
+    var startsSegment = false;
     for (final point in points) {
-      if (point is! Map) continue;
+      if (point is! Map) {
+        startsSegment = true;
+        continue;
+      }
       final lat = _number(point['lat']);
       final lon = _number(point['lon']);
       if (lat != null &&
@@ -150,7 +154,16 @@ class ApiServerActivitiesRepository implements ServerActivitiesRepository {
           lat <= 90 &&
           lon >= -180 &&
           lon <= 180) {
-        route.add(ServerRoutePoint(latitude: lat, longitude: lon));
+        route.add(
+          ServerRoutePoint(
+            latitude: lat,
+            longitude: lon,
+            startsSegment: startsSegment,
+          ),
+        );
+        startsSegment = false;
+      } else {
+        startsSegment = true;
       }
     }
     return List.unmodifiable(route);

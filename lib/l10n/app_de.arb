@@ -673,5 +673,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "serverActivityAccountChanged": "Der Account wurde gewechselt. Öffne die Details erneut über die Aktivitäten.",
+  "serverActivityDetailFailed": "Aktivitätsdetails konnten nicht geladen werden.",
+  "serverActivityRoute": "Strecke",
+  "serverActivityRouteFailed": "Die Strecke konnte nicht geladen werden.",
+  "serverActivityNoRoute": "Keine GPS-Strecke verfügbar.",
+  "serverActivityDescription": "Beschreibung",
+  "serverActivityElapsedTime": "Verstrichene Zeit",
+  "serverActivityCalories": "Kalorien"
 }

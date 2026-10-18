@@ -2401,6 +2401,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value} kn'**
   String serverActivityUnitKnots(String value);
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'The account has changed. Return to activities to open a detail.'**
+  String get serverActivityAccountChanged;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load activity details.'**
+  String get serverActivityDetailFailed;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get serverActivityRoute;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the route.'**
+  String get serverActivityRouteFailed;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS route available.'**
+  String get serverActivityNoRoute;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get serverActivityDescription;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Elapsed time'**
+  String get serverActivityElapsedTime;
+
+  /// Read-only server activity detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get serverActivityCalories;
 }
 
 class _AppLocalizationsDelegate

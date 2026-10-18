@@ -1,0 +1,160 @@
+import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/features/server_activities/controllers/server_activity_detail_controller.dart';
+import 'package:endurain/features/server_activities/models/server_activity.dart';
+import 'package:endurain/features/server_activities/models/server_activity_page.dart';
+import 'package:endurain/features/server_activities/models/server_activity_query.dart';
+import 'package:endurain/features/server_activities/models/server_route_point.dart';
+import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
+import 'package:endurain/features/server_activities/screens/server_activity_detail_screen.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+
+void main() {
+  testWidgets(
+    'outdoor metrics survive route failure and retry loads real route',
+    (tester) async {
+      tester.platformDispatcher.localeTestValue = const Locale('de', 'DE');
+      addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+      final connection = ValueNotifier<String?>('a');
+      final repository = _OutdoorRepository();
+      final controller = ServerActivityDetailController(
+        activityId: 7,
+        repository: repository,
+        connection: connection,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ServerActivityDetailScreen(
+            activityId: 7,
+            controller: controller,
+            tileServerUrlProvider: () async =>
+                'https://tiles.example/{z}/{x}/{y}.png',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('River run'), findsOneWidget);
+      expect(find.text('5.00 km'), findsOneWidget);
+      expect(find.text('5:00 min/km'), findsOneWidget);
+      expect(find.text('28:20'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Could not load the route.'),
+        150,
+      );
+      expect(find.text('Could not load the route.'), findsOneWidget);
+      await tester.ensureVisible(find.text('Try again'));
+      await tester.tap(find.text('Try again'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.text('Could not load the route.'), findsNothing);
+      expect(find.byTooltip('Started'), findsOneWidget);
+      expect(repository.routeCalls, 2);
+      expect(repository.detailCalls, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      connection.dispose();
+    },
+  );
+
+  testWidgets(
+    'indoor details show real metrics without inventing a map and disappear on logout',
+    (tester) async {
+      tester.platformDispatcher.localeTestValue = const Locale('de', 'DE');
+      addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+      final connection = ValueNotifier<String?>('a');
+      final controller = ServerActivityDetailController(
+        activityId: 7,
+        repository: _Repository(),
+        connection: connection,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: ThemeData(brightness: Brightness.dark),
+          home: ServerActivityDetailScreen(
+            activityId: 7,
+            controller: controller,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Indoor training'), findsOneWidget);
+      expect(find.text('Real description'), findsOneWidget);
+      expect(find.text('30:00'), findsOneWidget);
+      expect(find.text('125 bpm'), findsOneWidget);
+      expect(find.text('Keine GPS-Strecke verfügbar.'), findsOneWidget);
+      connection.value = null;
+      await tester.pumpAndSettle();
+      expect(find.text('Indoor training'), findsNothing);
+      expect(find.text('Real description'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      connection.dispose();
+    },
+  );
+}
+
+class _Repository implements ServerActivitiesRepository {
+  @override
+  Future<ServerActivity> fetchDetail(int activityId) async =>
+      const ServerActivity(
+        id: 7,
+        name: 'Indoor training',
+        activityType: 10,
+        timerSeconds: 1800,
+        averageHeartRate: 125,
+        calories: 300,
+        description: 'Real description',
+      );
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async => [];
+  @override
+  Future<List<int>> fetchActivityTypes() => throw UnimplementedError();
+  @override
+  Future<ServerActivityPage> fetchPage({
+    ServerActivityQuery query = const ServerActivityQuery(),
+    int page = 1,
+    int pageSize = 20,
+  }) => throw UnimplementedError();
+}
+
+class _OutdoorRepository extends _Repository {
+  int routeCalls = 0;
+  int detailCalls = 0;
+  @override
+  Future<ServerActivity> fetchDetail(int activityId) async {
+    detailCalls++;
+    return ServerActivity(
+      id: 7,
+      name: 'River run',
+      activityType: 1,
+      startTime: DateTime.utc(2026, 10, 18, 8),
+      city: 'Berlin',
+      country: 'Germany',
+      distanceMeters: 5000,
+      timerSeconds: 1500,
+      elapsedSeconds: 1700,
+      averageSpeedMetersPerSecond: 10 / 3,
+      elevationGainMeters: 23,
+      averagePower: 200,
+    );
+  }
+
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
+    routeCalls++;
+    if (routeCalls == 1) throw Exception('offline');
+    return const [
+      ServerRoutePoint(latitude: 52, longitude: 13),
+      ServerRoutePoint(latitude: 52.01, longitude: 13.01),
+    ];
+  }
+}

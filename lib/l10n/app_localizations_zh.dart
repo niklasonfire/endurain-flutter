@@ -1302,6 +1302,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String serverActivityUnitKnots(String value) {
     return '$value kn';
   }
+
+  @override
+  String get serverActivityAccountChanged =>
+      'The account has changed. Return to activities to open a detail.';
+
+  @override
+  String get serverActivityDetailFailed => 'Could not load activity details.';
+
+  @override
+  String get serverActivityRoute => 'Route';
+
+  @override
+  String get serverActivityRouteFailed => 'Could not load the route.';
+
+  @override
+  String get serverActivityNoRoute => 'No GPS route available.';
+
+  @override
+  String get serverActivityDescription => 'Description';
+
+  @override
+  String get serverActivityElapsedTime => 'Elapsed time';
+
+  @override
+  String get serverActivityCalories => 'Calories';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2602,4 +2627,29 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String serverActivityUnitKnots(String value) {
     return '$value kn';
   }
+
+  @override
+  String get serverActivityAccountChanged =>
+      'The account has changed. Return to activities to open a detail.';
+
+  @override
+  String get serverActivityDetailFailed => 'Could not load activity details.';
+
+  @override
+  String get serverActivityRoute => 'Route';
+
+  @override
+  String get serverActivityRouteFailed => 'Could not load the route.';
+
+  @override
+  String get serverActivityNoRoute => 'No GPS route available.';
+
+  @override
+  String get serverActivityDescription => 'Description';
+
+  @override
+  String get serverActivityElapsedTime => 'Elapsed time';
+
+  @override
+  String get serverActivityCalories => 'Calories';
 }

@@ -1624,5 +1624,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "serverActivityAccountChanged": "The account has changed. Return to activities to open a detail.",
+  "serverActivityDetailFailed": "Could not load activity details.",
+  "serverActivityRoute": "Route",
+  "serverActivityRouteFailed": "Could not load the route.",
+  "serverActivityNoRoute": "No GPS route available.",
+  "serverActivityDescription": "Description",
+  "serverActivityElapsedTime": "Elapsed time",
+  "serverActivityCalories": "Calories"
 }
