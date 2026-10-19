@@ -1,4 +1,7 @@
 enum AppErrorCode {
+  achievementCacheFailed,
+  achievementScanFailed,
+  achievementCalculationFailed,
   activeActivityStoreReadFailed,
   activeActivityStoreWriteFailed,
   activityGpxCleanupFailed,

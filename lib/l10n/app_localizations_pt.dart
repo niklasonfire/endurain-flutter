@@ -1617,4 +1617,152 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorActivityUploadInvalidGpx =>
       'Não foi possível ler o ficheiro GPX guardado. A gravação local permanece guardada e pode ser exportada.';
+
+  @override
+  String get achievementsTitle => 'Recordes pessoais';
+
+  @override
+  String get achievementsLocal => 'Calculado neste dispositivo';
+
+  @override
+  String get achievementsGpsNote =>
+      'Os esforços GPS são estimativas. Nem todas as pausas originais podem ser detetadas.';
+
+  @override
+  String get achievementsGuest =>
+      'Liga uma conta Endurain para analisar o histórico de atividades.';
+
+  @override
+  String get achievementsNotAnalysed =>
+      'Analisa o histórico do servidor para encontrar os teus recordes pessoais.';
+
+  @override
+  String get achievementsAnalyse => 'Analisar histórico';
+
+  @override
+  String get achievementsRebuild => 'Recalcular a partir do servidor';
+
+  @override
+  String get achievementsRebuildNote =>
+      'O recálculo volta a obter o GPS para detetar alterações ausentes dos resumos.';
+
+  @override
+  String get achievementsPartial => 'Melhores resultados encontrados até agora';
+
+  @override
+  String get achievementsComplete => 'Histórico analisado';
+
+  @override
+  String get achievementsFailed =>
+      'Não foi possível concluir a análise. Os resultados guardados continuam disponíveis; tenta novamente.';
+
+  @override
+  String get achievementsEmpty => 'Sem recordes para estes filtros.';
+
+  @override
+  String get achievementsNoActivities =>
+      'O histórico do servidor não tem atividades.';
+
+  @override
+  String get achievementsAllTime => 'Desde sempre';
+
+  @override
+  String achievementsLastAnalysis(String date) {
+    return 'Última análise concluída: $date';
+  }
+
+  @override
+  String achievementsProgress(String processed, String total) {
+    return '$processed de $total atividades analisadas';
+  }
+
+  @override
+  String achievementsCoverage(
+    String usable,
+    String unavailable,
+    String failed,
+  ) {
+    return 'GPS utilizável: $usable · GPS indisponível: $unavailable · Falhas: $failed';
+  }
+
+  @override
+  String achievementsSkipped(String count) {
+    return 'Dados excluídos ou limitados em $count atividades';
+  }
+
+  @override
+  String achievementsFastest(String distance) {
+    return 'Mais rápido: $distance';
+  }
+
+  @override
+  String get achievementsLongestDistance => 'Maior distância';
+
+  @override
+  String get achievementsLongestDuration => 'Maior duração registada';
+
+  @override
+  String get achievementsElevation => 'Maior subida acumulada';
+
+  @override
+  String get achievementsWeeklyDistance => 'Maior distância semanal';
+
+  @override
+  String get achievementsWeeklyDuration => 'Maior duração semanal registada';
+
+  @override
+  String get achievementsMonthlyDistance => 'Maior distância mensal';
+
+  @override
+  String get achievementsMonthlyDuration => 'Maior duração mensal registada';
+
+  @override
+  String get achievementsGpsEstimate => 'Estimativa GPS';
+
+  @override
+  String get achievementsServerSummary => 'Resumo do servidor';
+
+  @override
+  String get achievementsRecordedDistance => 'Distância registada';
+
+  @override
+  String get achievementsPartialWeek => 'Semana parcial';
+
+  @override
+  String get achievementsContributors => 'Atividades incluídas';
+
+  @override
+  String achievementsActivity(String id) {
+    return 'Atividade $id';
+  }
+
+  @override
+  String get achievementsMissingDate => 'Data da atividade indisponível';
+
+  @override
+  String get achievementsWeeklyUnavailable =>
+      'Os recordes semanais precisam da preferência de calendário do servidor.';
+
+  @override
+  String get achievementsOutdated =>
+      'Os cálculos guardados precisam de recálculo antes de poderem ser comparados.';
+
+  @override
+  String get achievementsGpsUnavailable => 'GPS ausente ou inutilizável';
+
+  @override
+  String get achievementsGpsQuality =>
+      'Lacunas GPS, pontos inválidos ou saltos improváveis excluídos';
+
+  @override
+  String get achievementsUnsupportedSport =>
+      'Esta modalidade não tem esforços de distância';
+
+  @override
+  String get achievementsDateExcluded =>
+      'Data absoluta ausente: excluída dos recordes anuais e por período';
+
+  @override
+  String get achievementsOtherExclusion =>
+      'Alguns dados da atividade não puderam ser utilizados';
 }

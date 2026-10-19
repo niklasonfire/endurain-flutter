@@ -177,6 +177,27 @@ class ApiClient {
     throw ApiResponse.failure(response, failureCode);
   }
 
+  /// Reads a resource while retaining a definitive HTTP 404 distinction.
+  /// A successful JSON null is still found and must be validated by the caller.
+  Future<({bool found, Object? value})> getJsonResource(
+    String endpoint, {
+    required AppErrorCode failureCode,
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) async {
+    final response = await _sendAuthorized(
+      'GET',
+      endpoint,
+      expectedOrigin: expectedOrigin,
+      expectedProfileId: expectedProfileId,
+    );
+    if (response.statusCode == 404) return (found: false, value: null);
+    if (response.statusCode == 200) {
+      return (found: true, value: ApiResponse.decodeJson(response));
+    }
+    throw ApiResponse.failure(response, failureCode);
+  }
+
   /// Sends an authenticated `POST` with an optional JSON [body] and returns the
   /// decoded JSON object.
   Future<Map<String, dynamic>> postJsonObject(

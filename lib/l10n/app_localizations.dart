@@ -2833,6 +2833,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The saved GPX file could not be read. The local recording is preserved and can be exported.'**
   String get errorActivityUploadInvalidGpx;
+
+  /// Personal bests screen: achievementsTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Personal bests'**
+  String get achievementsTitle;
+
+  /// Personal bests screen: achievementsLocal
+  ///
+  /// In en, this message translates to:
+  /// **'Calculated on this device'**
+  String get achievementsLocal;
+
+  /// Personal bests screen: achievementsGpsNote
+  ///
+  /// In en, this message translates to:
+  /// **'GPS efforts are estimates. Original pauses may not all be detectable.'**
+  String get achievementsGpsNote;
+
+  /// Personal bests screen: achievementsGuest
+  ///
+  /// In en, this message translates to:
+  /// **'Connect an Endurain account to analyse your activity history.'**
+  String get achievementsGuest;
+
+  /// Personal bests screen: achievementsNotAnalysed
+  ///
+  /// In en, this message translates to:
+  /// **'Analyse your server history to find your personal bests.'**
+  String get achievementsNotAnalysed;
+
+  /// Personal bests screen: achievementsAnalyse
+  ///
+  /// In en, this message translates to:
+  /// **'Analyse history'**
+  String get achievementsAnalyse;
+
+  /// Personal bests screen: achievementsRebuild
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild from server'**
+  String get achievementsRebuild;
+
+  /// Personal bests screen: achievementsRebuildNote
+  ///
+  /// In en, this message translates to:
+  /// **'A rebuild fetches GPS again to detect changes invisible in activity summaries.'**
+  String get achievementsRebuildNote;
+
+  /// Personal bests screen: achievementsPartial
+  ///
+  /// In en, this message translates to:
+  /// **'Best found so far'**
+  String get achievementsPartial;
+
+  /// Personal bests screen: achievementsComplete
+  ///
+  /// In en, this message translates to:
+  /// **'History analysed'**
+  String get achievementsComplete;
+
+  /// Personal bests screen: achievementsFailed
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis could not finish. Saved results remain available; retry to update them.'**
+  String get achievementsFailed;
+
+  /// Personal bests screen: achievementsEmpty
+  ///
+  /// In en, this message translates to:
+  /// **'No records for these filters.'**
+  String get achievementsEmpty;
+
+  /// Personal bests screen: achievementsNoActivities
+  ///
+  /// In en, this message translates to:
+  /// **'Your server history has no activities.'**
+  String get achievementsNoActivities;
+
+  /// Personal bests screen: achievementsAllTime
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get achievementsAllTime;
+
+  /// Personal bests screen: achievementsLastAnalysis
+  ///
+  /// In en, this message translates to:
+  /// **'Last successful analysis: {date}'**
+  String achievementsLastAnalysis(String date);
+
+  /// Personal bests screen: achievementsProgress
+  ///
+  /// In en, this message translates to:
+  /// **'{processed} of {total} activities analysed'**
+  String achievementsProgress(String processed, String total);
+
+  /// Personal bests screen: achievementsCoverage
+  ///
+  /// In en, this message translates to:
+  /// **'Usable GPS: {usable} · Unavailable GPS: {unavailable} · Failed: {failed}'**
+  String achievementsCoverage(String usable, String unavailable, String failed);
+
+  /// Personal bests screen: achievementsSkipped
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded or limited data in {count} activities'**
+  String achievementsSkipped(String count);
+
+  /// Personal bests screen: achievementsFastest
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest {distance}'**
+  String achievementsFastest(String distance);
+
+  /// Personal bests screen: achievementsLongestDistance
+  ///
+  /// In en, this message translates to:
+  /// **'Longest distance'**
+  String get achievementsLongestDistance;
+
+  /// Personal bests screen: achievementsLongestDuration
+  ///
+  /// In en, this message translates to:
+  /// **'Longest recorded duration'**
+  String get achievementsLongestDuration;
+
+  /// Personal bests screen: achievementsElevation
+  ///
+  /// In en, this message translates to:
+  /// **'Most climbing'**
+  String get achievementsElevation;
+
+  /// Personal bests screen: achievementsWeeklyDistance
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest distance week'**
+  String get achievementsWeeklyDistance;
+
+  /// Personal bests screen: achievementsWeeklyDuration
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest recorded duration week'**
+  String get achievementsWeeklyDuration;
+
+  /// Personal bests screen: achievementsMonthlyDistance
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest distance month'**
+  String get achievementsMonthlyDistance;
+
+  /// Personal bests screen: achievementsMonthlyDuration
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest recorded duration month'**
+  String get achievementsMonthlyDuration;
+
+  /// Personal bests screen: achievementsGpsEstimate
+  ///
+  /// In en, this message translates to:
+  /// **'GPS estimate'**
+  String get achievementsGpsEstimate;
+
+  /// Personal bests screen: achievementsServerSummary
+  ///
+  /// In en, this message translates to:
+  /// **'Server summary'**
+  String get achievementsServerSummary;
+
+  /// Personal bests screen: achievementsRecordedDistance
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded distance'**
+  String get achievementsRecordedDistance;
+
+  /// Personal bests screen: achievementsPartialWeek
+  ///
+  /// In en, this message translates to:
+  /// **'Partial week'**
+  String get achievementsPartialWeek;
+
+  /// Personal bests screen: achievementsContributors
+  ///
+  /// In en, this message translates to:
+  /// **'Contributing activities'**
+  String get achievementsContributors;
+
+  /// Personal bests screen: achievementsActivity
+  ///
+  /// In en, this message translates to:
+  /// **'Activity {id}'**
+  String achievementsActivity(String id);
+
+  /// Personal bests screen: achievementsMissingDate
+  ///
+  /// In en, this message translates to:
+  /// **'Activity date unavailable'**
+  String get achievementsMissingDate;
+
+  /// Personal bests screen: achievementsWeeklyUnavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly records need your server calendar preference.'**
+  String get achievementsWeeklyUnavailable;
+
+  /// Personal bests screen: achievementsOutdated
+  ///
+  /// In en, this message translates to:
+  /// **'Saved calculations need a rebuild before they can be compared.'**
+  String get achievementsOutdated;
+
+  /// Personal bests screen: achievementsGpsUnavailable
+  ///
+  /// In en, this message translates to:
+  /// **'GPS missing or unusable'**
+  String get achievementsGpsUnavailable;
+
+  /// Personal bests screen: achievementsGpsQuality
+  ///
+  /// In en, this message translates to:
+  /// **'GPS gaps, invalid points or implausible jumps excluded'**
+  String get achievementsGpsQuality;
+
+  /// Personal bests screen: achievementsUnsupportedSport
+  ///
+  /// In en, this message translates to:
+  /// **'This sport has no distance efforts'**
+  String get achievementsUnsupportedSport;
+
+  /// Personal bests screen: achievementsDateExcluded
+  ///
+  /// In en, this message translates to:
+  /// **'Missing absolute date: excluded from yearly and period records'**
+  String get achievementsDateExcluded;
+
+  /// Personal bests screen: achievementsOtherExclusion
+  ///
+  /// In en, this message translates to:
+  /// **'Some activity data could not be used'**
+  String get achievementsOtherExclusion;
 }
 
 class _AppLocalizationsDelegate

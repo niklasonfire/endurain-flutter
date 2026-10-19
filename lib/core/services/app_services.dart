@@ -1,3 +1,7 @@
+import 'package:endurain/features/achievements/controllers/achievements_controller.dart';
+import 'package:endurain/features/achievements/repositories/local_achievements_repository.dart';
+import 'package:endurain/features/achievements/services/achievement_server_source.dart';
+import 'package:endurain/features/achievements/services/achievement_scan_service.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
 import 'package:endurain/features/goals/repositories/api_goals_repository.dart';
@@ -143,6 +147,18 @@ class AppServices {
     repository: repository ?? statistics,
     connection: authSession.connectionChanges,
   );
+
+  late final AchievementScanService achievementScan = AchievementScanService(
+    repository: LocalAchievementsRepository(),
+    source: ApiAchievementServerSource(
+      apiClient: apiClient,
+      sessionStore: authSession,
+    ),
+    sessionStore: authSession,
+  );
+
+  AchievementsController createAchievementsController() =>
+      AchievementsController(scanService: achievementScan);
 
   late final GoalsRepository goals = ApiGoalsRepository(
     apiClient: apiClient,

@@ -22,8 +22,12 @@ class ServerActivityDetailScreen extends StatefulWidget {
     required this.activityId,
     this.controller,
     this.tileServerUrlProvider,
+    this.effortStart,
+    this.effortEnd,
   });
   final int activityId;
+  final DateTime? effortStart;
+  final DateTime? effortEnd;
   final ServerActivityDetailController? controller;
   final Future<String> Function()? tileServerUrlProvider;
 
@@ -156,6 +160,8 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
                         startLabel: l10n.activityHistoryStartedAt,
                         finishLabel: l10n.activityHistoryEndedAt,
                         selectedTime: _selectedTime,
+                        effortStart: widget.effortStart,
+                        effortEnd: widget.effortEnd,
                       ),
                     ),
                   ),

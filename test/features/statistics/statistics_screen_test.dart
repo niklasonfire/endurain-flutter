@@ -100,7 +100,16 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Gesamtdistanz'), findsOneWidget);
-      expect(find.text('10,00 km'), findsNWidgets(2));
+      expect(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text('Gesamtdistanz'),
+            matching: find.byType(Card),
+          ),
+          matching: find.text('10,00 km'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('1:30:00'), findsOneWidget);
       await tester.tap(find.text('Monat'));
       await tester.pumpAndSettle();
