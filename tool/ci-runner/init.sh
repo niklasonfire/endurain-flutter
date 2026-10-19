@@ -10,4 +10,4 @@ for sdk in flutter android-sdk jdk17; do
 done
 export PATH="/opt/flutter/bin:/opt/jdk17/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/cmdline-tools/latest/bin:$PATH"
 git config --global --add safe.directory /opt/flutter
-exec /entrypoint.sh
+exec /entrypoint.sh ./bin/Runner.Listener run --startuptype service

@@ -1,6 +1,5 @@
 [Unit]
 Description=Ephemeral GitHub runner for niklasonfire/endurain-flutter
-After=default.target
 
 [Service]
 ExecStartPre=-/usr/bin/docker rm -f gh-runner-endurain-1
