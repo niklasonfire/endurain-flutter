@@ -1,3 +1,4 @@
+import 'package:endurain/features/server_activities/models/server_activity_start_time.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
 import 'package:endurain/core/models/app_exception.dart';
@@ -161,6 +162,7 @@ class ApiServerActivitiesRepository
           ServerRoutePoint(
             latitude: lat,
             longitude: lon,
+            time: _timestamp(point['time']),
             startsSegment: startsSegment,
           ),
         );
@@ -219,17 +221,26 @@ class ApiServerActivitiesRepository
 
   static ServerActivity _activity(Object? value) {
     final data = _object(value);
+    // A masked raw start time must not be revealed by the parallel display field.
+    final displayStartTime = data['start_time'] == null
+        ? null
+        : ServerActivityStartTime.fromApi(
+            timezoneApplied: data['start_time_tz_applied'],
+            fallback: data['start_time'],
+          );
     return ServerActivity(
       id: _positiveInt(data['id']),
       name: _text(data['name']) ?? '',
       activityType: _positiveInt(data['activity_type']),
-      startTime: _timestamp(data['start_time']),
+      startTime: displayStartTime?.instantUtc,
+      displayStartTime: displayStartTime,
       distanceMeters: _number(data['distance']),
       elapsedSeconds: _number(data['total_elapsed_time']),
       timerSeconds: _number(data['total_timer_time']),
       elevationGainMeters: _number(data['elevation_gain']),
       averageHeartRate: _number(data['average_hr']),
       averageSpeedMetersPerSecond: _number(data['average_speed']),
+      paceSecondsPerMeter: _number(data['pace']),
       averagePower: _number(data['average_power']),
       calories: _number(data['calories']),
       description: _text(data['description']),

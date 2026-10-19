@@ -1,6 +1,7 @@
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/features/server_activities/models/server_activity.dart';
 import 'package:intl/intl.dart';
 
 /// Web-compatible sport-specific units, layered over the app's SI formatter.
@@ -44,6 +45,56 @@ class ServerActivityFormatter {
           : stats.labels.meter(value);
     }
     return stats.formatDistance(meters, locale: locale);
+  }
+
+  /// Summary pace comes from the server's seconds/metre value, not from the
+  /// average of GPS sample speeds. Older servers may omit it; elapsed time
+  /// over total distance provides the equivalent aggregate fallback.
+  String? activityTempo(ServerActivity activity) {
+    if (!usesPace(activity.activityType)) {
+      final speed = activity.averageSpeedMetersPerSecond;
+      return speed == null || !speed.isFinite || speed < 0
+          ? null
+          : tempo(speed, activity.activityType);
+    }
+    var pace = activity.paceSecondsPerMeter;
+    if (pace == null || !pace.isFinite || pace <= 0) {
+      final duration = activity.elapsedSeconds ?? activity.timerSeconds;
+      final distance = activity.distanceMeters;
+      if (duration == null ||
+          !duration.isFinite ||
+          duration <= 0 ||
+          distance == null ||
+          !distance.isFinite ||
+          distance <= 0) {
+        return null;
+      }
+      pace = duration / distance;
+    }
+    final imperial = stats.system == MeasurementSystem.imperial;
+    final swimming = activity.activityType == 8 || activity.activityType == 9;
+    final rowing = {13, 32, 42}.contains(activity.activityType);
+    final meters = swimming
+        ? (imperial ? 91.44 : 100)
+        : rowing
+        ? 500
+        : (imperial ? 1609.34 : 1000);
+    final displaySeconds = pace * meters;
+    if (!displaySeconds.isFinite) return null;
+    final seconds = displaySeconds.round();
+    final clock =
+        '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+    if (swimming) {
+      return imperial
+          ? l10n.serverActivityUnitMinutesPer100Yards(clock)
+          : l10n.serverActivityUnitMinutesPer100Meters(clock);
+    }
+    if (rowing) {
+      return l10n.serverActivityUnitMinutesPer500Meters(clock);
+    }
+    return imperial
+        ? stats.labels.minutesPerMile(clock)
+        : stats.labels.minutesPerKilometer(clock);
   }
 
   String tempo(double speed, int type) {

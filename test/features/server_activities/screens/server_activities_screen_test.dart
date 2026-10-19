@@ -41,6 +41,7 @@ void main() {
               activityType: 8,
               distanceMeters: 1500,
               averageSpeedMetersPerSecond: 1.25,
+              paceSecondsPerMeter: 0.8,
             ),
           ),
         ),

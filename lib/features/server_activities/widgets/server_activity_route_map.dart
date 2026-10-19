@@ -14,11 +14,13 @@ class ServerActivityRouteMap extends StatefulWidget {
     required this.tileServerUrl,
     required this.startLabel,
     required this.finishLabel,
+    this.selectedTime,
   });
   final List<ServerRoutePoint> route;
   final String tileServerUrl;
   final String startLabel;
   final String finishLabel;
+  final DateTime? selectedTime;
 
   @override
   State<ServerActivityRouteMap> createState() => _ServerActivityRouteMapState();
@@ -27,6 +29,7 @@ class ServerActivityRouteMap extends StatefulWidget {
 class _ServerActivityRouteMapState extends State<ServerActivityRouteMap> {
   List<List<LatLng>> _segments = [];
   List<LatLng> _points = [];
+  late ServerRoutePlayback _playback;
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _ServerActivityRouteMapState extends State<ServerActivityRouteMap> {
   }
 
   void _prepare() {
+    _playback = ServerRoutePlayback(widget.route);
     _segments = [];
     _points = [];
     var segment = <LatLng>[];
@@ -67,6 +71,7 @@ class _ServerActivityRouteMapState extends State<ServerActivityRouteMap> {
   Widget build(BuildContext context) {
     if (_points.isEmpty) return const SizedBox.shrink();
     final colors = Theme.of(context).colorScheme;
+    final selected = _playback.at(widget.selectedTime);
     final bounds = LatLngBounds.fromPoints(_points);
     final singleLocation =
         bounds.north == bounds.south && bounds.east == bounds.west;
@@ -107,6 +112,23 @@ class _ServerActivityRouteMapState extends State<ServerActivityRouteMap> {
             ),
             MarkerLayer(
               markers: [
+                if (selected != null)
+                  Marker(
+                    point: LatLng(selected.latitude, selected.longitude),
+                    width: 24,
+                    height: 24,
+                    child: DecoratedBox(
+                      key: const ValueKey('route-playback-marker'),
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 4),
+                        boxShadow: const [
+                          BoxShadow(blurRadius: 6, color: Colors.black38),
+                        ],
+                      ),
+                    ),
+                  ),
                 _marker(
                   _points.first,
                   colors.primary,

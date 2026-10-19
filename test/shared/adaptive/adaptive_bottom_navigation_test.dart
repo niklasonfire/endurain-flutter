@@ -1,4 +1,5 @@
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/core/theme/app_theme.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +10,50 @@ void main() {
   });
 
   tearDown(PlatformUtils.debugResetOverrides);
+
+  for (final dark in [false, true]) {
+    testWidgets('four tabs stay visible with themed colors (dark=$dark)', (
+      tester,
+    ) async {
+      final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: AdaptiveBottomNavigation(
+            tabs: [
+              for (var i = 0; i < 4; i++)
+                AdaptiveTab(
+                  routeName: '/$i',
+                  label: 'Tab $i',
+                  materialIcon: Icons.map,
+                  cupertinoIcon: Icons.map,
+                  builder: (_) => Text('Page $i'),
+                ),
+            ],
+          ),
+        ),
+      );
+      final bar = tester.widget<BottomNavigationBar>(
+        find.byType(BottomNavigationBar),
+      );
+      expect(bar.type, BottomNavigationBarType.fixed);
+      expect(bar.backgroundColor, theme.cardColor);
+      expect(bar.selectedItemColor, theme.colorScheme.primary);
+      expect(bar.unselectedItemColor, theme.colorScheme.onSurfaceVariant);
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.text('Tab $i'));
+        await tester.pumpAndSettle();
+        expect(find.text('Page $i'), findsOneWidget);
+        expect(
+          tester
+              .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+              .currentIndex,
+          i,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final apple in [false, true]) {
     testWidgets(

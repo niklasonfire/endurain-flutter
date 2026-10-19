@@ -44,6 +44,7 @@ class ServerActivityListItem extends StatelessWidget {
       locale: locale,
     );
     final duration = activity.timerSeconds ?? activity.elapsedSeconds;
+    final tempo = sportFormatter.activityTempo(activity);
     final metricParts = <String>[
       if (isDistanceBased(activity.activityType) &&
           activity.distanceMeters != null)
@@ -51,13 +52,8 @@ class ServerActivityListItem extends StatelessWidget {
           activity.distanceMeters!,
           activity.activityType,
         ),
-      if (duration != null) formatter.formatDuration(duration.round()),
-      if (isDistanceBased(activity.activityType) &&
-          activity.averageSpeedMetersPerSecond != null)
-        sportFormatter.tempo(
-          activity.averageSpeedMetersPerSecond!,
-          activity.activityType,
-        ),
+      if (duration != null) formatter.formatDuration(duration.floor()),
+      if (isDistanceBased(activity.activityType) && tempo != null) tempo,
       if (isDistanceBased(activity.activityType) &&
           activity.elevationGainMeters != null)
         '↗ ${formatter.formatElevation(activity.elevationGainMeters, locale: locale)}',
@@ -72,7 +68,9 @@ class ServerActivityListItem extends StatelessWidget {
       activity.country,
     ].whereType<String>().where((s) => s.isNotEmpty).join(', ');
     final subtitle = [
-      if (activity.startTime != null)
+      if (activity.displayStartTime != null)
+        activity.displayStartTime!.format(DateFormat.yMMMd(locale))
+      else if (activity.startTime != null)
         DateFormat.yMMMd(locale).format(activity.startTime!.toLocal()),
       if (place.isNotEmpty) place,
     ].join(' · ');

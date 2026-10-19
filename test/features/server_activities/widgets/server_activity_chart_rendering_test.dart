@@ -13,7 +13,7 @@ void main() {
   testWidgets(
     'paints measured segments while leaving missing readings unjoined',
     (tester) async {
-      const color = Color(0xff0055ff);
+      const color = Color(0xffe24b4a);
       const boundaryKey = ValueKey('review-rendering');
       final graph = ServerActivityGraph.fromJson({
         'stream_type': 1,
@@ -67,9 +67,9 @@ void main() {
               x++
             ) {
               final offset = (y * image.width + x) * 4;
-              if (pixels.getUint8(offset) == 0 &&
-                  pixels.getUint8(offset + 1) == 85 &&
-                  pixels.getUint8(offset + 2) == 255) {
+              if (pixels.getUint8(offset) == 226 &&
+                  pixels.getUint8(offset + 1) == 75 &&
+                  pixels.getUint8(offset + 2) == 74) {
                 count++;
               }
             }

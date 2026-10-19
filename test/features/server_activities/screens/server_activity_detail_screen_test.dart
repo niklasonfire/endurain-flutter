@@ -1,4 +1,7 @@
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
+import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:endurain/features/server_activities/controllers/server_activity_detail_controller.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
 import 'package:endurain/features/server_activities/models/server_activity_page.dart';
@@ -11,6 +14,72 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  testWidgets(
+    'graph tap and slider move the visible map marker using timestamps',
+    (tester) async {
+      tester.view.physicalSize = const Size(420, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final connection = ValueNotifier<String?>('a');
+      final controller = ServerActivityDetailController(
+        activityId: 7,
+        repository: _PlaybackRepository(),
+        connection: connection,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ServerActivityDetailScreen(
+            activityId: 7,
+            controller: controller,
+            tileServerUrlProvider: () async =>
+                'https://tiles.example/{z}/{x}/{y}.png',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final chart = find.byKey(const ValueKey('chart-heartRate'));
+      await tester.scrollUntilVisible(chart, 200);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('route-playback-marker')), findsNothing);
+      await tester.tapAt(tester.getRect(chart).center);
+      await tester.pump();
+      var marker = tester
+          .widget<MarkerLayer>(find.byType(MarkerLayer))
+          .markers
+          .first;
+      expect(marker.point.latitude, 52.01);
+      expect(marker.point.longitude, 13.01);
+      final markerFinder = find.byKey(const ValueKey('route-playback-marker'));
+      expect(markerFinder.hitTestable(), findsOneWidget);
+      await tester.drag(chart, const Offset(180, 0));
+      await tester.pump();
+      marker = tester
+          .widget<MarkerLayer>(find.byType(MarkerLayer))
+          .markers
+          .first;
+      expect(marker.point.latitude, 52.02);
+      // Slider interaction takes the same selection path.
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+      await tester.pump();
+      marker = tester
+          .widget<MarkerLayer>(find.byType(MarkerLayer))
+          .markers
+          .first;
+      expect(marker.point.latitude, 52);
+      connection.value = null;
+      await tester.pump();
+      expect(markerFinder, findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      connection.dispose();
+    },
+  );
+
   testWidgets(
     'outdoor metrics survive route failure and retry loads real route',
     (tester) async {
@@ -39,7 +108,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('River run'), findsOneWidget);
       expect(find.text('5.00 km'), findsOneWidget);
-      expect(find.text('5:00 min/km'), findsOneWidget);
+      expect(find.text('5:40 min/km'), findsOneWidget);
       expect(find.text('28:20'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Could not load the route.'),
@@ -157,4 +226,33 @@ class _OutdoorRepository extends _Repository {
       ServerRoutePoint(latitude: 52.01, longitude: 13.01),
     ];
   }
+}
+
+class _PlaybackRepository extends _Repository
+    implements ServerActivityGraphRepository {
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async =>
+      List.generate(
+        3,
+        (i) => ServerRoutePoint(
+          latitude: 52 + i / 100,
+          longitude: 13 + i / 100,
+          time: DateTime.utc(2026, 10, 18, 10, 0, i * 10),
+        ),
+      );
+  @override
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async => [
+    ServerActivityGraph.fromJson({
+      'stream_type': 1,
+      'stream_waypoints': List.generate(
+        3,
+        (i) => {
+          'time': DateTime.utc(2026, 10, 18, 10, 0, i * 10).toIso8601String(),
+          'hr': 120 + i * 10,
+        },
+      ),
+    }),
+  ];
+  @override
+  Future<List<ServerActivityLap>> fetchLaps(int activityId) async => [];
 }

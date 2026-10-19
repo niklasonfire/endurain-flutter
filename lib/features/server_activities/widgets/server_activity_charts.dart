@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/core/theme/brand_colors.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/services/server_activity_formatter.dart';
@@ -14,9 +15,13 @@ class ServerActivityCharts extends StatelessWidget {
     super.key,
     required this.graphs,
     required this.activityType,
+    this.selectedTime,
+    this.onSelected,
   });
   final List<ServerActivityGraph> graphs;
   final int activityType;
+  final DateTime? selectedTime;
+  final ValueChanged<DateTime?>? onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +58,8 @@ class ServerActivityCharts extends StatelessWidget {
             key: ValueKey(graph.metric),
             graph: graph,
             activityType: activityType,
+            selectedTime: selectedTime,
+            onSelected: onSelected,
           ),
       ],
     );
@@ -73,9 +80,13 @@ class ServerActivityChart extends StatefulWidget {
     super.key,
     required this.graph,
     required this.activityType,
+    this.selectedTime,
+    this.onSelected,
   });
   final ServerActivityGraph graph;
   final int activityType;
+  final DateTime? selectedTime;
+  final ValueChanged<DateTime?>? onSelected;
   @override
   State<ServerActivityChart> createState() => _ServerActivityChartState();
 }
@@ -96,6 +107,14 @@ class _ServerActivityChartState extends State<ServerActivityChart> {
       _points = widget.graph.points();
       _fraction = 0;
     }
+  }
+
+  void _select(double fraction) {
+    setState(() => _fraction = fraction.clamp(0.0, 1.0));
+    final point = widget.graph.nearest(
+      _points.first.x + (_points.last.x - _points.first.x) * _fraction,
+    );
+    widget.onSelected?.call(point?.time);
   }
 
   @override
@@ -147,11 +166,28 @@ class _ServerActivityChartState extends State<ServerActivityChart> {
         : NumberFormat('0', locale).format(x + 1);
     final first = _points.first.x;
     final last = _points.last.x;
-    final selected = widget.graph.nearest(first + (last - first) * _fraction)!;
+    final sharedX = widget.selectedTime == null
+        ? null
+        : widget.graph.xAt(widget.selectedTime!);
+    final selected = widget.graph.nearest(
+      sharedX ?? first + (last - first) * _fraction,
+    )!;
+    final sliderFraction = sharedX != null && last > first
+        ? ((selected.x - first) / (last - first)).clamp(0.0, 1.0)
+        : _fraction;
     final values = _points.map((point) => point.value).whereType<double>();
     final minimum = values.isEmpty ? 0.0 : values.reduce(math.min);
     final maximum = values.isEmpty ? 1.0 : values.reduce(math.max);
-    final color = Theme.of(context).colorScheme.primary;
+    final brand = BrandColors.of(context);
+    final color = switch (metric) {
+      ServerGraphMetric.heartRate => brand.hr,
+      ServerGraphMetric.power => brand.effort,
+      ServerGraphMetric.elevation => brand.goal,
+      ServerGraphMetric.speed => brand.info,
+      ServerGraphMetric.pace => brand.brand,
+      ServerGraphMetric.cadence => const Color(0xffa855f7),
+      ServerGraphMetric.temperature => const Color(0xfff97316),
+    };
     final reading = '${axis(selected.x)} · ${value(selected.value)}';
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -162,7 +198,14 @@ class _ServerActivityChartState extends State<ServerActivityChart> {
           children: [
             Row(
               children: [
-                Icon(Icons.show_chart, color: color, size: 20),
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -181,20 +224,10 @@ class _ServerActivityChartState extends State<ServerActivityChart> {
             LayoutBuilder(
               builder: (context, constraints) => GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTapDown: (event) => setState(
-                  () => _fraction =
-                      (event.localPosition.dx / constraints.maxWidth).clamp(
-                        0.0,
-                        1.0,
-                      ),
-                ),
-                onHorizontalDragUpdate: (event) => setState(
-                  () => _fraction =
-                      (event.localPosition.dx / constraints.maxWidth).clamp(
-                        0.0,
-                        1.0,
-                      ),
-                ),
+                onTapDown: (event) =>
+                    _select(event.localPosition.dx / constraints.maxWidth),
+                onHorizontalDragUpdate: (event) =>
+                    _select(event.localPosition.dx / constraints.maxWidth),
                 child: Semantics(
                   label: '$title. ${l10n.chartReadHint}',
                   child: SizedBox(
@@ -236,10 +269,8 @@ class _ServerActivityChartState extends State<ServerActivityChart> {
               ),
             ),
             Slider(
-              value: _fraction,
-              onChanged: last == first
-                  ? null
-                  : (value) => setState(() => _fraction = value),
+              value: sliderFraction,
+              onChanged: last == first ? null : _select,
               label: reading,
               semanticFormatterCallback: (_) => reading,
             ),

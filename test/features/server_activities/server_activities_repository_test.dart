@@ -12,6 +12,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -162,8 +163,8 @@ void main() {
           'activity_id': 7,
           'stream_type': 7,
           'stream_waypoints': [
-            {'lat': 52.5, 'lon': 13.4},
-            {'lat': 0, 'lon': 0},
+            {'lat': 52.5, 'lon': 13.4, 'time': '2026-10-18T10:00:00'},
+            {'lat': 0, 'lon': 0, 'time': '2026-10-18T12:00:10+02:00'},
             {'lat': null, 'lon': 13.4},
             {'lat': 91, 'lon': 13},
             {'lat': 50, 'lon': 181},
@@ -178,6 +179,9 @@ void main() {
     expect(route.map((p) => p.latitude), [52.5, 0, 51]);
     expect(route.map((p) => p.longitude), [13.4, 0, 12]);
     expect(route.map((p) => p.startsSegment), [false, false, true]);
+    expect(route[0].time, DateTime.utc(2026, 10, 18, 10));
+    expect(route[1].time, DateTime.utc(2026, 10, 18, 10, 0, 10));
+    expect(route[2].time, isNull);
   });
 
   test('late detail response from previous account is rejected', () async {
@@ -225,7 +229,7 @@ void main() {
     expect(await repo.fetchRoute(7), isEmpty);
   });
 
-  test('detail preserves measured zero, optional null and UTC dates without an offset', () async {
+  test('detail preserves measured zero, optional null and offset-free display dates', () async {
     final repo = repository(
       (request) async => http.Response(
         '{"id":7,"name":"Ride","activity_type":2,"distance":0,"start_time":"2026-10-18T09:30:00","average_hr":null,"average_power":125}',
@@ -236,8 +240,11 @@ void main() {
     expect(detail.distanceMeters, 0);
     expect(detail.averageHeartRate, isNull);
     expect(detail.averagePower, 125);
-    expect(detail.startTime, DateTime.utc(2026, 10, 18, 9, 30));
-    expect(detail.startTime!.isUtc, isTrue);
+    expect(detail.startTime, isNull);
+    expect(
+      detail.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
+      '2026-10-18 09:30',
+    );
   });
 
   test(

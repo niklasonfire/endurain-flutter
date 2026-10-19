@@ -16,7 +16,13 @@ enum ServerGraphMetric {
 }
 
 class ServerGraphPoint {
-  const ServerGraphPoint(this.x, this.value, {this.startsSegment = false});
+  const ServerGraphPoint(
+    this.x,
+    this.value, {
+    this.startsSegment = false,
+    this.time,
+  });
+  final DateTime? time;
   final double x;
   final double? value;
   final bool startsSegment;
@@ -58,6 +64,7 @@ class ServerActivityGraph {
         ServerGraphPoint(
           x,
           value,
+          time: times[i],
           startsSegment: previousX != null && timed && x - previousX > 60,
         ),
       );
@@ -85,6 +92,7 @@ class ServerActivityGraph {
             point.x,
             point.value != null ? _positiveRatio(1, point.value!) : null,
             startsSegment: point.startsSegment,
+            time: point.time,
           ),
         ),
       ),
@@ -122,6 +130,7 @@ class ServerActivityGraph {
           ServerGraphPoint(
             _points[i].x,
             _points[i].value,
+            time: _points[i].time,
             startsSegment: _points[i].startsSegment || (gap != null && broken),
           ),
         );
@@ -129,6 +138,13 @@ class ServerActivityGraph {
       }
     }
     return List.unmodifiable(result);
+  }
+
+  double? xAt(DateTime time) {
+    if (!hasTimeAxis || _points.isEmpty || _points.first.time == null) {
+      return null;
+    }
+    return time.difference(_points.first.time!).inMilliseconds / 1000;
   }
 
   ServerGraphPoint? nearest(double x) {

@@ -101,6 +101,11 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Theme.of(context).cardColor,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        elevation: 0,
         currentIndex: _currentIndex,
         onTap: _selectIndex,
         items: [

@@ -36,6 +36,7 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
     with OwnedControllers {
   late final ServerActivityDetailController _controller;
   String? _tiles;
+  DateTime? _selectedTime;
 
   @override
   void initState() {
@@ -99,77 +100,111 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
           }
           return RefreshIndicator(
             onRefresh: _controller.load,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
+            child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                if (_controller.isLoading) const LinearProgressIndicator(),
-                if (_controller.error != null)
-                  _retry(l10n.serverActivityDetailFailed, _controller.load),
-                _header(_controller.activity!, l10n),
-                const SizedBox(height: 16),
-                _metrics(_controller.activity!, l10n),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.serverActivityRoute,
-                  style: Theme.of(context).textTheme.titleMedium,
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.list(
+                    children: [
+                      if (_controller.isLoading)
+                        const LinearProgressIndicator(),
+                      if (_controller.error != null)
+                        _retry(
+                          l10n.serverActivityDetailFailed,
+                          _controller.load,
+                        ),
+                      _header(_controller.activity!, l10n),
+                      const SizedBox(height: 16),
+                      _metrics(_controller.activity!, l10n),
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.serverActivityRoute,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      if (_controller.isRouteLoading)
+                        const Center(child: AdaptiveLoadingIndicator())
+                      else if (_controller.routeError != null)
+                        _retry(
+                          l10n.serverActivityRouteFailed,
+                          _controller.loadRoute,
+                        )
+                      else if (_controller.route.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Text(
+                            l10n.serverActivityNoRoute,
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      else if (_tiles == null)
+                        const Center(child: AdaptiveLoadingIndicator()),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                if (_controller.isRouteLoading)
-                  const Center(child: AdaptiveLoadingIndicator())
-                else if (_controller.routeError != null)
-                  _retry(l10n.serverActivityRouteFailed, _controller.loadRoute)
-                else if (_controller.route.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                      l10n.serverActivityNoRoute,
-                      textAlign: TextAlign.center,
+                if (!_controller.isRouteLoading &&
+                    _controller.routeError == null &&
+                    _controller.route.isNotEmpty &&
+                    _tiles != null)
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _RouteHeader(
+                      child: ServerActivityRouteMap(
+                        route: _controller.route,
+                        tileServerUrl: _tiles!,
+                        startLabel: l10n.activityHistoryStartedAt,
+                        finishLabel: l10n.activityHistoryEndedAt,
+                        selectedTime: _selectedTime,
+                      ),
                     ),
-                  )
-                else if (_tiles == null)
-                  const Center(child: AdaptiveLoadingIndicator())
-                else
-                  ServerActivityRouteMap(
-                    route: _controller.route,
-                    tileServerUrl: _tiles!,
-                    startLabel: l10n.activityHistoryStartedAt,
-                    finishLabel: l10n.activityHistoryEndedAt,
                   ),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.chartTitle,
-                  style: Theme.of(context).textTheme.titleMedium,
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.list(
+                    children: [
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.chartTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (_controller.isGraphLoading)
+                        const Center(child: AdaptiveLoadingIndicator())
+                      else if (_controller.graphError != null)
+                        _retry(l10n.chartLoadFailed, _controller.loadGraphs)
+                      else
+                        ServerActivityCharts(
+                          graphs: _controller.graphs,
+                          activityType: _controller.activity!.activityType,
+                          selectedTime: _selectedTime,
+                          onSelected: (time) =>
+                              setState(() => _selectedTime = time),
+                        ),
+                      const SizedBox(height: 20),
+                      if (_controller.isLapLoading)
+                        const Center(child: AdaptiveLoadingIndicator())
+                      else if (_controller.lapError != null)
+                        _retry(l10n.chartLapsFailed, _controller.loadLaps)
+                      else
+                        ServerActivityLaps(
+                          laps: _controller.laps,
+                          activityType: _controller.activity!.activityType,
+                        ),
+                      if (_controller.activity!.description
+                              ?.trim()
+                              .isNotEmpty ??
+                          false) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          l10n.serverActivityDescription,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        SelectableText(_controller.activity!.description!),
+                      ],
+                    ],
+                  ),
                 ),
-                if (_controller.isGraphLoading)
-                  const Center(child: AdaptiveLoadingIndicator())
-                else if (_controller.graphError != null)
-                  _retry(l10n.chartLoadFailed, _controller.loadGraphs)
-                else
-                  ServerActivityCharts(
-                    graphs: _controller.graphs,
-                    activityType: _controller.activity!.activityType,
-                  ),
-                const SizedBox(height: 20),
-                if (_controller.isLapLoading)
-                  const Center(child: AdaptiveLoadingIndicator())
-                else if (_controller.lapError != null)
-                  _retry(l10n.chartLapsFailed, _controller.loadLaps)
-                else
-                  ServerActivityLaps(
-                    laps: _controller.laps,
-                    activityType: _controller.activity!.activityType,
-                  ),
-                if (_controller.activity!.description?.trim().isNotEmpty ??
-                    false) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    l10n.serverActivityDescription,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  SelectableText(_controller.activity!.description!),
-                ],
               ],
             ),
           );
@@ -204,13 +239,16 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
           activity.name.isEmpty ? sport : activity.name,
           style: theme.textTheme.headlineSmall,
         ),
-        if (activity.startTime != null)
+        if (activity.displayStartTime != null || activity.startTime != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              DateFormat.yMMMd(locale)
-                  .add_jm()
-                  .format(activity.startTime!.toLocal()),
+              activity.displayStartTime?.format(
+                    DateFormat.yMMMd(locale).add_jm(),
+                  ) ??
+                  DateFormat.yMMMd(locale)
+                      .add_jm()
+                      .format(activity.startTime!.toLocal()),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -238,7 +276,7 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
     final distanceBased = ServerActivityFormatter.isDistanceBased(
       activity.activityType,
     );
-    final duration = activity.timerSeconds ?? activity.elapsedSeconds;
+    final duration = activity.elapsedSeconds ?? activity.timerSeconds;
     final entries = <(String, String)>[
       if (distanceBased)
         (
@@ -252,25 +290,14 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
         ),
       (
         l10n.activityStatDuration,
-        duration == null ? '–' : stats.formatDuration(duration.round()),
+        duration == null ? '–' : stats.formatDuration(duration.floor()),
       ),
-      if (activity.elapsedSeconds != null &&
-          activity.elapsedSeconds != duration)
-        (
-          l10n.serverActivityElapsedTime,
-          stats.formatDuration(activity.elapsedSeconds!.round()),
-        ),
       if (distanceBased)
         (
           ServerActivityFormatter.usesPace(activity.activityType)
               ? l10n.activityStatPace
               : l10n.activityStatSpeed,
-          activity.averageSpeedMetersPerSecond == null
-              ? '–'
-              : formatter.tempo(
-                  activity.averageSpeedMetersPerSecond!,
-                  activity.activityType,
-                ),
+          formatter.activityTempo(activity) ?? '–',
         ),
       if (distanceBased && activity.elevationGainMeters != null)
         (
@@ -344,4 +371,27 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
       ],
     ),
   );
+}
+
+class _RouteHeader extends SliverPersistentHeaderDelegate {
+  _RouteHeader({required this.child});
+  final Widget child;
+  @override
+  double get minExtent => 220;
+  @override
+  double get maxExtent => 220;
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => ColoredBox(
+    color: Theme.of(context).scaffoldBackgroundColor,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: child,
+    ),
+  );
+  @override
+  bool shouldRebuild(_RouteHeader oldDelegate) => child != oldDelegate.child;
 }
