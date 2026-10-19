@@ -617,6 +617,12 @@ void main() {
 
         await controller.start(ActivityType.run);
         adapter.addPosition(recordingPosition());
+        adapter.addPosition(
+          recordingPosition(
+            latitude: 41.001,
+            timestamp: DateTime.utc(2026, 1, 1, 0, 0, 5),
+          ),
+        );
         await pumpEventQueue();
         await controller.stop();
         await controller.uploadCompletedGpx();
@@ -722,6 +728,12 @@ void main() {
 
       await controller.start(ActivityType.run);
       adapter.addPosition(recordingPosition());
+      adapter.addPosition(
+        recordingPosition(
+          latitude: 41.001,
+          timestamp: DateTime.utc(2026, 1, 1, 0, 0, 5),
+        ),
+      );
       await pumpEventQueue();
       await controller.stop();
       await controller.uploadCompletedGpx();
@@ -815,6 +827,12 @@ void main() {
 
       await controller.start(ActivityType.run);
       adapter.addPosition(recordingPosition());
+      adapter.addPosition(
+        recordingPosition(
+          latitude: 41.001,
+          timestamp: DateTime.utc(2026, 1, 1, 0, 0, 5),
+        ),
+      );
       await pumpEventQueue();
       await controller.stop();
       await controller.uploadCompletedGpx();
@@ -846,6 +864,12 @@ void main() {
 
         await controller.start(ActivityType.run);
         adapter.addPosition(recordingPosition());
+        adapter.addPosition(
+          recordingPosition(
+            latitude: 41.001,
+            timestamp: DateTime.utc(2026, 1, 1, 0, 0, 5),
+          ),
+        );
         await pumpEventQueue();
         await controller.stop();
         await controller.uploadCompletedGpx();
@@ -884,6 +908,12 @@ void main() {
 
       await controller.start(ActivityType.run);
       adapter.addPosition(recordingPosition());
+      adapter.addPosition(
+        recordingPosition(
+          latitude: 41.001,
+          timestamp: DateTime.utc(2026, 1, 1, 0, 0, 5),
+        ),
+      );
       await pumpEventQueue();
       await controller.stop();
       await controller.uploadCompletedGpx();

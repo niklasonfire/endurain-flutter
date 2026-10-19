@@ -41,6 +41,9 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
           : l10n.errorActivityUploadFailedWithDetails(details),
     AppErrorCode.activityUploadNotConfigured =>
       l10n.errorActivityUploadNotConfigured,
+    AppErrorCode.activityUploadInsufficientGps =>
+      l10n.errorActivityUploadInsufficientGps,
+    AppErrorCode.activityUploadInvalidGpx => l10n.errorActivityUploadInvalidGpx,
     AppErrorCode.serverActivitiesFetchFailed =>
       l10n.errorServerActivitiesFetchFailed,
     AppErrorCode.fetchProvidersFailed =>

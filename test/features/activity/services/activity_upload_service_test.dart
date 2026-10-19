@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
@@ -167,6 +168,65 @@ void main() {
                 ),
           ),
         );
+      },
+    );
+
+    test(
+      'shows FastAPI upload rejection detail instead of status alone',
+      () async {
+        final service = _serviceReturningBody(
+          '{"detail":"Invalid GPX file - no valid segments with at least two timed GPS trackpoints found"}',
+        );
+        await expectLater(
+          service.uploadGpx(_request()),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.details,
+              'details',
+              'HTTP 400: Invalid GPX file - no valid segments with at least two timed GPS trackpoints found',
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'redacts secrets from structured validation errors and bounds details',
+      () async {
+        final service = _serviceReturningBody(
+          jsonEncode({
+            'detail': {
+              'code': 'INVALID_GPX',
+              'message': 'Rejected token=private Bearer abc.def.ghi /data/user/0/private.gpx 41.123456, -8.654321',
+            },
+          }),
+        );
+        await expectLater(
+          service.uploadGpx(_request()),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.details,
+              'details',
+              'HTTP 400: INVALID_GPX: Rejected token=<redacted> Bearer <redacted> <path> <coordinates>',
+            ),
+          ),
+        );
+        for (final body in [
+          '<html>private proxy error</html>',
+          jsonEncode({'detail': 'x' * 9000}),
+          '{not-json}',
+        ]) {
+          await expectLater(
+            _serviceReturningBody(body).uploadGpx(_request()),
+            throwsA(
+              isA<AppException>().having(
+                (e) => e.details,
+                'details',
+                'HTTP 400',
+              ),
+            ),
+          );
+        }
       },
     );
 
@@ -575,6 +635,198 @@ void main() {
       expect(keys, ['svc_idem']);
     });
 
+    test('retains a one-point recording and blocks upload before server400', () async {
+      const gpx =
+          '<gpx xmlns="http://www.topografix.com/GPX/1/1"><trk><trkseg><trkpt lat="41" lon="-8"><time>2026-06-02T10:00:00Z</time></trkpt></trkseg></trk></gpx>';
+      final record = await _createRecord(
+        repository,
+        id: 'one-point-run',
+        gpx: gpx,
+      );
+      var uploads = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploads++;
+              return http.StreamedResponse(const Stream.empty(), 201);
+            },
+      );
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code.name,
+            'reason',
+            'activityUploadInsufficientGps',
+          ),
+        ),
+      );
+      expect(uploads, 0);
+      final retained = (await repository.get(record.id))!;
+      expect(retained.uploadStatus, LocalActivityUploadStatus.failed);
+      expect(retained.autoRetryEligible, isFalse);
+      expect(
+        await File(await repository.readGpxFilePath(retained)).readAsString(),
+        gpx,
+      );
+    });
+
+    test(
+      'one point on each side of a pause never invents a connecting segment',
+      () async {
+        final gpx = _validRunGpx.replaceFirst(
+          '</trkpt><trkpt',
+          '</trkpt></trkseg><trkseg><trkpt',
+        );
+        final record = await _createRecord(
+          repository,
+          id: 'split-single-points',
+          gpx: gpx,
+        );
+        await expectLater(
+          _serviceReturningStatus(201)
+              .performUploadAttempt(record: record, repository: repository),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'reason',
+              AppErrorCode.activityUploadInsufficientGps,
+            ),
+          ),
+        );
+        final retained = (await repository.get(record.id))!;
+        expect(
+          await File(await repository.readGpxFilePath(retained)).readAsString(),
+          gpx,
+        );
+      },
+    );
+
+    test(
+      'invalid XML is retained with a distinct error and can be exported',
+      () async {
+        final record = await _createRecord(
+          repository,
+          id: 'broken-xml',
+          gpx: '<gpx><trk>',
+        );
+        await expectLater(
+          _serviceReturningStatus(201)
+              .performUploadAttempt(record: record, repository: repository),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'reason',
+              AppErrorCode.activityUploadInvalidGpx,
+            ),
+          ),
+        );
+        expect(
+          await repository.hasGpx((await repository.get(record.id))!),
+          isTrue,
+        );
+      },
+    );
+
+    test('prefixed GPX 1.0 with two timed points uploads unchanged', () async {
+      final gpx = _validRunGpx
+          .replaceFirst(
+            '<gpx xmlns="http://www.topografix.com/GPX/1/1">',
+            '<g:gpx xmlns:g="http://www.topografix.com/GPX/1/0">',
+          )
+          .replaceAll('</gpx>', '</g:gpx>')
+          .replaceAll('<trk', '<g:trk')
+          .replaceAll('</trk', '</g:trk')
+          .replaceAll('<time>', '<g:time>')
+          .replaceAll('</time>', '</g:time>');
+      final record = await _createRecord(repository, id: 'gpx-1-0', gpx: gpx);
+      final result = await _serviceReturningStatus(201)
+          .performUploadAttempt(record: record, repository: repository);
+      expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+      expect(
+        await File(await repository.readGpxFilePath(result)).readAsString(),
+        gpx,
+      );
+    });
+
+    test('repairs old app power-only GPX for retry without modifying durable original', () async {
+      final gpx = _validRunGpx
+          .replaceFirst(
+            '<gpx ',
+            '<gpx creator="Endurain mobile app" xmlns:ns3="http://www.garmin.com/xmlschemas/PowerExtension/v1" ',
+          )
+          .replaceAll(
+            '</trkpt>',
+            '<extensions><gpxtpx:TrackPointExtension><ns3:wrapper><ns3:power>250</ns3:power></ns3:wrapper></gpxtpx:TrackPointExtension></extensions></trkpt>',
+          );
+      final record = await _createRecord(
+        repository,
+        id: 'old-power-run',
+        gpx: gpx,
+      );
+      String? uploadedPath;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile:
+            (
+              _,
+              path,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploadedPath = path;
+              final prepared = await File(path).readAsString();
+              expect(
+                prepared,
+                contains(
+                  'xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1"',
+                ),
+              );
+              expect(prepared, contains('<ns3:power>250</ns3:power>'));
+              expect(idempotencyKey, record.effectiveIdempotencyKey);
+              return http.StreamedResponse(
+                Stream.value(utf8.encode('{"detail":"Invalid activity"}')),
+                400,
+              );
+            },
+      );
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.details,
+            'detail',
+            'HTTP 400: Invalid activity',
+          ),
+        ),
+      );
+      expect(File(uploadedPath!).existsSync(), isFalse);
+      expect(
+        await File(await repository.readGpxFilePath(record)).readAsString(),
+        gpx,
+      );
+      expect(
+        (await repository.get(record.id))!.uploadStatus,
+        LocalActivityUploadStatus.failed,
+      );
+    });
+
     test('5xx is not retried when maxAttempts is 1 (default)', () async {
       final record = await _createRecord(repository, id: 'svc_no_retry');
       final service = _serviceReturningStatus(500); // default: maxAttempts=1
@@ -771,8 +1023,9 @@ Future<LocalActivityRecord> _createRecord(
   required String id,
   String? connectionOrigin = 'https://example.test',
   String? connectionProfileId = 'profile-1',
+  String gpx = _validRunGpx,
 }) async {
-  final fileName = await repository.writeGpx(id: id, gpx: '<gpx />');
+  final fileName = await repository.writeGpx(id: id, gpx: gpx);
   final record = LocalActivityRecord(
     id: id,
     activityType: ActivityType.run,
@@ -791,3 +1044,22 @@ Future<LocalActivityRecord> _createRecord(
   await repository.upsert(record);
   return record;
 }
+
+const _validRunGpx =
+    '<gpx xmlns="http://www.topografix.com/GPX/1/1"><trk><trkseg><trkpt lat="41" lon="-8"><time>2026-06-02T10:00:00Z</time></trkpt><trkpt lat="41.001" lon="-8.001"><time>2026-06-02T10:00:05Z</time></trkpt></trkseg></trk></gpx>';
+
+ActivityUploadService _serviceReturningBody(String body) =>
+    ActivityUploadService(
+      config: const ActivityUploadConfig(
+        endpoint: '/upload',
+        fieldName: 'file',
+      ),
+      uploadFile: (
+        _,
+        _,
+        _, {
+        idempotencyKey,
+        expectedOrigin,
+        expectedProfileId,
+      }) async => http.StreamedResponse(Stream.value(utf8.encode(body)), 400),
+    );

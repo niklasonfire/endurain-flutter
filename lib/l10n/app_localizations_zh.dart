@@ -1531,6 +1531,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeGoalSwim => 'Swimming';
+
+  @override
+  String get errorActivityUploadInsufficientGps =>
+      'This activity has too few GPS points to upload. At least two timed GPS points in the same recording segment are required. The local recording is saved and can be exported.';
+
+  @override
+  String get errorActivityUploadInvalidGpx =>
+      'The saved GPX file could not be read. The local recording is preserved and can be exported.';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3060,4 +3068,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeGoalSwim => 'Swimming';
+
+  @override
+  String get errorActivityUploadInsufficientGps =>
+      'This activity has too few GPS points to upload. At least two timed GPS points in the same recording segment are required. The local recording is saved and can be exported.';
+
+  @override
+  String get errorActivityUploadInvalidGpx =>
+      'The saved GPX file could not be read. The local recording is preserved and can be exported.';
 }

@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../helpers/sqlite_local_activity_repository.dart';
+import '../../../helpers/uploadable_gpx.dart';
 
 void main() {
   group('ActivityUploadQueue', () {
@@ -431,7 +432,7 @@ Future<LocalActivityRecord> _createRecord(
   String? connectionProfileId = 'profile-1',
   bool autoRetryEligible = true,
 }) async {
-  final fileName = await repository.writeGpx(id: id, gpx: '<gpx />');
+  final fileName = await repository.writeGpx(id: id, gpx: uploadableRunGpx);
   final record = LocalActivityRecord(
     id: id,
     activityType: ActivityType.run,

@@ -2821,6 +2821,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Swimming'**
   String get homeGoalSwim;
+
+  /// Upload error when an activity has fewer than two timed GPS samples within one segment. Used in: core/utils/error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This activity has too few GPS points to upload. At least two timed GPS points in the same recording segment are required. The local recording is saved and can be exported.'**
+  String get errorActivityUploadInsufficientGps;
+
+  /// Malformed or unreadable GPX upload error - Used in: core/utils/error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The saved GPX file could not be read. The local recording is preserved and can be exported.'**
+  String get errorActivityUploadInvalidGpx;
 }
 
 class _AppLocalizationsDelegate

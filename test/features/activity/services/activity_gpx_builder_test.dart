@@ -143,6 +143,33 @@ void main() {
       expect(gpx, contains('<gpxtpx:hr>142</gpxtpx:hr>'));
     });
 
+    test('power-only run declares every sensor namespace', () {
+      final gpx = builder.build(
+        ActivityRecordingState(
+          status: ActivityRecordingStatus.completed,
+          activityType: ActivityType.run,
+          points: [
+            _point(powerWatts: 250),
+            _point(latitude: 41.01, powerWatts: 260),
+          ],
+        ),
+      );
+      expect(
+        gpx,
+        contains(
+          'xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1"',
+        ),
+      );
+      expect(
+        gpx,
+        contains(
+          'xmlns:ns3="http://www.garmin.com/xmlschemas/PowerExtension/v1"',
+        ),
+      );
+      expect(gpx, contains('<ns3:power>250</ns3:power>'));
+      expect(gpx, isNot(contains('<gpxtpx:hr>')));
+    });
+
     test('emits cadence and power extensions from track points', () {
       final gpx = builder.build(
         ActivityRecordingState(

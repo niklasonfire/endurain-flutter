@@ -107,7 +107,7 @@ String buildGpxDocument({
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
     ..write('<gpx version="1.1" creator="Endurain mobile app" ')
     ..write('xmlns="http://www.topografix.com/GPX/1/1"');
-  if (hasHeartRate || hasCadence) {
+  if (hasHeartRate || hasCadence || hasPower) {
     buffer.write(' $_gpxtpxNamespace');
   }
   if (hasPower) {

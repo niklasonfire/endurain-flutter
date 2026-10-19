@@ -1,6 +1,6 @@
 # Server activity list
 
-The Activities tab sits between Map and Settings. It loads only activities of
+The Activities tab sits between Home and Statistics. It loads only activities of
 current server credentials through `ServerActivitiesRepository`, newest first.
 Search, exact sport type, and inclusive date range are server-side filters.
 Pull to refresh replaces the first page; scrolling near the end or Load more
@@ -24,8 +24,11 @@ cancelled and cleared when the account changes.
 and assert the selected server activity ID. Detail state must independently
 observe the active connection identity and reject old responses.
 
-`ServerActivityListItem` follows the web mobile row: sport icon, activity name,
-localized date/location, and compact sport-specific metrics. Its static
+The list reuses `HomeActivityCard` from the Home screen: a real route thumbnail
+(or sport icon when GPS is unavailable), localized sport label, activity name,
+date/location, and compact sport-specific metrics. The shared
+`ServerActivityListItem` supplies the established date and metric formatting.
+Its static
 `usesPace`, `isDistanceBased`, and `sportIcon` methods are also available to the
 detail screen. Distances, duration, elevation, speed and pace use the existing
 `ActivityStatsFormatterScope` and device/user unit preference.
@@ -39,3 +42,18 @@ placeholders.
 Targeted tests cover account-switch and stale-query responses, pagination
 failure/retry, session identity events, guest sign-in, German text, dark-theme
 rows, search, filter reset, detail selection, and pending-search cancellation.
+
+## Route preview loading
+
+Cards are built only for the visible viewport (`scrollCacheExtent` is zero),
+so opening the list does not fetch GPS routes for the whole page or history.
+`ServerActivitiesController.loadRoute` permits at most two route requests in
+flight and deduplicates repeated requests in a forty-entry least recently used
+cache. Scrolling back can reuse previews without another request. Evicted
+queued requests are skipped before accessing the server. Account changes,
+filter changes, and disposal invalidate cached and pending route responses.
+Failed or unavailable routes keep the activity card usable with its sport icon.
+Transient failures are evicted, and pull to refresh rebinds visible previews so
+they can retry. Successful previews and legitimate empty GPS-less routes remain
+cached across refreshes.
+Actual GPS segment boundaries remain disconnected in the thumbnail.

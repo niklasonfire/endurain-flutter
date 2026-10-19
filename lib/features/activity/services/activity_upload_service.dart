@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/utils/diagnostics_redaction.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
+import 'package:endurain/features/activity/services/activity_gpx_upload_preparation.dart';
 import 'package:http/http.dart' as http;
 
 /// Uploads a GPX file to the activity import endpoint.
@@ -133,10 +136,59 @@ class ActivityUploadService {
       throw const AppException(AppErrorCode.sessionExpired);
     }
 
+    final detail = await _readServerRejection(response);
     throw AppException(
       AppErrorCode.activityUploadFailed,
-      details: 'HTTP ${response.statusCode}',
+      details:
+          'HTTP ${response.statusCode}${detail == null ? '' : ': $detail'}',
     );
+  }
+
+  /// Retain the server's validation reason, never arbitrary response JSON or
+  /// HTML. Bodies are size/time bounded, redacted, and kept out of persistence.
+  Future<String?> _readServerRejection(http.StreamedResponse response) async {
+    final iterator = StreamIterator(response.stream);
+    final bytes = <int>[];
+    final elapsed = Stopwatch()..start();
+    try {
+      while (await iterator.moveNext().timeout(
+        const Duration(seconds: 2) - elapsed.elapsed,
+      )) {
+        final chunk = iterator.current;
+        if (bytes.length + chunk.length > 8192) return null;
+        bytes.addAll(chunk);
+      }
+      final json = jsonDecode(utf8.decode(bytes));
+      if (json is! Map<String, dynamic>) return null;
+      final detail = json['detail'];
+      String? message;
+      if (detail is String) {
+        message = detail;
+      } else if (detail is Map<String, dynamic>) {
+        final text = detail['message'];
+        final code = detail['code'];
+        message = [
+          if (code is String) code,
+          if (text is String) text,
+        ].join(': ');
+      }
+      if (message == null || message.trim().isEmpty) return null;
+      final sanitized = redactDiagnosticText(
+        message
+            .replaceAll(
+              RegExp(r'[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]'),
+              ' ',
+            )
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim(),
+        maxLength: 300,
+      );
+      return sanitized.isEmpty ? null : sanitized;
+    } catch (_) {
+      return null;
+    } finally {
+      await iterator.cancel();
+    }
   }
 
   /// Performs a complete upload workflow for [record]:
@@ -231,15 +283,7 @@ class ActivityUploadService {
           throw const AppException(AppErrorCode.activityUploadNotConfigured);
         }
         final filePath = await repository.readGpxFilePath(updated);
-        await uploadGpx(
-          ActivityUploadRequest(
-            filePath: filePath,
-            activityType: updated.activityType,
-            idempotencyKey: updated.effectiveIdempotencyKey,
-            expectedOrigin: updated.connectionOrigin,
-            expectedProfileId: updated.connectionProfileId,
-          ),
-        );
+        await _uploadStoredGpx(filePath, updated);
 
         final uploadedAt = clock().toUtc();
         updated = updated.copyWith(
@@ -289,6 +333,44 @@ class ActivityUploadService {
     // Unreachable: loop always returns or rethrows inside the catch block.
     // This satisfies Dart's control flow analysis.
     throw lastError!;
+  }
+
+  Future<void> _uploadStoredGpx(
+    String filePath,
+    LocalActivityRecord record,
+  ) async {
+    final source = await File(filePath).readAsString();
+    final prepared = prepareActivityGpxUpload(source);
+    Directory? temporary;
+    try {
+      var uploadPath = filePath;
+      if (prepared != source) {
+        temporary = await Directory.systemTemp.createTemp('endurain_upload_');
+        final repairedFile = File(
+          '${temporary.path}${Platform.pathSeparator}activity.gpx',
+        );
+        await repairedFile.writeAsString(prepared, flush: true);
+        uploadPath = repairedFile.path;
+      }
+      await uploadGpx(
+        ActivityUploadRequest(
+          filePath: uploadPath,
+          activityType: record.activityType,
+          idempotencyKey: record.effectiveIdempotencyKey,
+          expectedOrigin: record.connectionOrigin,
+          expectedProfileId: record.connectionProfileId,
+        ),
+      );
+    } finally {
+      if (temporary != null) {
+        try {
+          await temporary.delete(recursive: true);
+        } on FileSystemException {
+          // Temporary repair cleanup must never turn an accepted upload into
+          // a retry. The durable original GPX is never modified here.
+        }
+      }
+    }
   }
 
   /// Returns true if [error] represents a failure worth retrying (5xx

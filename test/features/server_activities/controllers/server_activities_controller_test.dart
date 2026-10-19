@@ -133,6 +133,84 @@ void main() {
     controller.dispose();
     connection.dispose();
   });
+  test(
+    'route previews share requests and keep at most two requests in flight',
+    () async {
+      final connection = ValueNotifier<String?>('account');
+      final repository = _RouteRepository();
+      final controller = ServerActivitiesController(
+        repository: repository,
+        connection: connection,
+      );
+      final first = controller.loadRoute(1);
+      final duplicate = controller.loadRoute(1);
+      final second = controller.loadRoute(2);
+      final third = controller.loadRoute(3);
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.routeIds, [1, 2]);
+      repository.routes[1]!.complete(const [
+        ServerRoutePoint(latitude: 52, longitude: 13),
+      ]);
+      expect((await first).single.latitude, 52);
+      expect((await duplicate).single.longitude, 13);
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.routeIds, [1, 2, 3]);
+      repository.routes[2]!.complete(const []);
+      repository.routes[3]!.complete(const []);
+      await Future.wait([second, third]);
+      await controller.loadRoute(1);
+      expect(repository.routeIds.where((id) => id == 1), hasLength(1));
+      controller.dispose();
+      connection.dispose();
+    },
+  );
+
+  test('account changes reject late and queued route previews', () async {
+    final connection = ValueNotifier<String?>('a');
+    final repository = _RouteRepository();
+    final controller = ServerActivitiesController(
+      repository: repository,
+      connection: connection,
+    );
+    final first = controller.loadRoute(1),
+        second = controller.loadRoute(2),
+        queued = controller.loadRoute(3);
+    await Future<void>.delayed(Duration.zero);
+    connection.value = null;
+    repository.routes[1]!.complete(const [
+      ServerRoutePoint(latitude: 52, longitude: 13),
+    ]);
+    repository.routes[2]!.complete(const []);
+    expect(await first, isEmpty);
+    expect(await second, isEmpty);
+    expect(await queued, isEmpty);
+    expect(repository.routeIds, [1, 2]);
+    controller.dispose();
+    connection.dispose();
+  });
+
+  test(
+    'route preview cache evicts old entries after forty activities',
+    () async {
+      final connection = ValueNotifier<String?>('account');
+      final repository = _ImmediateRoutesRepository();
+      final controller = ServerActivitiesController(
+        repository: repository,
+        connection: connection,
+      );
+      for (var id = 1; id <= 40; id++) {
+        await controller.loadRoute(id);
+      }
+      await controller.loadRoute(1); // Keep this older entry recently used.
+      await controller.loadRoute(41);
+      await controller.loadRoute(1);
+      await controller.loadRoute(2);
+      expect(repository.routeIds.where((id) => id == 1), hasLength(1));
+      expect(repository.routeIds.where((id) => id == 2), hasLength(2));
+      controller.dispose();
+      connection.dispose();
+    },
+  );
 }
 
 class _Repository implements ServerActivitiesRepository {
@@ -160,4 +238,25 @@ class _Repository implements ServerActivitiesRepository {
   @override
   Future<List<ServerRoutePoint>> fetchRoute(int activityId) =>
       throw UnimplementedError();
+}
+
+class _RouteRepository extends _Repository {
+  final routeIds = <int>[];
+  final routes = <int, Completer<List<ServerRoutePoint>>>{};
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) {
+    routeIds.add(activityId);
+    final result = Completer<List<ServerRoutePoint>>();
+    routes[activityId] = result;
+    return result.future;
+  }
+}
+
+class _ImmediateRoutesRepository extends _Repository {
+  final routeIds = <int>[];
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
+    routeIds.add(activityId);
+    return const [];
+  }
 }

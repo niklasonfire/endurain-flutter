@@ -952,5 +952,13 @@
   "homeGoalSwim": "Schwimmen",
   "@homeGoalSwim": {
     "description": "Generic swimming sport label for Endurain goal categories - Used in: home_goal_card.dart"
+  },
+  "errorActivityUploadInsufficientGps": "Diese Aktivität enthält zu wenige GPS-Punkte zum Hochladen. Erforderlich sind mindestens zwei GPS-Punkte mit Zeitangabe im selben Aufzeichnungsabschnitt. Die lokale Aufnahme bleibt gespeichert und kann exportiert werden.",
+  "@errorActivityUploadInsufficientGps": {
+    "description": "Upload error when an activity has fewer than two timed GPS samples within one segment. Used in: core/utils/error_localizations.dart"
+  },
+  "errorActivityUploadInvalidGpx": "Die gespeicherte GPX-Datei konnte nicht gelesen werden. Die lokale Aufnahme bleibt erhalten und kann exportiert werden.",
+  "@errorActivityUploadInvalidGpx": {
+    "description": "Malformed or unreadable GPX upload error - Used in: core/utils/error_localizations.dart"
   }
 }

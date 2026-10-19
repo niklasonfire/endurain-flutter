@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:endurain/features/server_activities/models/server_activity.dart';
 import 'package:endurain/features/server_activities/models/server_activity_query.dart';
+import 'package:endurain/features/server_activities/models/server_route_point.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 import 'package:flutter/foundation.dart';
@@ -23,6 +24,15 @@ class ServerActivitiesController extends SafeNotifier {
   List<int> _activityTypes = [];
   ServerActivityQuery _query = const ServerActivityQuery();
   int _generation = 0;
+  static const _maxRouteRequests = 2;
+  static const _routeCacheCapacity = 40;
+  int _routeGeneration = 0;
+  int _nextRouteSlot = 0;
+  final _routeSlots = List.generate(
+    _maxRouteRequests,
+    (_) => Future<void>.value(),
+  );
+  final _routeCache = <int, Future<List<ServerRoutePoint>>>{};
   int _page = 0;
   bool _hasMore = false;
   bool _loading = false;
@@ -34,6 +44,10 @@ class ServerActivitiesController extends SafeNotifier {
   List<int> get activityTypes => List.unmodifiable(_activityTypes);
   ServerActivityQuery get query => _query;
   String? get connectionId => _connection.value;
+
+  /// Rebind visible preview futures after a refresh without discarding cached
+  /// successful routes (including legitimate empty routes).
+  int get previewRevision => _generation;
   bool get isGuest => _connection.value == null;
   bool get isLoading => _loading;
   bool get isLoadingMore => _loadingMore;
@@ -47,6 +61,7 @@ class ServerActivitiesController extends SafeNotifier {
       _query.endDate != null;
 
   void _connectionChanged() {
+    _clearRoutes();
     _generation++;
     _items = [];
     _activityTypes = [];
@@ -62,6 +77,7 @@ class ServerActivitiesController extends SafeNotifier {
   }
 
   Future<void> setQuery(ServerActivityQuery query) {
+    _clearRoutes();
     _query = query;
     return refresh(clear: true);
   }
@@ -130,6 +146,60 @@ class ServerActivitiesController extends SafeNotifier {
     }
   }
 
+  /// Only cards built by the viewport request routes. Two network slots and a
+  /// forty-entry LRU keep scrolling from fetching or retaining entire history.
+  Future<List<ServerRoutePoint>> loadRoute(int activityId) {
+    if (isGuest || isDisposed) return Future.value(const []);
+    final cached = _routeCache.remove(activityId);
+    if (cached != null) {
+      _routeCache[activityId] = cached;
+      return cached;
+    }
+    final generation = _routeGeneration;
+    final slot = _nextRouteSlot;
+    _nextRouteSlot = (_nextRouteSlot + 1) % _routeSlots.length;
+    final previous = _routeSlots[slot];
+    final release = Completer<void>();
+    _routeSlots[slot] = release.future;
+    late final Future<List<ServerRoutePoint>> result;
+    result = () async {
+      await previous;
+      try {
+        // Evicted or obsolete queued requests never reach the server.
+        if (!_routeIsCurrent(generation) ||
+            !identical(_routeCache[activityId], result)) {
+          return const <ServerRoutePoint>[];
+        }
+        final points = await _repository.fetchRoute(activityId);
+        return _routeIsCurrent(generation)
+            ? points
+            : const <ServerRoutePoint>[];
+      } catch (_) {
+        // Transient failures use the fallback now and may retry after refresh.
+        // Successful empty GPS-less routes remain cached by the success path.
+        if (identical(_routeCache[activityId], result)) {
+          unawaited(_routeCache.remove(activityId));
+        }
+        return const <ServerRoutePoint>[];
+      } finally {
+        release.complete();
+      }
+    }();
+    _routeCache[activityId] = result;
+    if (_routeCache.length > _routeCacheCapacity) {
+      _routeCache.remove(_routeCache.keys.first);
+    }
+    return result;
+  }
+
+  bool _routeIsCurrent(int generation) =>
+      !isDisposed && !isGuest && generation == _routeGeneration;
+
+  void _clearRoutes() {
+    _routeGeneration++;
+    _routeCache.clear();
+  }
+
   bool _isCurrent(int generation) =>
       !isDisposed && generation == _generation && !isGuest;
 
@@ -140,6 +210,7 @@ class ServerActivitiesController extends SafeNotifier {
 
   @override
   void dispose() {
+    _clearRoutes();
     _generation++;
     _connection.removeListener(_connectionChanged);
     super.dispose();

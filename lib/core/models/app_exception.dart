@@ -10,6 +10,8 @@ enum AppErrorCode {
   activityLocalRecordInvalid,
   activityLocalSaveFailed,
   activityUploadFailed,
+  activityUploadInsufficientGps,
+  activityUploadInvalidGpx,
   activityUploadNotConfigured,
   serverActivitiesFetchFailed,
   fetchProvidersFailed,

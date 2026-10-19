@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../helpers/fake_share_service.dart';
+import '../../../helpers/uploadable_gpx.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
@@ -82,7 +83,11 @@ void main() {
     });
 
     test('loadRoute returns null when the GPX has no track points', () async {
-      final record = await _createRecord(repository, id: 'empty_route');
+      final record = await _createRecord(
+        repository,
+        id: 'empty_route',
+        gpx: '<gpx />',
+      );
       final controller = LocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(201),
@@ -313,8 +318,9 @@ void main() {
 Future<LocalActivityRecord> _createRecord(
   LocalActivityRepository repository, {
   required String id,
+  String gpx = uploadableRunGpx,
 }) async {
-  final fileName = await repository.writeGpx(id: id, gpx: '<gpx />');
+  final fileName = await repository.writeGpx(id: id, gpx: gpx);
   final record = LocalActivityRecord(
     id: id,
     activityType: ActivityType.run,

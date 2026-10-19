@@ -66,6 +66,7 @@ dependencies:
 
   # HTTP client for API requests
   http: ^1.2.2
+  xml: ^7.0.1
 
   # Crypto utilities for PKCE
   crypto: ^3.0.6

@@ -1618,4 +1618,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get homeGoalSwim => 'Schwimmen';
+
+  @override
+  String get errorActivityUploadInsufficientGps =>
+      'Diese Aktivität enthält zu wenige GPS-Punkte zum Hochladen. Erforderlich sind mindestens zwei GPS-Punkte mit Zeitangabe im selben Aufzeichnungsabschnitt. Die lokale Aufnahme bleibt gespeichert und kann exportiert werden.';
+
+  @override
+  String get errorActivityUploadInvalidGpx =>
+      'Die gespeicherte GPX-Datei konnte nicht gelesen werden. Die lokale Aufnahme bleibt erhalten und kann exportiert werden.';
 }

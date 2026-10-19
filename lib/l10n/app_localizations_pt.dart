@@ -1609,4 +1609,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get homeGoalSwim => 'Natação';
+
+  @override
+  String get errorActivityUploadInsufficientGps =>
+      'Esta atividade tem poucos pontos GPS para enviar. São necessários pelo menos dois pontos GPS com data e hora no mesmo segmento da gravação. A gravação local permanece guardada e pode ser exportada.';
+
+  @override
+  String get errorActivityUploadInvalidGpx =>
+      'Não foi possível ler o ficheiro GPX guardado. A gravação local permanece guardada e pode ser exportada.';
 }

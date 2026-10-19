@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
+
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/server_activities/controllers/server_activities_controller.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
 import 'package:endurain/features/server_activities/models/server_activity_query.dart';
-import 'package:endurain/features/server_activities/widgets/server_activity_list_item.dart';
+import 'package:endurain/features/home/widgets/home_activity_card.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
@@ -192,7 +194,8 @@ class _ServerActivitiesScreenState extends State<ServerActivitiesScreen>
                   child: ListView.builder(
                     controller: _scroll,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(0),
                     itemCount: _controller.items.isEmpty
                         ? 1
                         : _controller.items.length + 1,
@@ -202,16 +205,15 @@ class _ServerActivitiesScreenState extends State<ServerActivitiesScreen>
                         return _footer(l10n);
                       }
                       final activity = _controller.items[index];
-                      return Column(
-                        children: [
-                          ServerActivityListItem(
-                            activity: activity,
-                            onTap: widget.onOpenActivity == null
-                                ? null
-                                : () => widget.onOpenActivity!(activity),
-                          ),
-                          const Divider(height: 1, indent: 68),
-                        ],
+                      return HomeActivityCard(
+                        key: ValueKey((
+                          _controller.connectionId,
+                          _controller.previewRevision,
+                          activity,
+                        )),
+                        activity: activity,
+                        loadRoute: () => _controller.loadRoute(activity.id),
+                        onTap: () => widget.onOpenActivity?.call(activity),
                       );
                     },
                   ),
