@@ -32,6 +32,7 @@ exec docker run --rm --init --name gh-runner-endurain-1 \
   -e GRADLE_USER_HOME=/opt/gradle-home -e XDG_CONFIG_HOME=/opt/flutter-config \
   --mount "type=bind,src=$toolchain/flutter,dst=/seed/flutter,readonly" \
   --mount "type=bind,src=$toolchain/android-sdk,dst=/seed/android-sdk,readonly" \
+  --mount type=bind,src=/home/nilius/sdks/android-sdk,dst=/home/nilius/sdks/android-sdk,readonly \
   --mount type=bind,src=/home/nilius/sdks/jdk17,dst=/seed/jdk17,readonly \
   --mount "type=bind,src=$runner_dir/init.sh,dst=/endurain-init.sh,readonly" \
   -v endurain-flutter-sdk:/opt/flutter \

@@ -2,7 +2,12 @@
 set -euo pipefail
 # Seed independent persistent SDK volumes once. Host SDKs remain read-only.
 for sdk in flutter android-sdk jdk17; do
-  if [[ ! -f "/opt/$sdk/.endurain-seeded" ]]; then
+  if [[ "$sdk" == android-sdk && ! -f /opt/android-sdk/.endurain-seeded-v2 ]]; then
+    echo 'Seeding Android SDK with host symlinks resolved'
+    find /opt/android-sdk -type l -delete
+    cp -aL /seed/android-sdk/. /opt/android-sdk/
+    touch /opt/android-sdk/.endurain-seeded-v2
+  elif [[ "$sdk" != android-sdk && ! -f "/opt/$sdk/.endurain-seeded" ]]; then
     echo "Seeding isolated $sdk volume"
     cp -a "/seed/$sdk/." "/opt/$sdk/"
     touch "/opt/$sdk/.endurain-seeded"
