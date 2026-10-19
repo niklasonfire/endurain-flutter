@@ -40,6 +40,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     // that build it without supplying services — there is no shared global.
     _services = widget.services ?? AppServices();
     WidgetsBinding.instance.addObserver(this);
+    // Restore before the recording screen is opened. The app-lifetime
+    // controller also serializes a quick tap on Start with this recovery.
+    unawaited(_services.activityRecordingController.recoverActiveRecording());
     _ownsSessionController = widget.sessionController == null;
     _sessionController =
         widget.sessionController ??
@@ -122,7 +125,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   }
 
   void _onLogout() {
-    // Local-first: signing out drops back to the map in guest mode rather than
+    // Local-first: signing out drops back to Home in guest mode rather than
     // gating the app behind the login screen.
     _sessionController.continueAsGuest();
   }

@@ -1776,5 +1776,132 @@
   "chartSpm": "spm",
   "@chartSpm": {
     "description": "Activity chart: chartSpm"
+  },
+  "homeTab": "Início",
+  "@homeTab": {
+    "description": "Home screen: homeTab"
+  },
+  "homeGreeting": "Cada atividade conta.",
+  "@homeGreeting": {
+    "description": "Home screen: homeGreeting"
+  },
+  "homeWeek": "A tua semana",
+  "@homeWeek": {
+    "description": "Home screen: homeWeek"
+  },
+  "homeActiveTime": "Tempo em movimento",
+  "@homeActiveTime": {
+    "description": "Home screen: homeActiveTime"
+  },
+  "homeDailyTime": "Tempo ativo por dia",
+  "@homeDailyTime": {
+    "description": "Home screen: homeDailyTime"
+  },
+  "homeGoals": "Os teus objetivos",
+  "@homeGoals": {
+    "description": "Home screen: homeGoals"
+  },
+  "homeAllGoals": "Todos os objetivos",
+  "@homeAllGoals": {
+    "description": "Home screen: homeAllGoals"
+  },
+  "homeRecent": "Conquistas recentes",
+  "@homeRecent": {
+    "description": "Home screen: homeRecent"
+  },
+  "homeAllActivities": "Todas as atividades",
+  "@homeAllActivities": {
+    "description": "Home screen: homeAllActivities"
+  },
+  "homeRecordActivity": "Registar atividade",
+  "@homeRecordActivity": {
+    "description": "Home screen: homeRecordActivity"
+  },
+  "homeReturnToRecording": "Voltar à gravação",
+  "@homeReturnToRecording": {
+    "description": "Home screen: homeReturnToRecording"
+  },
+  "homeRecordingActive": "Gravação em curso",
+  "@homeRecordingActive": {
+    "description": "Home screen: homeRecordingActive"
+  },
+  "homeRecordingPaused": "Gravação em pausa",
+  "@homeRecordingPaused": {
+    "description": "Home screen: homeRecordingPaused"
+  },
+  "homeNoGoals": "Define os teus objetivos no Endurain para veres aqui o teu progresso.",
+  "@homeNoGoals": {
+    "description": "Home screen: homeNoGoals"
+  },
+  "homeGuestGoals": "Liga a tua conta Endurain para veres os teus objetivos.",
+  "@homeGuestGoals": {
+    "description": "Home screen: homeGuestGoals"
+  },
+  "homeNoActivities": "A tua próxima atividade começa aqui.",
+  "@homeNoActivities": {
+    "description": "Home screen: homeNoActivities"
+  },
+  "homeGoalAchieved": "Objetivo alcançado",
+  "@homeGoalAchieved": {
+    "description": "Home screen: homeGoalAchieved"
+  },
+  "homeLoadFailed": "Não foi possível atualizar. Desliza para baixo para tentar novamente.",
+  "@homeLoadFailed": {
+    "description": "Home screen: homeLoadFailed"
+  },
+  "homeGoalDaily": "Diário",
+  "@homeGoalDaily": {
+    "description": "Home screen: homeGoalDaily"
+  },
+  "homeGoalWeekly": "Semanal",
+  "@homeGoalWeekly": {
+    "description": "Home screen: homeGoalWeekly"
+  },
+  "homeGoalMonthly": "Mensal",
+  "@homeGoalMonthly": {
+    "description": "Home screen: homeGoalMonthly"
+  },
+  "homeGoalYearly": "Anual",
+  "@homeGoalYearly": {
+    "description": "Home screen: homeGoalYearly"
+  },
+  "homeGoalCalories": "Calorias",
+  "@homeGoalCalories": {
+    "description": "Home screen: homeGoalCalories"
+  },
+  "homePendingUploads": "As atividades a aguardar envio não estão incluídas nos totais do servidor.",
+  "@homePendingUploads": {
+    "description": "Home screen: homePendingUploads"
+  },
+  "homeActivitiesCount": "{count} atividades",
+  "@homeActivitiesCount": {
+    "description": "Home screen: homeActivitiesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeActiveDays": "Em movimento em {count} dias. Muito bem!",
+  "@homeActiveDays": {
+    "description": "Home screen: homeActiveDays",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeGoalRemaining": "Faltam {value} para o teu objetivo",
+  "@homeGoalRemaining": {
+    "description": "Home screen: homeGoalRemaining",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "homeGoalSwim": "Natação",
+  "@homeGoalSwim": {
+    "description": "Generic swimming sport label for Endurain goal categories - Used in: home_goal_card.dart"
   }
 }

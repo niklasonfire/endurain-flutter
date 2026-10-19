@@ -46,6 +46,11 @@ Used by: `features/settings/screens/settings_screen.dart`, `features/settings/sc
 - Server configuration (serverUrl, tileServerUrl, loggedIn)
 - Save messages (savedSuccessfully)
 
+### 7. **HOME**
+Used by: `features/home/` and the bottom navigation
+- Weekly overview, goal progress, recent activities and fixed recording action
+- Home strings are translated in English, German and Portuguese; other locales currently use the English fallback.
+
 ## Adding New Translations
 
 When adding a new translation:

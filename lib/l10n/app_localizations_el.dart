@@ -1522,4 +1522,97 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get chartSpm => 'spm';
+
+  @override
+  String get homeTab => 'Home';
+
+  @override
+  String get homeGreeting => 'Every activity counts.';
+
+  @override
+  String get homeWeek => 'Your week';
+
+  @override
+  String get homeActiveTime => 'Time in motion';
+
+  @override
+  String get homeDailyTime => 'Active time per day';
+
+  @override
+  String get homeGoals => 'Your goals';
+
+  @override
+  String get homeAllGoals => 'All goals';
+
+  @override
+  String get homeRecent => 'Recently achieved';
+
+  @override
+  String get homeAllActivities => 'All activities';
+
+  @override
+  String get homeRecordActivity => 'Record Activity';
+
+  @override
+  String get homeReturnToRecording => 'Return to recording';
+
+  @override
+  String get homeRecordingActive => 'Recording in progress';
+
+  @override
+  String get homeRecordingPaused => 'Recording paused';
+
+  @override
+  String get homeNoGoals =>
+      'Set your goals in Endurain to see your progress here.';
+
+  @override
+  String get homeGuestGoals =>
+      'Connect your Endurain account to see your goals.';
+
+  @override
+  String get homeNoActivities => 'Your next activity starts here.';
+
+  @override
+  String get homeGoalAchieved => 'Goal reached';
+
+  @override
+  String get homeLoadFailed => 'Could not update. Pull down to retry.';
+
+  @override
+  String get homeGoalDaily => 'Daily';
+
+  @override
+  String get homeGoalWeekly => 'Weekly';
+
+  @override
+  String get homeGoalMonthly => 'Monthly';
+
+  @override
+  String get homeGoalYearly => 'Yearly';
+
+  @override
+  String get homeGoalCalories => 'Calories';
+
+  @override
+  String get homePendingUploads =>
+      'Activities awaiting upload are not included in server totals.';
+
+  @override
+  String homeActivitiesCount(int count) {
+    return '$count activities';
+  }
+
+  @override
+  String homeActiveDays(int count) {
+    return 'In motion on $count days. Well done!';
+  }
+
+  @override
+  String homeGoalRemaining(String value) {
+    return '$value to your goal';
+  }
+
+  @override
+  String get homeGoalSwim => 'Swimming';
 }

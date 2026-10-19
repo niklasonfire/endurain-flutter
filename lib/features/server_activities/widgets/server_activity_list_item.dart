@@ -7,9 +7,15 @@ import 'package:material_ui/material_ui.dart';
 
 /// Mirrors the web list: sport icon, name, date/location, compact metrics.
 class ServerActivityListItem extends StatelessWidget {
-  const ServerActivityListItem({super.key, required this.activity, this.onTap});
+  const ServerActivityListItem({
+    super.key,
+    required this.activity,
+    this.onTap,
+    this.showSportIcon = true,
+  });
   final ServerActivity activity;
   final VoidCallback? onTap;
+  final bool showSportIcon;
 
   static bool usesPace(int type) => ServerActivityFormatter.usesPace(type);
   static bool isDistanceBased(int type) =>
@@ -79,15 +85,17 @@ class ServerActivityListItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Tooltip(
-                message: l10n.serverActivitySport('${activity.activityType}'),
-                child: CircleAvatar(
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  foregroundColor: theme.colorScheme.onSurfaceVariant,
-                  child: Icon(sportIcon(activity.activityType)),
+              if (showSportIcon) ...[
+                Tooltip(
+                  message: l10n.serverActivitySport('${activity.activityType}'),
+                  child: CircleAvatar(
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    foregroundColor: theme.colorScheme.onSurfaceVariant,
+                    child: Icon(sportIcon(activity.activityType)),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,3 +1,7 @@
+import 'package:endurain/features/home/controllers/home_controller.dart';
+import 'package:endurain/features/goals/repositories/goals_repository.dart';
+import 'package:endurain/features/goals/repositories/api_goals_repository.dart';
+import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/statistics/controllers/statistics_controller.dart';
 import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
 import 'package:endurain/features/statistics/repositories/api_statistics_repository.dart';
@@ -138,6 +142,38 @@ class AppServices {
   }) => StatisticsController(
     repository: repository ?? statistics,
     connection: authSession.connectionChanges,
+  );
+
+  late final GoalsRepository goals = ApiGoalsRepository(
+    apiClient: apiClient,
+    sessionStore: authSession,
+  );
+
+  HomeController createHomeController({
+    StatisticsRepository? statisticsRepository,
+    ServerActivitiesRepository? activitiesRepository,
+    GoalsRepository? goalsRepository,
+  }) => HomeController(
+    statisticsRepository: statisticsRepository ?? statistics,
+    activitiesRepository: activitiesRepository ?? serverActivities,
+    goalsRepository: goalsRepository ?? goals,
+    connection: authSession.connectionChanges,
+    loadLocalActivities: localActivities.list,
+    loadPendingUploads: () async {
+      final profile = await authSession.getConnectionProfile();
+      if (profile == null) return 0;
+      final records = await localActivities.listByUploadStatus({
+        LocalActivityUploadStatus.pending,
+        LocalActivityUploadStatus.failed,
+      });
+      return records
+          .where(
+            (r) =>
+                r.connectionOrigin == profile.origin &&
+                r.connectionProfileId == profile.id,
+          )
+          .length;
+    },
   );
 
   // ── Activity ───────────────────────────────────────────────────────────────

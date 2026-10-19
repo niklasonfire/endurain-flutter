@@ -2653,6 +2653,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'spm'**
   String get chartSpm;
+
+  /// Home screen: homeTab
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeTab;
+
+  /// Home screen: homeGreeting
+  ///
+  /// In en, this message translates to:
+  /// **'Every activity counts.'**
+  String get homeGreeting;
+
+  /// Home screen: homeWeek
+  ///
+  /// In en, this message translates to:
+  /// **'Your week'**
+  String get homeWeek;
+
+  /// Home screen: homeActiveTime
+  ///
+  /// In en, this message translates to:
+  /// **'Time in motion'**
+  String get homeActiveTime;
+
+  /// Home screen: homeDailyTime
+  ///
+  /// In en, this message translates to:
+  /// **'Active time per day'**
+  String get homeDailyTime;
+
+  /// Home screen: homeGoals
+  ///
+  /// In en, this message translates to:
+  /// **'Your goals'**
+  String get homeGoals;
+
+  /// Home screen: homeAllGoals
+  ///
+  /// In en, this message translates to:
+  /// **'All goals'**
+  String get homeAllGoals;
+
+  /// Home screen: homeRecent
+  ///
+  /// In en, this message translates to:
+  /// **'Recently achieved'**
+  String get homeRecent;
+
+  /// Home screen: homeAllActivities
+  ///
+  /// In en, this message translates to:
+  /// **'All activities'**
+  String get homeAllActivities;
+
+  /// Home screen: homeRecordActivity
+  ///
+  /// In en, this message translates to:
+  /// **'Record Activity'**
+  String get homeRecordActivity;
+
+  /// Home screen: homeReturnToRecording
+  ///
+  /// In en, this message translates to:
+  /// **'Return to recording'**
+  String get homeReturnToRecording;
+
+  /// Home screen: homeRecordingActive
+  ///
+  /// In en, this message translates to:
+  /// **'Recording in progress'**
+  String get homeRecordingActive;
+
+  /// Home screen: homeRecordingPaused
+  ///
+  /// In en, this message translates to:
+  /// **'Recording paused'**
+  String get homeRecordingPaused;
+
+  /// Home screen: homeNoGoals
+  ///
+  /// In en, this message translates to:
+  /// **'Set your goals in Endurain to see your progress here.'**
+  String get homeNoGoals;
+
+  /// Home screen: homeGuestGoals
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Endurain account to see your goals.'**
+  String get homeGuestGoals;
+
+  /// Home screen: homeNoActivities
+  ///
+  /// In en, this message translates to:
+  /// **'Your next activity starts here.'**
+  String get homeNoActivities;
+
+  /// Home screen: homeGoalAchieved
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached'**
+  String get homeGoalAchieved;
+
+  /// Home screen: homeLoadFailed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update. Pull down to retry.'**
+  String get homeLoadFailed;
+
+  /// Home screen: homeGoalDaily
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get homeGoalDaily;
+
+  /// Home screen: homeGoalWeekly
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get homeGoalWeekly;
+
+  /// Home screen: homeGoalMonthly
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get homeGoalMonthly;
+
+  /// Home screen: homeGoalYearly
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get homeGoalYearly;
+
+  /// Home screen: homeGoalCalories
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get homeGoalCalories;
+
+  /// Home screen: homePendingUploads
+  ///
+  /// In en, this message translates to:
+  /// **'Activities awaiting upload are not included in server totals.'**
+  String get homePendingUploads;
+
+  /// Home screen: homeActivitiesCount
+  ///
+  /// In en, this message translates to:
+  /// **'{count} activities'**
+  String homeActivitiesCount(int count);
+
+  /// Home screen: homeActiveDays
+  ///
+  /// In en, this message translates to:
+  /// **'In motion on {count} days. Well done!'**
+  String homeActiveDays(int count);
+
+  /// Home screen: homeGoalRemaining
+  ///
+  /// In en, this message translates to:
+  /// **'{value} to your goal'**
+  String homeGoalRemaining(String value);
+
+  /// Generic swimming sport label for Endurain goal categories - Used in: home_goal_card.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Swimming'**
+  String get homeGoalSwim;
 }
 
 class _AppLocalizationsDelegate

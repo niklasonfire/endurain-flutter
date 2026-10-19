@@ -96,9 +96,6 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       controller.initialize();
     }
     _controller.initialize();
-    if (widget.activityController == null) {
-      unawaited(_activityController.recoverActiveRecording());
-    }
   }
 
   @override
@@ -365,6 +362,9 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
 
     return AdaptiveScaffold(
       safeArea: false,
+      leading: Navigator.of(context).canPop()
+          ? AdaptiveBackButton(onPressed: () => Navigator.of(context).pop())
+          : null,
       body: Stack(
         children: [
           FlutterMap(

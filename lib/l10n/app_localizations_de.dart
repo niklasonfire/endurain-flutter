@@ -1524,4 +1524,98 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chartSpm => 'Schritte/min';
+
+  @override
+  String get homeTab => 'Home';
+
+  @override
+  String get homeGreeting => 'Jede Aktivität zählt.';
+
+  @override
+  String get homeWeek => 'Deine Woche';
+
+  @override
+  String get homeActiveTime => 'Aktiv gewesen';
+
+  @override
+  String get homeDailyTime => 'Aktive Zeit pro Tag';
+
+  @override
+  String get homeGoals => 'Deine Ziele';
+
+  @override
+  String get homeAllGoals => 'Alle Ziele';
+
+  @override
+  String get homeRecent => 'Zuletzt geschafft';
+
+  @override
+  String get homeAllActivities => 'Alle Aktivitäten';
+
+  @override
+  String get homeRecordActivity => 'Record Activity';
+
+  @override
+  String get homeReturnToRecording => 'Zur Aufnahme';
+
+  @override
+  String get homeRecordingActive => 'Aufnahme läuft';
+
+  @override
+  String get homeRecordingPaused => 'Aufnahme pausiert';
+
+  @override
+  String get homeNoGoals =>
+      'Lege deine Ziele in Endurain an, um hier deinen Fortschritt zu sehen.';
+
+  @override
+  String get homeGuestGoals =>
+      'Verbinde dein Endurain-Konto, um deine Ziele zu sehen.';
+
+  @override
+  String get homeNoActivities => 'Deine nächste Aktivität beginnt hier.';
+
+  @override
+  String get homeGoalAchieved => 'Ziel erreicht';
+
+  @override
+  String get homeLoadFailed =>
+      'Aktualisierung fehlgeschlagen. Zum Wiederholen herunterziehen.';
+
+  @override
+  String get homeGoalDaily => 'Täglich';
+
+  @override
+  String get homeGoalWeekly => 'Wöchentlich';
+
+  @override
+  String get homeGoalMonthly => 'Monatlich';
+
+  @override
+  String get homeGoalYearly => 'Jährlich';
+
+  @override
+  String get homeGoalCalories => 'Kalorien';
+
+  @override
+  String get homePendingUploads =>
+      'Aktivitäten mit ausstehendem Upload sind noch nicht in den Serverwerten enthalten.';
+
+  @override
+  String homeActivitiesCount(int count) {
+    return '$count Aktivitäten';
+  }
+
+  @override
+  String homeActiveDays(int count) {
+    return 'An $count Tagen in Bewegung. Stark gemacht!';
+  }
+
+  @override
+  String homeGoalRemaining(String value) {
+    return 'Noch $value bis zu deinem Ziel';
+  }
+
+  @override
+  String get homeGoalSwim => 'Schwimmen';
 }

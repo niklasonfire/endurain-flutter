@@ -20,9 +20,16 @@ class AdaptiveTab {
 }
 
 class AdaptiveBottomNavigation extends StatefulWidget {
-  const AdaptiveBottomNavigation({super.key, required this.tabs});
+  const AdaptiveBottomNavigation({
+    super.key,
+    required this.tabs,
+    this.selectedIndex,
+    this.onIndexChanged,
+  });
 
   final List<AdaptiveTab> tabs;
+  final int? selectedIndex;
+  final ValueChanged<int>? onIndexChanged;
 
   @override
   State<AdaptiveBottomNavigation> createState() =>
@@ -30,14 +37,39 @@ class AdaptiveBottomNavigation extends StatefulWidget {
 }
 
 class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
-  int _currentIndex = 0;
+  late int _currentIndex = widget.selectedIndex ?? 0;
+  late final CupertinoTabController _cupertinoController =
+      CupertinoTabController(initialIndex: _currentIndex);
+
+  @override
+  void didUpdateWidget(covariant AdaptiveBottomNavigation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final selected = widget.selectedIndex;
+    if (selected != null && selected != _currentIndex) {
+      _currentIndex = selected;
+      _cupertinoController.index = selected;
+    }
+  }
+
+  void _selectIndex(int index) {
+    setState(() => _currentIndex = index);
+    widget.onIndexChanged?.call(index);
+  }
+
+  @override
+  void dispose() {
+    _cupertinoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     if (PlatformUtils.isApplePlatform) {
       return CupertinoTabScaffold(
+        controller: _cupertinoController,
         tabBar: CupertinoTabBar(
           height: UIConstants.tabBarHeight,
+          onTap: _selectIndex,
           items: [
             for (final tab in widget.tabs)
               BottomNavigationBarItem(
@@ -70,11 +102,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _selectIndex,
         items: [
           for (final tab in widget.tabs)
             BottomNavigationBarItem(
