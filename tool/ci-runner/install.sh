@@ -5,6 +5,7 @@ source_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 test "$(id -un)" = nilius
 docker image inspect teqsas/ci-runner:latest >/dev/null
 docker network inspect ci-net >/dev/null
+docker build -t endurain/ci-runner:2.338.0 "$source_dir"
 install -d "$HOME/ci-runners/endurain-flutter" "$HOME/.config/systemd/user"
 install -m 0755 "$source_dir/run.sh" "$source_dir/init.sh" "$HOME/ci-runners/endurain-flutter/"
 install -m 0644 "$source_dir/gh-runner-endurain.service" "$HOME/.config/systemd/user/"

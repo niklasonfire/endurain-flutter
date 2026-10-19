@@ -8,7 +8,7 @@ toolchain=/home/nilius/Documents/Codex/2026-10-18-ich-nutze-endurain-seit-einige
 for source_dir in "$toolchain/flutter" "$toolchain/android-sdk" /home/nilius/sdks/jdk17; do
   test -d "$source_dir"
 done
-docker image inspect teqsas/ci-runner:latest >/dev/null
+docker image inspect endurain/ci-runner:2.338.0 >/dev/null
 docker network inspect ci-net >/dev/null
 
 # Use the explicitly selected existing account without changing gh's active user.
@@ -40,4 +40,4 @@ exec docker run --rm --init --name gh-runner-endurain-1 \
   -v endurain-gradle:/opt/gradle-home \
   -v endurain-pub:/root/.pub-cache \
   -v ci-dind-endurain-1:/var/lib/docker \
-  --entrypoint /bin/bash teqsas/ci-runner:latest /endurain-init.sh
+  --entrypoint /bin/bash endurain/ci-runner:2.338.0 /endurain-init.sh

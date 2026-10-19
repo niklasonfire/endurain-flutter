@@ -44,6 +44,11 @@ the existing `teqsas/ci-runner:latest` image, `ci-net` network, Docker access,
 and the saved `niklasonfire` GitHub CLI credential with repository admin rights.
 It does not switch the CLI's active account.
 
+Installation builds `endurain/ci-runner:2.338.0` from the existing host image,
+updating only the Actions runner to the pinned official release with its
+SHA256 verified. The existing runner pools keep their original image. Update
+the pinned version/checksum and image references here when GitHub retires it.
+
 The launcher obtains a short-lived repository registration token for each
 container; the long-lived GitHub credential stays on the host. Each runner
 accepts one job and is then replaced by systemd. Containers are privileged
