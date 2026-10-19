@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   format:
+    if: github.repository != 'niklasonfire/endurain-flutter'
     name: Format
     runs-on: ubuntu-latest
     container:
@@ -38,6 +39,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
   analyze:
+    if: github.repository != 'niklasonfire/endurain-flutter'
     name: Analyze
     runs-on: ubuntu-latest
     container:
@@ -55,6 +57,7 @@ jobs:
         run: flutter analyze
 
   test:
+    if: github.repository != 'niklasonfire/endurain-flutter'
     name: Test
     runs-on: ubuntu-latest
     container:
@@ -85,6 +88,7 @@ jobs:
           --exclude 'lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart'
 
   android-unit-test:
+    if: github.repository != 'niklasonfire/endurain-flutter'
     name: Android unit tests
     runs-on: ubuntu-latest
     container:
@@ -122,6 +126,7 @@ jobs:
         run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
 
   android-build:
+    if: github.repository != 'niklasonfire/endurain-flutter'
     name: Android build
     runs-on: ubuntu-latest
     container:

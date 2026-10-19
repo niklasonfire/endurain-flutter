@@ -28,9 +28,9 @@ permissions:
 jobs:
   build-android:
     name: Build Android APK
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+    runs-on: ${{ github.repository == 'niklasonfire/endurain-flutter' && fromJSON('["self-hosted","linux","x64","dind","endurain-flutter"]') || 'ubuntu-latest' }}
+    # The local runner already provides Flutter/Android. Upstream uses its image.
+    container: ${{ fromJSON(github.repository == 'niklasonfire/endurain-flutter' && 'null' || '{"image":"ghcr.io/endurain-project/endurain-flutter-ci:3.47.3"}') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -128,7 +128,6 @@ jobs:
             -XX:ReservedCodeCacheSize=128m
           ENDURAIN_CRASH_REPORTING_DSN: ${{ vars.ENDURAIN_CRASH_REPORTING_DSN }}
         run: |
-          pkill -f 'GradleDaemon' || true
           flutter build apk --release \
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \

@@ -21,14 +21,14 @@ permissions:
 
 env:
   # Published alongside this repository in GitHub Container Registry.
-  IMAGE_NAME: ghcr.io/endurain-project/endurain-flutter-ci
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/endurain-flutter-ci
   # Keep in sync with docker/flutter-build/Dockerfile and the CI workflows.
   IMAGE_TAG: '3.47.3'
 
 jobs:
   build-image:
     name: Build and push builder image
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository == 'niklasonfire/endurain-flutter' && fromJSON('["self-hosted","linux","x64","dind","endurain-flutter"]') || 'ubuntu-latest' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

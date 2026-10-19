@@ -1,0 +1,95 @@
+name: Local runner CI
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**', 'ci/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      smoke_only:
+        description: Only verify runner and toolchain connectivity
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  FLUTTER_VERSION: 3.47.3
+
+jobs:
+  verify:
+    # The privileged runner is reserved for code from this fork.
+    if: >-
+      github.repository == 'niklasonfire/endurain-flutter' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, linux, x64, dind, endurain-flutter]
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify runner and toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global --add safe.directory "$FLUTTER_HOME"
+          flutter --version
+          flutter --version --machine | python3 -c 'import json,sys; assert json.load(sys.stdin)["frameworkVersion"] == "3.47.3"'
+          java -version
+          test -x "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner"
+          docker info --format '{{.ServerVersion}}'
+
+      - name: Set up dependencies
+        if: ${{ !inputs.smoke_only }}
+        uses: ./.github/actions/setup-flutter
+
+      - name: Check formatting
+        if: ${{ !inputs.smoke_only }}
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        if: ${{ !inputs.smoke_only }}
+        run: flutter analyze
+
+      - name: Tests and coverage
+        if: ${{ !inputs.smoke_only }}
+        run: |
+          set -euo pipefail
+          flutter test --coverage
+          dart run tool/check_coverage.dart \
+            --min-line-coverage 80 --min-file-line-coverage 60 \
+            --exclude 'lib/l10n/app_localizations*.dart' \
+            --exclude 'lib/core/theme/app_theme_tokens.dart' \
+            --exclude 'lib/core/navigation/app_routes.dart' \
+            --exclude 'lib/shared/widgets/app_bottom_nav.dart' \
+            --exclude 'lib/core/services/platform/*.dart' \
+            --exclude 'lib/features/health/services/health_package_platform_adapter.dart' \
+            --exclude 'lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart'
+
+      - name: Android unit tests
+        if: ${{ !inputs.smoke_only }}
+        run: |
+          set -euo pipefail
+          flutter build apk --config-only
+          cd android
+          ./gradlew :app:testDebugUnitTest --console=plain --max-workers=2
+
+      - name: Build debug APK
+        if: ${{ !inputs.smoke_only }}
+        run: flutter build apk --debug --target-platform android-arm64 --dart-define=ENDURAIN_CRASH_REPORTING_DSN=
+
+      - name: Upload debug APK
+        if: ${{ !inputs.smoke_only }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: endurain-local-debug-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
