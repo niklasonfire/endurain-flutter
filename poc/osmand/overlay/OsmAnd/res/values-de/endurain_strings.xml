@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="endurain_health_rationale">Endurain-Gesundheitsdaten\n\nEndurain liest Trainingseinheiten, Routen, Herzfrequenz, Distanz, Kalorien und Schritte nur zum Import ausgewählter Aktivitäten.\n\nAusgewählte Routendaten werden auf diesem Gerät gespeichert und nur zum verbundenen Endurain-Server hochgeladen.</string>
+</resources>

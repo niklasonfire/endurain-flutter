@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="endurain_health_rationale">Endurain health data\n\nEndurain reads workouts, routes, heart rate, distance, calories, and steps only to import selected activities.\n\nSelected route data is stored on this device and uploaded only to the Endurain server you connect.</string>
+</resources>
