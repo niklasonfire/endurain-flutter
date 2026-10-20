@@ -96,6 +96,96 @@ void main() {
       expect(result.sports.last.hasDistance, isFalse);
     },
   );
+  for (final period in StatisticsPeriod.values) {
+    test(
+      'running filter preserves aggregate totals for ${period.name}',
+      () async {
+        final repo = repository((request) async {
+          // v0.19.4 returns display names with a " workout" suffix, but
+          // resolves the type filter against the canonical name ("Run").
+          final type = request.url.queryParameters['type'];
+          final hasRun = type == null || type.toLowerCase() == 'run';
+          final metrics = {
+            'total_distance': hasRun ? 7050 : 0,
+            'total_duration': hasRun ? 3143 : 0,
+            'total_elevation_gain': hasRun ? 257 : 0,
+            'activity_count': hasRun ? 1 : 0,
+          };
+          return http.Response(
+            jsonEncode({
+              ...metrics,
+              'breakdown': [
+                {
+                  switch (period) {
+                    StatisticsPeriod.week => 'day_of_week',
+                    StatisticsPeriod.month => 'week_number',
+                    StatisticsPeriod.year => 'month_number',
+                  }: 1,
+                  ...metrics,
+                },
+              ],
+              'type_breakdown': [
+                if (hasRun)
+                  {
+                    'activity_type_id': 1,
+                    'activity_type': 'Run workout',
+                    ...metrics,
+                  },
+              ],
+            }),
+            200,
+          );
+        });
+        final date = DateTime(2026, 10, 20);
+        final all = await repo.fetch(
+          StatisticsQuery(period: period, date: date),
+        );
+        expect(all.totals.count, 1);
+        final running = await repo.fetch(
+          StatisticsQuery(period: period, date: date, sport: all.sports.single),
+        );
+        expect(running.totals.count, all.totals.count);
+        expect(running.distanceMeters, 7050);
+        expect(running.totals.durationSeconds, 3143);
+        expect(running.totals.elevationMeters, 257);
+        expect(running.buckets.single.metrics.count, 1);
+      },
+    );
+  }
+  for (final names in {
+    'Run': 'Run',
+    'Trail run workout': 'Trail run',
+    'Open water swim workout': 'Open water swim',
+    'Strength training workout': 'Strength training',
+    'Workout': 'Workout',
+    'Workout workout': 'Workout',
+  }.entries) {
+    test('encodes sport name ${names.key} as ${names.value}', () async {
+      final repo = repository((request) async {
+        expect(request.url.queryParameters['type'], names.value);
+        return http.Response(
+          jsonEncode({
+            'total_distance': 0,
+            'total_duration': 0,
+            'total_elevation_gain': 0,
+            'activity_count': 0,
+            'breakdown': <Object?>[],
+            'type_breakdown': <Object?>[],
+          }),
+          200,
+        );
+      });
+      await repo.fetch(
+        StatisticsQuery(
+          sport: StatisticsSport(
+            id: 1,
+            apiName: names.key,
+            metrics: StatisticsMetrics.zero,
+          ),
+        ),
+      );
+    });
+  }
   test('rejects late responses after account disconnect', () async {
     final response = Completer<http.Response>();
     final started = Completer<void>();

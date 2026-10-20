@@ -13,6 +13,12 @@ class ApiStatisticsRepository implements StatisticsRepository {
        _sessions = sessionStore;
   final ApiClient _api;
   final AuthSessionStore _sessions;
+  // v0.19.4 type_breakdown uses display names such as "Run workout".
+  // Its type filter accepts canonical names such as "Run"; "Workout"
+  // itself is already canonical and must remain intact.
+  static String _sportFilterName(String name) =>
+      name.trim().replaceFirst(RegExp(r' workout$', caseSensitive: false), '');
+
   @override
   Future<ActivityStatistics> fetch(StatisticsQuery query) async {
     final profile = await _sessions.getConnectionProfile();
@@ -26,7 +32,7 @@ class ApiStatisticsRepository implements StatisticsRepository {
       else
         'date':
             '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-      if (query.sport != null) 'type': query.sport!.apiName,
+      if (query.sport != null) 'type': _sportFilterName(query.sport!.apiName),
     };
     final response = await _api.getJson(
       Uri(
