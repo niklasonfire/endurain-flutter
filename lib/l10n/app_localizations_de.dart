@@ -1626,4 +1626,57 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get errorActivityUploadInvalidGpx =>
       'Die gespeicherte GPX-Datei konnte nicht gelesen werden. Die lokale Aufnahme bleibt erhalten und kann exportiert werden.';
+
+  @override
+  String get osmandRecordingsTitle => 'OsmAnd-Aufzeichnungen';
+
+  @override
+  String get osmandRefresh => 'Aufzeichnungen aktualisieren';
+
+  @override
+  String get osmandRecordingsInstructions =>
+      'Die Aufnahme zuerst in OsmAnd beenden und als GPX speichern. Originaldateien bleiben erhalten. Über die Endurain-Schaltfläche auf der nativen Karte zurückkehren.';
+
+  @override
+  String get osmandRecordingsLoadFailed =>
+      'Gespeicherte Aufzeichnungen konnten nicht geladen werden. Bitte aktualisieren.';
+
+  @override
+  String get osmandRecordingsEmpty =>
+      'Noch keine gespeicherten GPX-Aufzeichnungen.';
+
+  @override
+  String get osmandImportTitle => 'OsmAnd-Aufzeichnung importieren?';
+
+  @override
+  String get osmandImportAction => 'Importieren';
+
+  @override
+  String get osmandImportLocalConfirmation =>
+      'Lokal speichern. Diese Kopie bleibt auch nach einer späteren Anmeldung lokal.';
+
+  @override
+  String osmandImportAccountConfirmation(String server) {
+    return 'Lokal speichern und zum aktuell angemeldeten Konto auf $server hochladen. Bereits importierte Dateien behalten ihr ursprüngliches Ziel.';
+  }
+
+  @override
+  String get osmandImportLocalResult =>
+      'Lokal gespeichert. Die Datei behält ihre ursprüngliche lokale Ablage oder Kontozuordnung.';
+
+  @override
+  String get osmandImportQueuedResult =>
+      'Lokal gespeichert. Der Upload wartet und wird nach Möglichkeit erneut versucht.';
+
+  @override
+  String get osmandImportUploadFailed =>
+      'Lokal gespeichert, aber der Upload ist fehlgeschlagen. Unter lokalen Aktivitäten kann er erneut versucht werden.';
+
+  @override
+  String get osmandImportAccountChanged =>
+      'Das Konto wurde gewechselt. Bitte erneut importieren und das Ziel bestätigen.';
+
+  @override
+  String get osmandImportFailed =>
+      'Die Aufzeichnung konnte nicht importiert werden. Bitte als gültigen GPX-Track mit Zeitstempeln speichern und erneut versuchen.';
 }

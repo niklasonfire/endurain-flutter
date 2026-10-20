@@ -67,7 +67,14 @@ class OsmandRecordingImporter {
           idempotencyKey: id,
         );
     await repository.upsert(record);
-    if (destination != null) await uploadQueue.drain();
+    if (destination != null) {
+      try {
+        await uploadQueue.drain();
+      } catch (_) {
+        // Queue infrastructure failure must not disguise a durable local save.
+        // The pending record remains available to normal resume/retry triggers.
+      }
+    }
     return await repository.get(id) ?? record;
   });
 

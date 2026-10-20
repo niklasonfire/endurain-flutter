@@ -1,175 +1,159 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/osmand/osmand_host_bridge.dart';
-import 'package:endurain/features/osmand/osmand_recording_importer.dart';
+import 'package:endurain/features/osmand/osmand_recordings_controller.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 
-/// POC entry point: users explicitly choose a saved track and its destination.
 class OsmandRecordingsScreen extends StatefulWidget {
-  const OsmandRecordingsScreen({super.key});
+  const OsmandRecordingsScreen({super.key, this.controller});
+  final OsmandRecordingsController? controller;
   @override
   State<OsmandRecordingsScreen> createState() => _OsmandRecordingsScreenState();
 }
 
-class _OsmandRecordingsScreenState extends State<OsmandRecordingsScreen> {
-  static const _bridge = OsmandHostBridge();
-  late Future<List<OsmandRecording>> _recordings;
-  ActivityType _type = ActivityType.other;
-  bool _busy = false;
-  String? _message;
-
+class _OsmandRecordingsScreenState extends State<OsmandRecordingsScreen>
+    with OwnedControllers {
+  late final OsmandRecordingsController _controller;
   @override
   void initState() {
     super.initState();
-    _recordings = _bridge.listCompletedRecordings();
+    _controller = registerController(
+      widget.controller,
+      () => AppScope.servicesOf(
+        context,
+        listen: false,
+      ).createOsmandRecordingsController(),
+    );
+    unawaited(_controller.refresh());
   }
 
-  Future<void> _import(OsmandRecording recording) async {
-    final services = AppScope.servicesOf(context, listen: false);
-    setState(() {
-      _busy = true;
-      _message = null;
-    });
-    try {
-      final destination = await services.authSession.getConnectionProfile();
-      if (!mounted) return;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('OsmAnd-Aufzeichnung importieren?'),
-          content: Text(
-            destination == null
-                ? 'Lokal speichern. Diese Kopie wird auch nach einer späteren Anmeldung nicht automatisch hochgeladen.'
-                : 'Lokal speichern und zum aktuell angemeldeten Konto auf ${destination.origin} hochladen. Bereits importierte Dateien behalten ihr ursprüngliches Zielkonto.',
+  Future<void> _confirmImport(OsmandRecording recording) async {
+    final destination = await _controller.prepareImport();
+    if (!mounted || destination == null) return;
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.osmandImportTitle),
+        content: Text(
+          destination.profile == null
+              ? l10n.osmandImportLocalConfirmation
+              : l10n.osmandImportAccountConfirmation(
+                  destination.profile!.origin,
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.osmandImportAction),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) {
+      _controller.cancelImport();
+      return;
+    }
+    await _controller.importRecording(recording, destination);
+  }
+
+  String _message(AppLocalizations l10n, OsmandImportMessage message) =>
+      switch (message) {
+        OsmandImportMessage.uploaded => l10n.activityUploaded,
+        OsmandImportMessage.local => l10n.osmandImportLocalResult,
+        OsmandImportMessage.queued => l10n.osmandImportQueuedResult,
+        OsmandImportMessage.failed => l10n.osmandImportUploadFailed,
+        OsmandImportMessage.accountChanged => l10n.osmandImportAccountChanged,
+        OsmandImportMessage.importFailed => l10n.osmandImportFailed,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.osmandRecordingsTitle),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Importieren'),
+            IconButton(
+              tooltip: l10n.osmandRefresh,
+              onPressed: _controller.busy || _controller.loading
+                  ? null
+                  : _controller.refresh,
+              icon: const Icon(Icons.refresh),
             ),
           ],
         ),
-      );
-      if (confirmed != true) return;
-      final current = await services.authSession.getConnectionProfile();
-      if (current?.id != destination?.id ||
-          current?.origin != destination?.origin) {
-        throw StateError(
-          'Das Konto wurde gewechselt. Bitte erneut importieren.',
-        );
-      }
-      final record =
-          await OsmandRecordingImporter(
-            repository: services.localActivities,
-            uploadQueue: services.activityUploadQueue,
-          ).importRecording(
-            recording,
-            activityType: _type,
-            destination: destination,
-          );
-      if (!mounted) return;
-      final sameDestination =
-          record.connectionProfileId == destination?.id &&
-          record.connectionOrigin == destination?.origin;
-      setState(
-        () =>
-            _message = record.uploadStatus == LocalActivityUploadStatus.uploaded
-            ? 'Bereits erfolgreich hochgeladen.'
-            : destination == null || !sameDestination
-            ? 'Lokal vorhanden. Die Datei bleibt ihrem bisherigen lokalen Speicher oder Konto zugeordnet.'
-            : 'Lokal gespeichert. Uploadstatus: ${record.uploadStatus.name}. Offline oder fehlgeschlagene Uploads bleiben in der bestehenden Warteschlange.',
-      );
-    } catch (error) {
-      if (mounted) setState(() => _message = 'Import fehlgeschlagen: $error');
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('OsmAnd-Aufzeichnungen'),
-      actions: [
-        IconButton(
-          tooltip: 'Aktualisieren',
-          onPressed: _busy
-              ? null
-              : () => setState(
-                  () => _recordings = _bridge.listCompletedRecordings(),
-                ),
-          icon: const Icon(Icons.refresh),
-        ),
-      ],
-    ),
-    body: Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'Zuerst die Aufnahme in OsmAnd beenden und als GPX speichern. Originaldateien bleiben erhalten. Zum Endurain-Frontend mit Android Zurück wechseln.',
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: DropdownButton<ActivityType>(
-            value: _type,
-            isExpanded: true,
-            onChanged: _busy ? null : (value) => setState(() => _type = value!),
-            items: ActivityType.values
-                .map(
-                  (type) =>
-                      DropdownMenuItem(value: type, child: Text(type.name)),
-                )
-                .toList(),
-          ),
-        ),
-        if (_busy) const LinearProgressIndicator(),
-        if (_message != null)
-          Padding(padding: const EdgeInsets.all(16), child: Text(_message!)),
-        Expanded(
-          child: FutureBuilder<List<OsmandRecording>>(
-            future: _recordings,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Aufzeichnungen konnten nicht gelesen werden: ${snapshot.error}',
-                  ),
-                );
-              }
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final recordings = snapshot.data!;
-              if (recordings.isEmpty) {
-                return const Center(
-                  child: Text('Noch keine gespeicherten GPX-Aufzeichnungen.'),
-                );
-              }
-              return ListView.builder(
-                itemCount: recordings.length,
-                itemBuilder: (context, index) {
-                  final recording = recordings[index];
-                  return ListTile(
-                    title: Text(recording.name),
-                    subtitle: Text(
-                      '${recording.modifiedAt.toLocal()} · ${recording.size} Bytes',
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.osmandRecordingsInstructions),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: DropdownButton<ActivityType>(
+                value: _controller.activityType,
+                isExpanded: true,
+                onChanged: _controller.busy
+                    ? null
+                    : (value) {
+                        if (value != null) _controller.selectType(value);
+                      },
+                items: ActivityType.values
+                    .map(
+                      (type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type.localizedLabel(l10n)),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            if (_controller.busy || _controller.loading)
+              const LinearProgressIndicator(),
+            if (_controller.message != null)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(_message(l10n, _controller.message!)),
+              ),
+            Expanded(
+              child: _controller.loadFailed
+                  ? Center(child: Text(l10n.osmandRecordingsLoadFailed))
+                  : _controller.recordings.isEmpty && !_controller.loading
+                  ? Center(child: Text(l10n.osmandRecordingsEmpty))
+                  : ListView.builder(
+                      itemCount: _controller.recordings.length,
+                      itemBuilder: (context, index) {
+                        final recording = _controller.recordings[index];
+                        final date = DateFormat.yMd(l10n.localeName)
+                            .add_Hm()
+                            .format(recording.modifiedAt.toLocal());
+                        return ListTile(
+                          title: Text(recording.name),
+                          subtitle: Text(date),
+                          trailing: const Icon(Icons.file_download_outlined),
+                          onTap: _controller.busy
+                              ? null
+                              : () => _confirmImport(recording),
+                        );
+                      },
                     ),
-                    trailing: const Icon(Icons.file_download_outlined),
-                    onTap: _busy ? null : () => _import(recording),
-                  );
-                },
-              );
-            },
-          ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }

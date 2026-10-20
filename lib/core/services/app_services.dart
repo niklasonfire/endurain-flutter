@@ -53,6 +53,10 @@ import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 
+import 'package:endurain/features/osmand/osmand_host_bridge.dart';
+import 'package:endurain/features/osmand/osmand_recording_importer.dart';
+import 'package:endurain/features/osmand/osmand_recordings_controller.dart';
+
 /// The application's composition root.
 ///
 /// [AppServices] wires the shared [AppInfrastructure] and the per-feature
@@ -70,6 +74,21 @@ import 'package:endurain/features/settings/controllers/settings_controller.dart'
 ///   cleanup is injected here (see [createLocalActivityHistoryController]).
 class AppServices {
   AppServices({this.config = AppConfig.defaults});
+
+  OsmandRecordingsController createOsmandRecordingsController({
+    OsmandHostBridge bridge = const OsmandHostBridge(),
+    OsmandRecordingImporter? importer,
+  }) => OsmandRecordingsController(
+    bridge: bridge,
+    importer:
+        importer ??
+        OsmandRecordingImporter(
+          repository: localActivities,
+          uploadQueue: activityUploadQueue,
+          bridge: bridge,
+        ),
+    currentProfile: authSession.getConnectionProfile,
+  );
 
   /// Runtime configuration shared by every service.
   final AppConfig config;

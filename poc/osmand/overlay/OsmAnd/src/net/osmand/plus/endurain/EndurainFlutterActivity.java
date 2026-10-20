@@ -149,7 +149,7 @@ public class EndurainFlutterActivity extends FlutterFragmentActivity {
         Button button = new Button(activity);
         button.setTag("endurain-return");
         button.setText("Endurain");
-        button.setContentDescription("Zurück zum Endurain-Frontend");
+        button.setContentDescription("Endurain");
         button.setOnClickListener(v -> activity.startActivity(new Intent(activity, EndurainFlutterActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
         FrameLayout.LayoutParams position = new FrameLayout.LayoutParams(

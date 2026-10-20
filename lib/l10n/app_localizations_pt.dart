@@ -1617,4 +1617,56 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorActivityUploadInvalidGpx =>
       'Não foi possível ler o ficheiro GPX guardado. A gravação local permanece guardada e pode ser exportada.';
+
+  @override
+  String get osmandRecordingsTitle => 'OsmAnd recordings';
+
+  @override
+  String get osmandRefresh => 'Refresh recordings';
+
+  @override
+  String get osmandRecordingsInstructions =>
+      'Finish and save the recording as GPX in OsmAnd first. Original files are preserved. Use the Endurain button on the native map to return here.';
+
+  @override
+  String get osmandRecordingsLoadFailed =>
+      'Saved recordings could not be loaded. Try refreshing.';
+
+  @override
+  String get osmandRecordingsEmpty => 'No saved GPX recordings yet.';
+
+  @override
+  String get osmandImportTitle => 'Import OsmAnd recording?';
+
+  @override
+  String get osmandImportAction => 'Import';
+
+  @override
+  String get osmandImportLocalConfirmation =>
+      'Save locally. This copy will remain local after you sign in later.';
+
+  @override
+  String osmandImportAccountConfirmation(String server) {
+    return 'Save locally and upload to the account currently signed in at $server. Previously imported files keep their original destination.';
+  }
+
+  @override
+  String get osmandImportLocalResult =>
+      'Saved locally. This file keeps its original local storage or account assignment.';
+
+  @override
+  String get osmandImportQueuedResult =>
+      'Saved locally. The upload is queued and will be retried when possible.';
+
+  @override
+  String get osmandImportUploadFailed =>
+      'Saved locally, but upload failed. You can retry from local activities.';
+
+  @override
+  String get osmandImportAccountChanged =>
+      'The account changed. Please import again to confirm the destination.';
+
+  @override
+  String get osmandImportFailed =>
+      'The recording could not be imported. Ensure it is saved as a valid GPX track with timestamps and try again.';
 }
