@@ -43,7 +43,7 @@ wrapper.write_text(wrapper.read_text().replace('gradle-8.9-bin.zip', 'gradle-8.1
 versions = upstream / 'versions.gradle'
 versions.write_text(versions.read_text().replace('osmand_compileSdk = 35', 'osmand_compileSdk = 36').replace('"35.0.0"', '"36.0.0"'))
 shared = upstream / 'OsmAnd-shared/build.gradle.kts'
-shared.write_text(shared.read_text().replace('compileSdk = 35', 'compileSdk = 36\n\tbuildToolsVersion = "36.0.0"'))
+shared.write_text(shared.read_text().replace('kotlin {', 'kotlin {\n\tcompilerOptions {\n\t\tlanguageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)\n\t\tapiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)\n\t}').replace('compileSdk = 35', 'compileSdk = 36\n\tbuildToolsVersion = "36.0.0"').replace('jvmTarget.set(JvmTarget.JVM_17)', 'jvmTarget.set(JvmTarget.JVM_17)\n\t\t\tlanguageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)\n\t\t\tapiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)'))
 strings = upstream / 'OsmAnd/res/values/strings.xml'
 strings.write_text(strings.read_text().replace('<resources>', '<resources>\n    <string name="endurain_return_to_frontend">Endurain</string>', 1))
 manifest = upstream / 'OsmAnd/AndroidManifest.xml'

@@ -17,6 +17,10 @@ android {
             resValue 'string', 'app_name', 'Endurain OsmAnd PoC'
         }
     }
+    kotlinOptions {
+        languageVersion = '2.1'
+        apiVersion = '2.1'
+    }
     signingConfigs {
         endurainPoc {
             if (System.getenv('ANDROID_KEYSTORE_PATH')) {

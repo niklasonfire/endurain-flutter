@@ -19,7 +19,8 @@ root. These helpers reuse that toolchain and never create a signing key.
 The frontend helper creates a disposable module under `build/osmand-poc`.
 The host helper aligns its build with AGP 8.13.2 / Gradle 8.13, Kotlin 2.4.0 and D8/R8 9.1.31
 (the Flutter plugin dependencies require AGP >=8.9.1 and Kotlin 2.4 metadata),
-using the existing JDK17 / Android SDK36 / build-tools36.0.0. It prepares pinned upstream sources, overlays tracked native
+using the existing JDK17 / Android SDK36 / build-tools36.0.0. The original
+Kotlin 2.1 language/API mode is retained for OsmAnd and its shared code. It prepares pinned upstream sources, overlays tracked native
 extensions, and builds `androidFullOpenglArm64Release`. The output lives under
 `poc/osmand/upstream/OsmAnd/build/outputs/apk/`. Only arm64 devices are supported
 by this PoC. Installation and publication are separate actions.
