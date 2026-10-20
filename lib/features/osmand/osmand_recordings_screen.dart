@@ -36,7 +36,7 @@ class _OsmandRecordingsScreenState extends State<OsmandRecordingsScreen>
   Future<void> _confirmImport(OsmandRecording recording) async {
     final destination = await _controller.prepareImport();
     if (!mounted || destination == null) return;
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -79,7 +79,7 @@ class _OsmandRecordingsScreenState extends State<OsmandRecordingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) => Scaffold(
