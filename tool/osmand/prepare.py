@@ -32,14 +32,18 @@ checkout('osmand', POC / 'upstream')
 checkout('resources', POC / 'resources')
 upstream = POC / 'upstream'
 # Only restore tracked upstream files changed by this script; no wholesale clean.
-patched = ['settings.gradle', 'versions.gradle', 'OsmAnd-shared/build.gradle.kts',
+patched = ['settings.gradle', 'build.gradle', 'gradle/wrapper/gradle-wrapper.properties', 'versions.gradle', 'OsmAnd-shared/build.gradle.kts',
            'OsmAnd/AndroidManifest.xml', 'OsmAnd/build.gradle', 'OsmAnd/src/net/osmand/plus/Version.java', 'OsmAnd/res/values/strings.xml']
 run('git', 'restore', '--source=HEAD', '--', *patched, cwd=upstream)
 (upstream / 'settings.gradle').write_text("include ':OsmAnd', ':OsmAnd-java', ':OsmAnd-api', ':OsmAnd-shared'\ngradle.ext.java_shared_conf = ''\n")
+build = upstream / 'build.gradle'
+build.write_text(build.read_text().replace("'2.1.10'", "'2.4.0'").replace('com.android.tools.build:gradle:8.7.3', 'com.android.tools.build:gradle:8.13.2').replace("classpath 'com.android.tools.build:gradle:8.13.2'", "classpath 'com.android.tools.build:gradle:8.13.2'\n        classpath 'com.android.tools:r8:9.1.31'"))
+wrapper = upstream / 'gradle/wrapper/gradle-wrapper.properties'
+wrapper.write_text(wrapper.read_text().replace('gradle-8.9-bin.zip', 'gradle-8.13-bin.zip'))
 versions = upstream / 'versions.gradle'
 versions.write_text(versions.read_text().replace('osmand_compileSdk = 35', 'osmand_compileSdk = 36').replace('"35.0.0"', '"36.0.0"'))
 shared = upstream / 'OsmAnd-shared/build.gradle.kts'
-shared.write_text(shared.read_text().replace('compileSdk = 35', 'compileSdk = 36'))
+shared.write_text(shared.read_text().replace('compileSdk = 35', 'compileSdk = 36\n\tbuildToolsVersion = "36.0.0"'))
 strings = upstream / 'OsmAnd/res/values/strings.xml'
 strings.write_text(strings.read_text().replace('<resources>', '<resources>\n    <string name="endurain_return_to_frontend">Endurain</string>', 1))
 manifest = upstream / 'OsmAnd/AndroidManifest.xml'
