@@ -50,3 +50,8 @@ androidComponents {
         variant.enable = variant.name == 'androidFullOpenglArm64Release'
     }
 }
+// AGP8.13's navigation resource scan also consumes upstream's generated icons.
+// Declare that producer explicitly, as upstream did for mergeResources.
+tasks.matching { it.name.startsWith('process') && it.name.endsWith('NavigationResources') }.configureEach {
+    dependsOn tasks.named('copyIcons')
+}
