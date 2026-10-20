@@ -15,8 +15,10 @@ class OsmandRecording {
 
 /// Reads only saved OsmAnd GPX files; the native recorder owns active sessions.
 class OsmandHostBridge {
-  const OsmandHostBridge();
-  static const _channel = MethodChannel('endurain/osmand_host');
+  const OsmandHostBridge({
+    MethodChannel channel = const MethodChannel('endurain/osmand_host'),
+  }) : _channel = channel;
+  final MethodChannel _channel;
   Future<void> openMap() => _channel.invokeMethod<void>('openMap');
   Future<void> openRecording() => _channel.invokeMethod<void>('openRecording');
   Future<List<OsmandRecording>> listCompletedRecordings() async {
@@ -45,4 +47,24 @@ class OsmandHostBridge {
     if (bytes == null) throw StateError('OsmAnd returned no saved recording.');
     return bytes;
   }
+}
+
+/// Explicit fallback for the standalone app and unsupported platforms.
+class UnsupportedOsmandHostBridge extends OsmandHostBridge {
+  const UnsupportedOsmandHostBridge();
+
+  @override
+  Future<void> openMap() async =>
+      throw UnsupportedError('osmandHostUnavailable');
+
+  @override
+  Future<void> openRecording() async =>
+      throw UnsupportedError('osmandHostUnavailable');
+
+  @override
+  Future<List<OsmandRecording>> listCompletedRecordings() async => const [];
+
+  @override
+  Future<Uint8List> readCompletedRecording(OsmandRecording recording) async =>
+      throw UnsupportedError('osmandHostUnavailable');
 }

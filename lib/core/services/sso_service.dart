@@ -1,4 +1,3 @@
-import 'package:endurain/core/config/osmand_host.dart';
 import 'package:http/http.dart' as http;
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
@@ -43,7 +42,7 @@ class _SsoPkceState {
 class SsoService {
   // v0.19.4 permits the endurain scheme and preserves custom callback hosts.
   // A separate host keeps the original installed app out of this login flow.
-  static const callbackUrl = isOsmandHost
+  static const callbackUrl = AppConfig.osmandHostBuildEnabled
       ? 'endurain://osmand-auth/sso/callback'
       : 'endurain://local-auth/sso/callback';
 

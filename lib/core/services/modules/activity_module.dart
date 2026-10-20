@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/core/config/osmand_host.dart';
 import 'package:async/async.dart';
 import 'package:endurain/core/services/app_infrastructure.dart';
 import 'package:endurain/core/services/modules/auth_module.dart';
@@ -159,7 +158,7 @@ class ActivityModule {
   ActivityLocationRecorder createLocationRecorder({
     LocationService? locationService,
   }) {
-    if (isOsmandHost) {
+    if (_infra.config.osmandHostEnabled) {
       throw StateError(
         'OsmAnd owns recording in this build. Open the host recorder instead.',
       );
@@ -251,7 +250,7 @@ class ActivityModule {
   /// finishes. On iOS and elsewhere the Dart links stay connected throughout, so
   /// reconnection is always allowed. Passed to [SensorsModule] as its gate.
   bool canAutoReconnectSensors() {
-    if (isOsmandHost) return false;
+    if (_infra.config.osmandHostEnabled) return false;
     if (!usesNativeHeartRateHandoff(defaultTargetPlatform)) {
       return true;
     }

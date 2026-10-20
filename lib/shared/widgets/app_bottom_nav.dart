@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/core/config/osmand_host.dart';
-import 'package:endurain/features/osmand/osmand_host_bridge.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
@@ -43,6 +41,7 @@ class AppBottomNav extends StatefulWidget {
 class _AppBottomNavState extends State<AppBottomNav> {
   late final HomeController _home;
   ActivityRecordingController? _recording;
+  late final bool _osmandHostEnabled;
   late final StreamSubscription<void> _uploadSubscription;
   ActivityUploadStatus _lastUploadStatus = ActivityUploadStatus.idle;
   int _selectedIndex = 0;
@@ -53,7 +52,8 @@ class _AppBottomNavState extends State<AppBottomNav> {
     super.initState();
     final services = AppScope.servicesOf(context, listen: false);
     _home = services.createHomeController();
-    if (!isOsmandHost) {
+    _osmandHostEnabled = services.config.osmandHostEnabled;
+    if (!_osmandHostEnabled) {
       final recording = services.activityRecordingController;
       _recording = recording;
       _lastUploadStatus = recording.uploadStatus;
@@ -79,8 +79,11 @@ class _AppBottomNavState extends State<AppBottomNav> {
     if (_recordingScreenOpen) return;
     _recordingScreenOpen = true;
     try {
-      if (isOsmandHost) {
-        await const OsmandHostBridge().openRecording();
+      if (_osmandHostEnabled) {
+        await AppScope.servicesOf(
+          tabContext,
+          listen: false,
+        ).osmandHostBridge.openRecording();
       } else {
         await adaptivePush<void>(tabContext, (_) => const MapScreen());
       }

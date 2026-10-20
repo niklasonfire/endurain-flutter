@@ -15,9 +15,20 @@ class AppConfig {
     this.apiBasePath = defaultApiBasePath,
     this.allowedTileServerHosts,
     this.healthSyncEnabled = true,
+    this.osmandHostEnabled = osmandHostBuildEnabled,
     this.cloudBaseUrl,
     this.crashReportingDsn,
   });
+
+  /// Whether the frontend is embedded in the native OsmAnd application.
+  /// Host builds keep all recording ownership in OsmAnd; standalone builds
+  /// retain their existing recorder. Can be overridden in injected test config.
+  final bool osmandHostEnabled;
+
+  /// Shared compile-time default, also used by the static SSO callback contract.
+  static const bool osmandHostBuildEnabled = bool.fromEnvironment(
+    'ENDURAIN_OSMAND_HOST',
+  );
 
   /// Base path prefix for all Endurain API endpoints.
   ///

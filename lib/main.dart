@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/core/config/osmand_host.dart';
 import 'package:endurain/app.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_services.dart';
@@ -103,7 +102,7 @@ Future<void> main() async {
       // background so they are ready before the user starts recording. Touching
       // each coordinator also starts it listening for Bluetooth becoming ready.
       // Best-effort and self-guarded; a no-op when no sensor was ever paired.
-      if (!isOsmandHost) {
+      if (!services.config.osmandHostEnabled) {
         unawaited(services.reconnectRememberedSensors());
       }
     },
