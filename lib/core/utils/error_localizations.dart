@@ -19,9 +19,6 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
   final details = error.details;
 
   return switch (error.code) {
-    AppErrorCode.achievementCacheFailed ||
-    AppErrorCode.achievementScanFailed ||
-    AppErrorCode.achievementCalculationFailed => l10n.achievementsFailed,
     AppErrorCode.activeActivityStoreReadFailed =>
       l10n.errorActivityLocalLoadFailed,
     AppErrorCode.activeActivityStoreWriteFailed =>

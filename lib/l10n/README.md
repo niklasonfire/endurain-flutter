@@ -51,11 +51,6 @@ Used by: `features/home/` and the bottom navigation
 - Weekly overview, goal progress, recent activities and fixed recording action
 - Home strings are translated in English, German and Portuguese; other locales currently use the English fallback.
 
-### 8. **PERSONAL BESTS**
-
-- `lib/features/achievements/` — rebuildable device calculations, filters, analysis coverage, records and activity links.
-- New achievement messages are translated in English, German and Portuguese. Other locales currently use the English fallback.
-
 ## Adding New Translations
 
 When adding a new translation:

@@ -1,5 +1,3 @@
-import 'package:endurain/features/achievements/screens/personal_bests_screen.dart';
-
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -136,16 +134,6 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               children: [
-                ListTile(
-                  leading: const Icon(Icons.emoji_events_outlined),
-                  title: Text(l10n.achievementsTitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const PersonalBestsScreen(),
-                    ),
-                  ),
-                ),
                 _filters(l10n),
                 if (_controller.isLoading) const LinearProgressIndicator(),
                 if (_controller.error != null) ...[

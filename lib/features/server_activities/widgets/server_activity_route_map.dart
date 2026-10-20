@@ -15,16 +15,12 @@ class ServerActivityRouteMap extends StatefulWidget {
     required this.startLabel,
     required this.finishLabel,
     this.selectedTime,
-    this.effortStart,
-    this.effortEnd,
   });
   final List<ServerRoutePoint> route;
   final String tileServerUrl;
   final String startLabel;
   final String finishLabel;
   final DateTime? selectedTime;
-  final DateTime? effortStart;
-  final DateTime? effortEnd;
 
   @override
   State<ServerActivityRouteMap> createState() => _ServerActivityRouteMapState();
@@ -112,12 +108,6 @@ class _ServerActivityRouteMapState extends State<ServerActivityRouteMap> {
                       strokeWidth: ActivityRouteConstants.strokeWidth,
                       color: colors.primary,
                     ),
-                for (final segment in _effortSegments())
-                  Polyline(
-                    points: segment,
-                    strokeWidth: ActivityRouteConstants.strokeWidth + 3,
-                    color: colors.tertiary,
-                  ),
               ],
             ),
             MarkerLayer(
@@ -157,61 +147,6 @@ class _ServerActivityRouteMapState extends State<ServerActivityRouteMap> {
         ),
       ),
     );
-  }
-
-  // Clip each valid timed interval independently; never draw over missing fixes,
-  // explicit sections, backwards timestamps or the adapter's 60-second gap rule.
-  List<List<LatLng>> _effortSegments() {
-    final start = widget.effortStart;
-    final end = widget.effortEnd;
-    if (start == null || end == null || !end.isAfter(start)) return const [];
-    final result = <List<LatLng>>[];
-    List<LatLng>? section;
-    for (var i = 1; i < widget.route.length; i++) {
-      final a = widget.route[i - 1];
-      final b = widget.route[i];
-      final at = a.time;
-      final bt = b.time;
-      final valid = [a, b].every(
-        (p) =>
-            p.latitude.isFinite &&
-            p.longitude.isFinite &&
-            p.latitude.abs() <= 90 &&
-            p.longitude.abs() <= 180,
-      );
-      if (!valid ||
-          at == null ||
-          bt == null ||
-          b.startsSegment ||
-          !bt.isAfter(at) ||
-          bt.difference(at).inMicroseconds > 60000000 ||
-          !bt.isAfter(start) ||
-          !at.isBefore(end)) {
-        section = null;
-        continue;
-      }
-      final left = at.isBefore(start) ? start : at;
-      final right = bt.isAfter(end) ? end : bt;
-      LatLng interpolate(DateTime time) {
-        final fraction =
-            time.difference(at).inMicroseconds /
-            bt.difference(at).inMicroseconds;
-        final longitudeDelta = ((b.longitude - a.longitude + 540) % 360) - 180;
-        final longitude =
-            ((a.longitude + longitudeDelta * fraction + 540) % 360) - 180;
-        return LatLng(
-          a.latitude + (b.latitude - a.latitude) * fraction,
-          longitude,
-        );
-      }
-
-      if (section == null) {
-        section = [interpolate(left)];
-        result.add(section);
-      }
-      section.add(interpolate(right));
-    }
-    return result;
   }
 
   Marker _marker(LatLng point, Color color, IconData icon, String label) =>
