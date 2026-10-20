@@ -54,6 +54,15 @@ if [[ "${1:-}" == '--prepare-only' ]]; then
   echo "Prepared $module_root"
   exit 0
 fi
+# Keep the generated module within this host's memory budget. The Flutter
+# template defaults to an 8 GB JVM heap, exceeding available physical memory.
+python3 - <<'PYMEM'
+from pathlib import Path
+props = Path('.android/gradle.properties')
+lines = [line for line in props.read_text().splitlines() if not line.startswith(('org.gradle.jvmargs=', 'org.gradle.workers.max=', 'kotlin.compiler.execution.strategy='))]
+lines.extend(['org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g', 'org.gradle.workers.max=2', 'kotlin.compiler.execution.strategy=in-process'])
+props.write_text('\n'.join(lines) + '\n')
+PYMEM
 flutter build aar --no-debug --no-profile --build-number=1.0 \
   --target-platform="${ENDURAIN_OSMAND_TARGET_PLATFORMS:-android-arm64}" \
   --dart-define=ENDURAIN_OSMAND_HOST=true

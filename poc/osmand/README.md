@@ -62,5 +62,5 @@ proof of concept is derived from it. The source repositories and recorded
 revisions are listed in `sources.json`. Any eventual binary distribution must
 provide the corresponding complete source and satisfy upstream and dependency
 licenses. The original APK download is an ignored build input, not a tracked
-redistributable artifact. See upstream `COPYING` and resource/core license
+redistributable artifact. See upstream `LICENSE` and resource/core license
 notices at their pinned source revisions.

@@ -43,3 +43,10 @@ tasks.named('cleanupDuplicatesInCore') { enabled = false }
 dependencies {
     implementation(System.getenv('ENDURAIN_FLUTTER_ARTIFACT') ?: 'dev.endurain.osmand.frontend:flutter_release:1.0')
 }
+// The PoC deliberately builds one release variant instead of configuring all
+// store/core/ABI combinations in upstream's matrix.
+androidComponents {
+    beforeVariants(selector().all()) { variant ->
+        variant.enable = variant.name == 'androidFullOpenglArm64Release'
+    }
+}

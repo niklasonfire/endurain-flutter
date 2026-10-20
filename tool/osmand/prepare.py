@@ -33,13 +33,15 @@ checkout('resources', POC / 'resources')
 upstream = POC / 'upstream'
 # Only restore tracked upstream files changed by this script; no wholesale clean.
 patched = ['settings.gradle', 'versions.gradle', 'OsmAnd-shared/build.gradle.kts',
-           'OsmAnd/AndroidManifest.xml', 'OsmAnd/build.gradle']
+           'OsmAnd/AndroidManifest.xml', 'OsmAnd/build.gradle', 'OsmAnd/src/net/osmand/plus/Version.java', 'OsmAnd/res/values/strings.xml']
 run('git', 'restore', '--source=HEAD', '--', *patched, cwd=upstream)
 (upstream / 'settings.gradle').write_text("include ':OsmAnd', ':OsmAnd-java', ':OsmAnd-api', ':OsmAnd-shared'\ngradle.ext.java_shared_conf = ''\n")
 versions = upstream / 'versions.gradle'
 versions.write_text(versions.read_text().replace('osmand_compileSdk = 35', 'osmand_compileSdk = 36').replace('"35.0.0"', '"36.0.0"'))
 shared = upstream / 'OsmAnd-shared/build.gradle.kts'
 shared.write_text(shared.read_text().replace('compileSdk = 35', 'compileSdk = 36'))
+strings = upstream / 'OsmAnd/res/values/strings.xml'
+strings.write_text(strings.read_text().replace('<resources>', '<resources>\n    <string name="endurain_return_to_frontend">Endurain</string>', 1))
 manifest = upstream / 'OsmAnd/AndroidManifest.xml'
 xml = manifest.read_text().replace('android:authorities="net.osmand.plus.fileprovider"', 'android:authorities="${applicationId}.fileprovider"')
 start = xml.index('\n\t\t\t<intent-filter>\n\t\t\t\t<action android:name="android.intent.action.MAIN"')
@@ -77,6 +79,8 @@ xml = xml.replace('</application>', '''
         </activity>
     </application>''')
 manifest.write_text(xml)
+version = upstream / 'OsmAnd/src/net/osmand/plus/Version.java'
+version.write_text(version.read_text().replace('app.getPackageName().equals(FULL_VERSION_NAME)', '(app.getPackageName().equals(FULL_VERSION_NAME) || app.getPackageName().equals("com.endurain.osmand.poc"))').replace('getAppName(app).contains("~")', '(getAppName(app).contains("~") || app.getPackageName().equals("com.endurain.osmand.poc"))'))
 config = upstream / 'OsmAnd/build.gradle'
 config.write_text(config.read_text() + '\napply from: rootProject.file("../host.gradle")\n')
 for patch in sorted(POC.glob('bridge-*.patch')):

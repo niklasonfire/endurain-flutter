@@ -148,13 +148,13 @@ public class EndurainFlutterActivity extends FlutterFragmentActivity {
         if (activity.getWindow().getDecorView().findViewWithTag("endurain-return") != null) return;
         Button button = new Button(activity);
         button.setTag("endurain-return");
-        button.setText("Endurain");
-        button.setContentDescription("Endurain");
+        button.setText(net.osmand.plus.R.string.endurain_return_to_frontend);
+        button.setContentDescription(activity.getString(net.osmand.plus.R.string.endurain_return_to_frontend));
         button.setOnClickListener(v -> activity.startActivity(new Intent(activity, EndurainFlutterActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
         FrameLayout.LayoutParams position = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-        position.topMargin = (int) (48 * activity.getResources().getDisplayMetrics().density);
+        position.topMargin = activity.getResources().getDimensionPixelSize(net.osmand.plus.R.dimen.endurain_return_button_top_margin);
         activity.addContentView(button, position);
     }
 
