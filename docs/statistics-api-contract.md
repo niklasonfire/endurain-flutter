@@ -16,6 +16,7 @@ The repository, response adapter, typed models, controller and screen are separa
 - The server's individual period buckets sum distance without excluding non-distance sports, while `type_breakdown` splits only the whole selected period. Therefore the all-sports trend displays **duration**. A selected distance sport displays its **distance** trend; a non-distance sport displays duration. The whole-period distance card remains visible immediately in the all-sports view. No dozens of extra per-sport requests are needed and no mixed bucket distance is presented as filtered kilometres.
 - The server uses SQL `coalesce` for missing distance/time/elevation values. A server zero does not prove every activity recorded elevation. The app preserves these aggregate semantics; it does not imply sensor-data completeness.
 - This version intentionally offers week/month/year, without lifetime totals, calorie cards, goals or activity editing. Server-unavailable/unsupported/malformed summary responses show an error, never a fabricated local-page total. The adapter requires the per-sport list supplied by v0.19.4 so that distance exclusion remains reliable.
+- Duplicate sport IDs and non-finite combined distance totals are rejected as malformed responses; they must not double-count a sport or display an overflowing sum.
 
 ## Verification
 

@@ -6,6 +6,10 @@ Search, exact sport type, and inclusive date range are server-side filters.
 Pull to refresh replaces the first page; scrolling near the end or Load more
 fetches the next page. Page failures keep current rows and provide a separate
 retry action. Failed refreshes preserve existing rows with an inline error.
+Filter changes reset pagination immediately, so a failed first-page request
+cannot continue at a page inherited from the previous filter. Retry starts at
+page one. The controller exposes immutable list snapshots, replaced only on
+updates, so reading a card does not copy the complete loaded history.
 
 `ServerActivitiesController` takes the repository and a
 `ValueListenable<String?>` connection identity. Production wiring uses

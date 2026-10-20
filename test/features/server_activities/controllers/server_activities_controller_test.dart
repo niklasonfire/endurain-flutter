@@ -67,6 +67,8 @@ void main() {
       ),
     );
     await initial;
+    final firstPage = controller.items;
+    expect(() => firstPage.clear(), throwsUnsupportedError);
     final next = controller.loadMore();
     repository.requests.last.completeError(Exception('Offline'));
     await next;
@@ -84,12 +86,65 @@ void main() {
     );
     await retry;
     expect(controller.items.map((item) => item.id), [1, 2]);
+    expect(firstPage.map((item) => item.id), [1]);
     expect(repository.pages, [1, 2, 2]);
     expect(controller.hasMore, isFalse);
     expect(controller.loadMoreError, isNull);
     controller.dispose();
     connection.dispose();
   });
+
+  test(
+    'failed filter change cannot continue pagination from the old query',
+    () async {
+      final connection = ValueNotifier<String?>('account');
+      final repository = _Repository();
+      final controller = ServerActivitiesController(
+        repository: repository,
+        connection: connection,
+      );
+      addTearDown(controller.dispose);
+      addTearDown(connection.dispose);
+
+      final initial = controller.refresh();
+      repository.requests.last.complete(
+        ServerActivityPage(
+          items: [const ServerActivity(id: 1, name: 'Old', activityType: 1)],
+          page: 1,
+          pageSize: 20,
+          total: 100,
+        ),
+      );
+      await initial;
+      expect(controller.hasMore, isTrue);
+
+      final filtered = controller.setQuery(
+        const ServerActivityQuery(search: 'forest'),
+      );
+      expect(controller.hasMore, isFalse);
+      repository.requests.last.completeError(Exception('offline'));
+      await filtered;
+      await controller.loadMore();
+      expect(repository.pages, [1, 1]);
+      expect(controller.items, isEmpty);
+      expect(controller.error, isNotNull);
+
+      final retry = controller.refresh();
+      expect(repository.pages, [1, 1, 1]);
+      expect(repository.queries.last.search, 'forest');
+      repository.requests.last.complete(
+        ServerActivityPage(
+          items: [const ServerActivity(id: 2, name: 'Forest', activityType: 1)],
+          page: 1,
+          pageSize: 20,
+          total: 1,
+        ),
+      );
+      await retry;
+      expect(controller.items.single.id, 2);
+      expect(controller.error, isNull);
+    },
+  );
 
   test('changing filters discards the previous search response', () async {
     final connection = ValueNotifier<String?>('account');

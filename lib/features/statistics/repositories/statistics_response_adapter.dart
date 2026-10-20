@@ -14,7 +14,8 @@ class StatisticsResponseAdapter {
       StatisticsPeriod.year => 'month_number',
     };
     final seen = <int>{};
-    return ActivityStatistics(
+    final sportIds = <int>{};
+    final result = ActivityStatistics(
       totals: _metrics(data),
       buckets: List.unmodifiable(
         buckets.map((row) {
@@ -34,7 +35,12 @@ class StatisticsResponseAdapter {
           final object = _object(row);
           final id = _integer(object['activity_type_id']);
           final name = object['activity_type'];
-          if (id < 1 || name is! String || name.trim().isEmpty) _invalid();
+          if (id < 1 ||
+              !sportIds.add(id) ||
+              name is! String ||
+              name.trim().isEmpty) {
+            _invalid();
+          }
           return StatisticsSport(
             id: id,
             apiName: name,
@@ -43,6 +49,9 @@ class StatisticsResponseAdapter {
         }),
       ),
     );
+    // Finite per-sport values can still overflow when combined for display.
+    if (!result.distanceMeters.isFinite) _invalid();
+    return result;
   }
 
   static Map<String, dynamic> _object(Object? value) {

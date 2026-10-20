@@ -20,7 +20,7 @@ class ServerActivitiesController extends SafeNotifier {
 
   final ServerActivitiesRepository _repository;
   final ValueListenable<String?> _connection;
-  List<ServerActivity> _items = [];
+  List<ServerActivity> _items = const [];
   List<int> _activityTypes = [];
   ServerActivityQuery _query = const ServerActivityQuery();
   int _generation = 0;
@@ -40,7 +40,9 @@ class ServerActivitiesController extends SafeNotifier {
   Object? _error;
   Object? _loadMoreError;
 
-  List<ServerActivity> get items => List.unmodifiable(_items);
+  // Replace immutable snapshots on updates; scrolling can read them without
+  // copying the full paginated history for each visible card.
+  List<ServerActivity> get items => _items;
   List<int> get activityTypes => List.unmodifiable(_activityTypes);
   ServerActivityQuery get query => _query;
   String? get connectionId => _connection.value;
@@ -63,7 +65,7 @@ class ServerActivitiesController extends SafeNotifier {
   void _connectionChanged() {
     _clearRoutes();
     _generation++;
-    _items = [];
+    _items = const [];
     _activityTypes = [];
     _query = const ServerActivityQuery();
     _page = 0;
@@ -85,7 +87,11 @@ class ServerActivitiesController extends SafeNotifier {
   Future<void> refresh({bool clear = false}) async {
     final generation = ++_generation;
     if (isGuest || isDisposed) return;
-    if (clear) _items = [];
+    if (clear) {
+      _items = const [];
+      _page = 0;
+      _hasMore = false;
+    }
     _loading = true;
     _loadingMore = false;
     _error = null;
@@ -205,7 +211,9 @@ class ServerActivitiesController extends SafeNotifier {
 
   List<ServerActivity> _unique(List<ServerActivity> activities) {
     final ids = <int>{};
-    return activities.where((activity) => ids.add(activity.id)).toList();
+    return List.unmodifiable(
+      activities.where((activity) => ids.add(activity.id)),
+    );
   }
 
   @override
