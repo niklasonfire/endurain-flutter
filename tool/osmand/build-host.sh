@@ -37,7 +37,7 @@ env = dict(os.environ, ANDROID_KEYSTORE_PATH=str(key),
            ANDROID_KEYSTORE_PASSWORD=props['storePassword'], ANDROID_KEY_ALIAS=props['keyAlias'],
            ANDROID_KEY_PASSWORD=props['keyPassword'])
 subprocess.run(['bash', './gradlew', ':OsmAnd:assembleAndroidFullOpenglArm64Release',
-                '--console=plain', '--max-workers=2', '-Dorg.gradle.jvmargs=-Xmx3g',
+                '--console=plain', '--refresh-dependencies', '--max-workers=2', '-Dorg.gradle.jvmargs=-Xmx3g',
                 '-Pkotlin.compiler.execution.strategy=in-process'],
                cwd=repo / 'poc/osmand/upstream', env=env, check=True)
 PY
