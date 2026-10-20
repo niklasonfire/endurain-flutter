@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
