@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:endurain/core/config/osmand_host.dart';
+import 'package:endurain/features/osmand/osmand_host_bridge.dart';
+import 'package:endurain/features/osmand/osmand_recordings_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -75,6 +78,23 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
       onChanged: _onControllerChanged,
     );
     unawaited(_controller.load());
+  }
+
+  Future<void> _openOsmandRecording({bool mapOnly = false}) async {
+    try {
+      if (mapOnly) {
+        await const OsmandHostBridge().openMap();
+      } else {
+        await const OsmandHostBridge().openRecording();
+      }
+    } catch (_) {
+      if (mounted) {
+        await DialogUtils.showErrorDialog(
+          context,
+          AppLocalizations.of(context)!.activityRecordingFailed,
+        );
+      }
+    }
   }
 
   void _onControllerChanged() {
@@ -178,6 +198,30 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         );
                       },
                     ),
+                    if (isOsmandHost)
+                      AdaptiveListTile(
+                        leading: const AdaptiveIcon(
+                          materialIcon: Icons.map,
+                          cupertinoIcon: CupertinoIcons.map,
+                        ),
+                        title: l10n.mapTab,
+                        subtitle: 'OsmAnd',
+                        onTap: () =>
+                            unawaited(_openOsmandRecording(mapOnly: true)),
+                      ),
+                    if (isOsmandHost)
+                      AdaptiveListTile(
+                        leading: const AdaptiveIcon(
+                          materialIcon: Icons.route,
+                          cupertinoIcon: CupertinoIcons.map,
+                        ),
+                        title: l10n.activityHistoryTitle,
+                        subtitle: 'OsmAnd GPX',
+                        onTap: () => adaptivePush<void>(
+                          context,
+                          (_) => const OsmandRecordingsScreen(),
+                        ),
+                      ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
                         materialIcon: Icons.history,
@@ -208,8 +252,14 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         cupertinoIcon: CupertinoIcons.speaker_2,
                       ),
                       title: l10n.audioAnnouncementsTitle,
-                      subtitle: l10n.audioAnnouncementsSubtitle,
+                      subtitle: isOsmandHost
+                          ? 'OsmAnd'
+                          : l10n.audioAnnouncementsSubtitle,
                       onTap: () {
+                        if (isOsmandHost) {
+                          unawaited(_openOsmandRecording());
+                          return;
+                        }
                         adaptivePush<void>(
                           context,
                           (context) => const AudioAnnouncementSettingsScreen(),
@@ -253,8 +303,14 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
                       ),
                       title: l10n.sensorsTitle,
-                      subtitle: l10n.sensorsSettingsSubtitle,
+                      subtitle: isOsmandHost
+                          ? 'OsmAnd'
+                          : l10n.sensorsSettingsSubtitle,
                       onTap: () {
+                        if (isOsmandHost) {
+                          unawaited(_openOsmandRecording());
+                          return;
+                        }
                         adaptivePush<void>(
                           context,
                           (context) => const SensorSettingsScreen(),

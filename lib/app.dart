@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:endurain/core/config/osmand_host.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:endurain/core/navigation/app_router.dart';
@@ -42,7 +43,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Restore before the recording screen is opened. The app-lifetime
     // controller also serializes a quick tap on Start with this recovery.
-    unawaited(_services.activityRecordingController.recoverActiveRecording());
+    if (!isOsmandHost) {
+      unawaited(_services.activityRecordingController.recoverActiveRecording());
+    }
     _ownsSessionController = widget.sessionController == null;
     _sessionController =
         widget.sessionController ??
@@ -96,7 +99,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       // may have dropped while backgrounded. Best-effort and self-guarded: each
       // no-ops when none is paired, Bluetooth is off, or a recording currently
       // owns the sensor.
-      unawaited(_services.reconnectRememberedSensors());
+      if (!isOsmandHost) {
+        unawaited(_services.reconnectRememberedSensors());
+      }
     }
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
