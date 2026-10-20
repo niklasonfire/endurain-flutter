@@ -1,0 +1,45 @@
+// Integration config only. OsmAnd Application, recorder and lifecycle stay upstream.
+def frontendRepo = System.getenv('ENDURAIN_FLUTTER_REPO') ?: rootProject.file('../../../build/osmand-poc/flutter_module/build/host/outputs/repo').absolutePath
+repositories {
+    maven { url uri(frontendRepo) }
+    maven { url 'https://storage.googleapis.com/download.flutter.io' }
+}
+android {
+    defaultConfig {
+        applicationId 'com.endurain.osmand.poc'
+        minSdkVersion 26
+        versionCode 1
+        versionName '0.1.0-poc'
+    }
+    productFlavors.configureEach {
+        if (dimension == 'version') {
+            applicationId 'com.endurain.osmand.poc'
+            resValue 'string', 'app_name', 'Endurain OsmAnd PoC'
+        }
+    }
+    signingConfigs {
+        endurainPoc {
+            if (System.getenv('ANDROID_KEYSTORE_PATH')) {
+                storeFile file(System.getenv('ANDROID_KEYSTORE_PATH'))
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes.release {
+        signingConfig signingConfigs.endurainPoc
+        minifyEnabled false
+    }
+    packagingOptions {
+        jniLibs.pickFirsts += ['**/libc++_shared.so']
+        resources.excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+    }
+}
+// Skip the source legacy JNI compilation because prepare.py stages the verified
+// official native library. No application recording/service code is replaced.
+tasks.named('buildOsmAndCore') { enabled = false }
+tasks.named('cleanupDuplicatesInCore') { enabled = false }
+dependencies {
+    implementation(System.getenv('ENDURAIN_FLUTTER_ARTIFACT') ?: 'dev.endurain.osmand.frontend:flutter_release:1.0')
+}
