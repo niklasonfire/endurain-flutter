@@ -423,6 +423,14 @@ GitHub Actions release builds require these repository secrets:
 
 For a published release, tag the commit as `vX.Y.Z+BUILD` mirroring pubspec's `version:` field (for example `v0.8.0+11`). CI splits the tag into the Android `versionName` (`0.8.0`) and `versionCode` (`11`), and fails the build if the tag does not match `pubspec.yaml`. Because Google Play requires a strictly increasing `versionCode`, bump the build number in `pubspec.yaml` before tagging. Manual workflow runs instead require an explicit semantic `version_name` and positive, monotonically increasing `version_code`.
 
+Manual runs also offer `signing_check_only`. Enable it to check the uploaded
+keystore, certificate fingerprint and private-key password without compiling or
+uploading an APK. Full release builds run the same preflight before compilation.
+The private-key check uses `KeyStore.getKey` directly because `keytool` can ignore
+a separate key password for PKCS12 keystores. To check the probe with disposable
+PKCS12/JKS fixtures, run `bash tool/test-android-signing.sh` with JDK 17 available
+through `JAVA_HOME` or `PATH`.
+
 Release builds may also bake in the managed diagnostics DSN for opt-in remote crash reporting. Set the optional GitHub repository **variable** `ENDURAIN_CRASH_REPORTING_DSN` (a Sentry/GlitchTip DSN — a public, send-only client identifier, so it is a variable rather than a secret). CI passes it to the build as `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. It is intentionally not hardcoded in source, so builds from source (forks, F-Droid) omit it and never point crash reports at the Endurain-operated endpoint by default. Remote crash reporting always targets this managed endpoint when the user opts in — there is no user-configurable DSN. When the variable is unset, the build simply ships no managed default and opt-in remote crash reporting stays inactive. For local runs or local/iOS release builds, pass the same flag to `flutter run` or `flutter build`:
 
 ```bash
