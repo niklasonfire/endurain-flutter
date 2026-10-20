@@ -69,6 +69,7 @@ class _OsmandRecordingsScreenState extends State<OsmandRecordingsScreen>
 
   String _message(AppLocalizations l10n, OsmandImportMessage message) =>
       switch (message) {
+        OsmandImportMessage.previouslyImported => l10n.osmandPreviouslyImported,
         OsmandImportMessage.uploaded => l10n.activityUploaded,
         OsmandImportMessage.local => l10n.osmandImportLocalResult,
         OsmandImportMessage.queued => l10n.osmandImportQueuedResult,

@@ -1679,4 +1679,12 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get osmandImportFailed =>
       'Die Aufzeichnung konnte nicht importiert werden. Bitte als gültigen GPX-Track mit Zeitstempeln speichern und erneut versuchen.';
+
+  @override
+  String get osmandPreviouslyImported =>
+      'Diese Aufzeichnung wurde bereits importiert und ihr lokaler Verlauf wurde gelöscht. Sie kann nicht erneut importiert oder einem anderen Konto zugeordnet werden. Die originale OsmAnd-GPX-Datei bleibt erhalten.';
+
+  @override
+  String get osmandNativeSettingsUnavailable =>
+      'Endurain-Sensor- und Audioeinstellungen sind in dieser Version nicht verfügbar. Öffne OsmAnd über die Karte.';
 }

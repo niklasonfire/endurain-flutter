@@ -1973,5 +1973,13 @@
   "osmandImportFailed": "The recording could not be imported. Ensure it is saved as a valid GPX track with timestamps and try again.",
   "@osmandImportFailed": {
     "description": "OsmAnd saved recording import - Used in: osmand_recordings_screen.dart"
+  },
+  "osmandPreviouslyImported": "This recording was already imported and its local history was deleted. It cannot be imported again or assigned to another account. The original OsmAnd GPX is preserved.",
+  "@osmandPreviouslyImported": {
+    "description": "Used in: osmand_recordings_screen.dart"
+  },
+  "osmandNativeSettingsUnavailable": "Endurain sensor and audio settings are unavailable in this build. Use OsmAnd from the Map screen.",
+  "@osmandNativeSettingsUnavailable": {
+    "description": "Used in: settings_screen.dart"
   }
 }

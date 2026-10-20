@@ -2917,6 +2917,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The recording could not be imported. Ensure it is saved as a valid GPX track with timestamps and try again.'**
   String get osmandImportFailed;
+
+  /// Used in: osmand_recordings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This recording was already imported and its local history was deleted. It cannot be imported again or assigned to another account. The original OsmAnd GPX is preserved.'**
+  String get osmandPreviouslyImported;
+
+  /// Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Endurain sensor and audio settings are unavailable in this build. Use OsmAnd from the Map screen.'**
+  String get osmandNativeSettingsUnavailable;
 }
 
 class _AppLocalizationsDelegate

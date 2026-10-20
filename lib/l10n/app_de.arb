@@ -1022,5 +1022,13 @@
   "osmandImportFailed": "Die Aufzeichnung konnte nicht importiert werden. Bitte als gültigen GPX-Track mit Zeitstempeln speichern und erneut versuchen.",
   "@osmandImportFailed": {
     "description": "OsmAnd saved recording import - Used in: osmand_recordings_screen.dart"
+  },
+  "osmandPreviouslyImported": "Diese Aufzeichnung wurde bereits importiert und ihr lokaler Verlauf wurde gelöscht. Sie kann nicht erneut importiert oder einem anderen Konto zugeordnet werden. Die originale OsmAnd-GPX-Datei bleibt erhalten.",
+  "@osmandPreviouslyImported": {
+    "description": "Used in: osmand_recordings_screen.dart"
+  },
+  "osmandNativeSettingsUnavailable": "Endurain-Sensor- und Audioeinstellungen sind in dieser Version nicht verfügbar. Öffne OsmAnd über die Karte.",
+  "@osmandNativeSettingsUnavailable": {
+    "description": "Used in: settings_screen.dart"
   }
 }

@@ -2,6 +2,7 @@ import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/osmand/osmand_host_bridge.dart';
+import 'package:endurain/features/osmand/osmand_import_ledger.dart';
 import 'package:endurain/features/osmand/osmand_recording_importer.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
@@ -12,6 +13,7 @@ enum OsmandImportMessage {
   failed,
   accountChanged,
   importFailed,
+  previouslyImported,
 }
 
 class OsmandImportDestination {
@@ -105,6 +107,8 @@ class OsmandRecordingsController extends SafeNotifier {
           : record.uploadStatus == LocalActivityUploadStatus.failed
           ? OsmandImportMessage.failed
           : OsmandImportMessage.queued;
+    } on OsmandPreviouslyImported {
+      message = OsmandImportMessage.previouslyImported;
     } catch (_) {
       message = OsmandImportMessage.importFailed;
     } finally {

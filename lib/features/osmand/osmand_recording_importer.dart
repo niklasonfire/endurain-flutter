@@ -13,6 +13,7 @@ import 'package:endurain/features/activity/repositories/local_activity_repositor
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
 import 'package:endurain/features/osmand/osmand_host_bridge.dart';
+import 'package:endurain/features/osmand/osmand_import_ledger.dart';
 
 /// Explicit, save-first import. A copied file's identity survives restarts and
 /// account changes; importing again never silently moves it to another account.
@@ -20,11 +21,13 @@ class OsmandRecordingImporter {
   OsmandRecordingImporter({
     required this.repository,
     required this.uploadQueue,
-    this.bridge = const OsmandHostBridge(),
+    required this.bridge,
+    required this.ledger,
   });
   final LocalActivityRepository repository;
   final ActivityUploadQueue uploadQueue;
   final OsmandHostBridge bridge;
+  final OsmandImportLedger ledger;
   static final _imports = SerialTaskQueue();
 
   Future<LocalActivityRecord> importRecording(
@@ -36,7 +39,12 @@ class OsmandRecordingImporter {
     // Content identity also catches renames/copies of an already imported file.
     final id = 'osmand_${sha256.convert(bytes)}';
     final existing = await repository.get(id);
-    if (existing != null) return existing;
+    if (existing != null) {
+      // Backfill provenance for recordings imported before the ledger existed.
+      await ledger.remember(existing);
+      return existing;
+    }
+    if (await ledger.contains(id)) throw const OsmandPreviouslyImported();
     final gpx = utf8.decode(bytes);
     final segments = _parse(gpx);
     final points = segments.expand((segment) => segment.points).toList();
@@ -67,6 +75,10 @@ class OsmandRecordingImporter {
           idempotencyKey: id,
         );
     await repository.upsert(record);
+    // Write only after the local save succeeds, before starting any upload.
+    // A failure here leaves the row and original untouched; a retry backfills
+    // its original provenance rather than choosing a fresh destination.
+    await ledger.remember(record);
     if (destination != null) {
       try {
         await uploadQueue.drain();

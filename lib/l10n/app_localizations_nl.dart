@@ -1663,4 +1663,12 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get osmandImportFailed =>
       'The recording could not be imported. Ensure it is saved as a valid GPX track with timestamps and try again.';
+
+  @override
+  String get osmandPreviouslyImported =>
+      'This recording was already imported and its local history was deleted. It cannot be imported again or assigned to another account. The original OsmAnd GPX is preserved.';
+
+  @override
+  String get osmandNativeSettingsUnavailable =>
+      'Endurain sensor and audio settings are unavailable in this build. Use OsmAnd from the Map screen.';
 }
