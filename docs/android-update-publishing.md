@@ -18,7 +18,13 @@ building. A pull request CI run or manual smoke check cannot authorize publishin
 To release Stable, run `Build Android` **from main**, select `stable`, supply
 `version_name` as `X.Y.Z`, and supply the full 40-character `source_commit` SHA.
 That SHA must already have passed complete main-push CI. Stable can use an older
-validated commit; Nightly must still be the current main commit at publication.
+validated commit. Nightly must still contain the current main code at publication.
+A tested main commit remains eligible when main advanced only through documentation
+according to the shared CI classifier: GitHub must confirm the tested SHA is an
+ancestor and provide a complete comparison with fewer than 300 changed files.
+Code changes, code-to-documentation renames, diverged history and truncated or
+missing comparisons reject the candidate. The APK and manifest keep the actual
+tested source SHA; untested documentation commits are never built.
 `check` instead keeps the verified APK and manifest as Actions artifacts without
 publishing. `signing_check_only` verifies credentials without building an APK;
 it still requires the same trusted source gate.

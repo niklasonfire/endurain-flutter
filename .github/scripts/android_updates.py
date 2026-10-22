@@ -11,6 +11,8 @@ import re
 import subprocess
 import urllib.request
 
+from classify_ci_changes import documentation
+
 REPOSITORY = "niklasonfire/endurain-flutter"
 APPLICATION_ID = "com.endurain.endurain.local"
 CERTIFICATE = "3341bbf406214b746b6f893d12a353652df6c9215feb6b2e58e541c2bb9dfb6e"
@@ -97,6 +99,21 @@ def release_codes(api):
     return codes
 
 
+def current_code_candidate(api, sha):
+    """Allow main to advance through documentation while retaining tested code."""
+    head = api.request('git/ref/heads/main')['object']['sha']
+    if head == sha:
+        return True
+    comparison = api.request(f'compare/{sha}...{head}')
+    files = comparison.get('files')
+    # GitHub truncates the changed-file list at 300. Fail closed at that bound.
+    return (comparison.get('status') == 'ahead' and isinstance(files, list)
+            and len(files) < 300 and all(
+                documentation(file['filename']) and
+                ('previous_filename' not in file or documentation(file['previous_filename']))
+                for file in files))
+
+
 def prepare(api, event, channel, sha, version, run_number, attempt):
     if attempt != 1:
         raise ValueError("Reruns cannot rebuild or publish an allocated versionCode; start a new run")
@@ -124,7 +141,7 @@ def prepare(api, event, channel, sha, version, run_number, attempt):
             continue
     if not valid:
         raise (SkipBuild if automatic else ValueError)("No complete successful main CI for this exact commit")
-    if channel == 'nightly' and api.request('git/ref/heads/main')['object']['sha'] != sha:
+    if channel == 'nightly' and not current_code_candidate(api, sha):
         raise (SkipBuild if automatic else ValueError)("Stale nightly candidate")
     code = 100000 + run_number
     if not 100000 < code <= 2100000000 or code <= max(release_codes(api), default=21):
@@ -176,7 +193,7 @@ def publish(api, manifest, apk):
         raise ValueError("Check builds cannot publish")
     if code <= max(release_codes(api), default=21):
         raise ValueError("A newer or equal build was published while building")
-    if channel == 'nightly' and api.request('git/ref/heads/main')['object']['sha'] != sha:
+    if channel == 'nightly' and not current_code_candidate(api, sha):
         raise ValueError("Nightly became stale during build")
     tag = 'nightly' if channel == 'nightly' else f"v{manifest['versionName']}+{code}"
     releases = api.pages('releases')

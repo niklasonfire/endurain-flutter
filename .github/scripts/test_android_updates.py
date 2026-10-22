@@ -34,6 +34,7 @@ class GitHubFixture:
     def __init__(self):
         self.releases = []
         self.head = SHA
+        self.comparison = {'status': 'ahead', 'files': [{'filename': 'lib/main.dart', 'status': 'modified'}]}
         self.run = {'id': 1, 'head_sha': SHA, 'head_branch': 'main',
                     'head_repository': {'full_name': REPOSITORY},
                     'event': 'push', 'conclusion': 'success',
@@ -66,6 +67,8 @@ class GitHubFixture:
                 return copy.deepcopy(self.run)
             if path == 'git/ref/heads/main':
                 return {'object': {'sha': self.head}}
+            if path.startswith('compare/'):
+                return copy.deepcopy(self.comparison)
             if path.startswith('contents/pubspec.yaml'):
                 return {'content': base64.b64encode(b'version: 0.12.0+21\n').decode()}
         if path == 'releases/generate-notes':
@@ -207,6 +210,42 @@ class BuildGateTests(unittest.TestCase):
                 self.api.run[field] = value
                 with self.assertRaises(ValueError):
                     self.prepare()
+
+    def test_documentation_advance_preserves_verified_nightly_source(self):
+        self.api.head = 'b' * 40
+        self.api.comparison = {'status': 'ahead', 'files': [
+            {'filename': 'docs/updates.md', 'status': 'modified'},
+            {'filename': 'docs/screenshots/update.png', 'status': 'added'}]}
+        result = self.prepare('nightly', automatic=True)
+        self.assertEqual(result['SOURCE_SHA'], SHA)
+        with tempfile.TemporaryDirectory() as directory:
+            apk = Path(directory) / 'app.apk'
+            apk.write_bytes(b'abc')
+            publish(self.api, metadata('nightly'), apk)
+        self.assertEqual(self.api.tag, SHA)
+
+    def test_code_changes_nonancestors_and_incomplete_comparisons_stay_stale(self):
+        comparisons = [
+            {'status': 'ahead', 'files': [{'filename': 'lib/main.dart'}]},
+            {'status': 'behind', 'files': [{'filename': 'README.md'}]},
+            {'status': 'diverged', 'files': [{'filename': 'README.md'}]},
+            {'status': 'ahead'},
+            {'status': 'ahead', 'files': [{'filename': 'README.md'}] * 300},
+            {'status': 'ahead', 'files': [{'filename': 'README.md',
+                                           'previous_filename': 'lib/main.dart'}]},
+        ]
+        for comparison in comparisons:
+            with self.subTest(comparison=comparison):
+                self.api.head = 'b' * 40
+                self.api.comparison = comparison
+                with self.assertRaises(SkipBuild):
+                    self.prepare('nightly', automatic=True)
+                with tempfile.TemporaryDirectory() as directory:
+                    apk = Path(directory) / 'app.apk'
+                    apk.write_bytes(b'abc')
+                    with self.assertRaisesRegex(ValueError, 'stale'):
+                        publish(self.api, metadata('nightly'), apk)
+                self.assertEqual(self.api.releases, [])
 
     def test_stale_automatic_candidate_skips_and_reruns_refuse_new_build(self):
         self.api.head = 'b' * 40

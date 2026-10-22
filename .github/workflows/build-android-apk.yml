@@ -86,7 +86,7 @@ jobs:
           ref: main
           persist-credentials: false
       - name: Preserve trusted publisher
-        run: cp .github/scripts/android_updates.py "$RUNNER_TEMP/android_updates.py"
+        run: cp .github/scripts/android_updates.py .github/scripts/classify_ci_changes.py "$RUNNER_TEMP/"
       - name: Checkout verified source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -204,4 +204,4 @@ jobs:
         if: always()
         shell: bash
         run: |
-          rm -f "$RUNNER_TEMP/endurain-upload-key.jks" "$RUNNER_TEMP/android_updates.py"
+          rm -f "$RUNNER_TEMP/endurain-upload-key.jks" "$RUNNER_TEMP/android_updates.py" "$RUNNER_TEMP/classify_ci_changes.py"
