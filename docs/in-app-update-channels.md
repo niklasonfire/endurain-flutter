@@ -1,6 +1,6 @@
 # Vorschlag: In-App-Updates über GitHub Releases
 
-Stand: 22. Oktober 2026. Recherche und Umsetzungsvorschlag; App und CI wurden noch nicht geändert. Ziel ist zunächst der direkt als APK verteilte Android-Fork `niklasonfire/endurain-flutter`.
+Stand: 22. Oktober 2026. Recherche und Umsetzungsspezifikation für den direkt als APK verteilten Android-Fork `niklasonfire/endurain-flutter`. Die drei Pakete werden auf `feat/in-app-update-channels` umgesetzt; Bedienung und Release-Vertrag sind im Folgenden beschrieben. Die Bedienungsanleitung für den Publisher steht in [android-update-publishing.md](android-update-publishing.md).
 
 ## Empfehlung und Bedienung
 
@@ -99,6 +99,8 @@ Der GitHub-Updater ist eine Fork-/Distributionsfunktion. Allgemeine Update-Logik
 ## Einbindung in unsere CI
 
 1. Die bestehende Prüfstrecke bleibt Voraussetzung. Ein Nightly entsteht nach erfolgreicher vollständiger CI auf `main`, nur bei relevanten Codeänderungen; reine Dokumentationsänderungen gemäß [CI-Klassifizierung](../.github/scripts/classify_ci_changes.py) erzeugen keinen Build. Ein grüner Sammelstatus mit übersprungenen Checks genügt nicht. Kein Signieren von PR-Code. Falls `workflow_run` genutzt wird, Repository, Event, Branch, Ergebnis, wirklich gelaufene Checks und exakten `head_sha` verifizieren; diesen SHA bauen, nicht das inzwischen weitergelaufene `main`.
+
+   Nachfolgende reine Dokumentationsänderungen dürfen einen bereits vollständig geprüften Kandidaten nicht verdrängen. Der Publisher akzeptiert den geprüften SHA deshalb auch dann, wenn ein vollständiger GitHub-Vergleich bis zum aktuellen Main ausschließlich Dokumentationsänderungen nachweist. Neue Codeänderungen, divergente Historie oder unvollständige Vergleiche blockieren ihn weiterhin. Gebaut und im Manifest ausgewiesen wird immer der tatsächlich geprüfte SHA.
 2. Signieren, Version vergeben und APK-Prüfung in einen gemeinsamen Workflow für beide Kanäle ziehen. Vorhandene Zertifikatsprüfung weiterverwenden; zusätzlich Package-ID, tatsächlichen `versionCode`, ABI und SHA-256 prüfen. Build- und Publish-Läufe über beide Kanäle serialisieren; veraltete Nightly-Kandidaten vor Veröffentlichung verwerfen.
 3. Nightly darf automatisch aus dem geprüften Main-Commit erscheinen. Stable wird bewusst per manuellem Workflow mit Kanal, Version und geprüftem Commit gestartet. Der Workflow erstellt nach erfolgreichem Build das versionierte Release. Den bisherigen `release: published`-Buildpfad ersetzen oder eindeutig abgrenzen, damit keine Doppel-Builds entstehen. Publikation im selben Ablauf ausführen und nicht auf einen rekursiv ausgelösten Release-Workflow bauen.
 4. Zuerst signierten Build samt eindeutigem APK und Manifest vorbereiten und prüfen, dann veröffentlichen. Bei Stable Release erst mit allen Assets freigeben; bei Nightly die oben beschriebene Reihenfolge einhalten. Fehlgeschlagener Build verändert keinen vorhandenen Kanalstand. Signiermaterial in temporären Dateien nach dem Lauf entfernen; Zugang zum Signieren auf vertrauenswürdige Runs begrenzen.

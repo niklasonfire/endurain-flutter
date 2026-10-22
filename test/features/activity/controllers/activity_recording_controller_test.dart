@@ -100,9 +100,19 @@ void main() {
         final controller = _controllerWithActiveStore(store);
         addTearDown(controller.dispose);
 
-        final recovered = await controller.recoverActiveRecording();
+        final recoveryStates = <bool>[];
+        controller.addListener(() {
+          recoveryStates.add(controller.isRecoveringRecording);
+        });
+        expect(controller.isRecoveringRecording, isFalse);
+        final recovery = controller.recoverActiveRecording();
+        expect(controller.isRecoveringRecording, isTrue);
+        final recovered = await recovery;
 
         expect(recovered, isFalse);
+        expect(controller.isRecoveringRecording, isFalse);
+        expect(recoveryStates, contains(true));
+        expect(recoveryStates.last, isFalse);
         expect(controller.state.status, ActivityRecordingStatus.idle);
         expect(controller.selectedActivityType, ActivityType.run);
       });
