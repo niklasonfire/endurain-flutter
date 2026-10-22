@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 from android_updates import (
@@ -44,6 +45,8 @@ class GitHubFixture:
                                  'conclusion': 'success'} for step in STEPS]}]
         self.snapshots = []
         self.tag = None
+        self.stable_tag = None
+        self.stable_ref_error = 404
         self.fail_apk = False
 
     def pages(self, path, key=None):
@@ -63,6 +66,10 @@ class GitHubFixture:
 
     def request(self, path, method='GET', data=None, binary=None):
         if method == 'GET':
+            if path.startswith('git/ref/tags/v'):
+                if self.stable_tag is not None:
+                    return {'object': {'sha': self.stable_tag}}
+                raise urllib.error.HTTPError(path, self.stable_ref_error, 'GitHub error', {}, None)
             if path.startswith('actions/runs/'):
                 return copy.deepcopy(self.run)
             if path == 'git/ref/heads/main':
@@ -116,6 +123,21 @@ class PublisherContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'APK bytes'):
             publish(self.api, metadata(), self.apk)
         self.assertEqual(self.api.releases, [])
+
+    def test_orphan_stable_tag_cannot_misrepresent_source_commit(self):
+        self.api.stable_tag = 'b' * 40
+        with self.assertRaisesRegex(ValueError, 'Stable tag already exists'):
+            publish(self.api, metadata(), self.apk)
+        self.assertEqual(self.api.releases, [])
+
+    def test_unavailable_stable_tag_check_cannot_authorize_release_creation(self):
+        for status in (403, 500):
+            with self.subTest(status=status):
+                self.api.stable_ref_error = status
+                with self.assertRaises(urllib.error.HTTPError) as error:
+                    publish(self.api, metadata(), self.apk)
+                self.assertEqual(error.exception.code, status)
+                self.assertEqual(self.api.releases, [])
 
     def test_stable_becomes_public_only_with_both_assets(self):
         publish(self.api, metadata(), self.apk)

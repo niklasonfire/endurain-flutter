@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import urllib.error
+import urllib.parse
 import urllib.request
 
 from classify_ci_changes import documentation
@@ -200,6 +202,14 @@ def publish(api, manifest, apk):
     existing = [release for release in releases if release['tag_name'] == tag]
     if channel == 'stable' and existing:
         raise ValueError("Stable tag already exists; never overwrite it")
+    if channel == 'stable':
+        try:
+            api.request(f"git/ref/tags/{urllib.parse.quote(tag, safe='')}")
+        except urllib.error.HTTPError as error:
+            if error.code != 404:
+                raise
+        else:
+            raise ValueError("Stable tag already exists; never reuse an orphan tag")
     # Generate the changelog before moving the rolling tag.
     previous = next((item for item in releases if not item.get('draft') and
                      (item['tag_name'] == 'nightly' if channel == 'nightly'
