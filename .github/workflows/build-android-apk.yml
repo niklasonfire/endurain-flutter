@@ -1,57 +1,103 @@
 name: Build Android
 
 on:
+  workflow_run:
+    workflows: [Local runner CI]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
-      version_name:
-        description: Release version name, for example 0.3.1
+      channel:
+        description: Stable publishes a release; nightly updates prerelease; check only uploads artifact
+        required: true
+        type: choice
+        options: [check, stable, nightly]
+        default: check
+      source_commit:
+        description: Full SHA with successful complete main push CI
         required: true
         type: string
-      version_code:
-        description: Monotonically increasing Android version code
-        required: true
+      version_name:
+        description: Stable/check version X.Y.Z (nightly generated automatically)
         type: string
       signing_check_only:
-        description: Verify signing credentials without building an APK
+        description: Verify signing credentials without building or publishing
         type: boolean
         default: false
-  release:
-    types: [published]
 
 env:
   FLUTTER_VERSION: 3.47.3
 
+# One allocator and publisher for both channels; never cancel a publish halfway.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: android-update-publisher
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  packages: read
+  contents: read
+  actions: read
 
 jobs:
+  prepare:
+    if: >-
+      github.repository == 'niklasonfire/endurain-flutter' &&
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
+       github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    outputs:
+      BUILD_REQUIRED: ${{ steps.prepare.outputs.BUILD_REQUIRED }}
+      SOURCE_SHA: ${{ steps.prepare.outputs.SOURCE_SHA }}
+      VERSION_NAME: ${{ steps.prepare.outputs.VERSION_NAME }}
+      VERSION_CODE: ${{ steps.prepare.outputs.VERSION_CODE }}
+      UPDATE_CHANNEL: ${{ steps.prepare.outputs.UPDATE_CHANNEL }}
+    steps:
+      # workflow_run always uses trusted default-branch release tooling.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Gate exact source commit and allocate build number
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ github.event_name == 'workflow_run' && 'nightly' || inputs.channel }}
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+          INPUT_VERSION_NAME: ${{ inputs.version_name }}
+        run: python3 .github/scripts/android_updates.py prepare
+
   build-android:
     name: Build Android APK
-    runs-on: ${{ github.repository == 'niklasonfire/endurain-flutter' && fromJSON('["self-hosted","linux","x64","dind","endurain-flutter"]') || 'ubuntu-latest' }}
-    # The local runner already provides Flutter/Android. Upstream uses its image.
-    container: ${{ fromJSON(github.repository == 'niklasonfire/endurain-flutter' && 'null' || '{"image":"ghcr.io/endurain-project/endurain-flutter-ci:3.47.3"}') }}
+    needs: prepare
+    if: needs.prepare.outputs.BUILD_REQUIRED == 'true'
+    runs-on: [self-hosted, linux, x64, dind, endurain-flutter]
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      actions: read
+    env:
+      SOURCE_SHA: ${{ needs.prepare.outputs.SOURCE_SHA }}
+      VERSION_NAME: ${{ needs.prepare.outputs.VERSION_NAME }}
+      VERSION_CODE: ${{ needs.prepare.outputs.VERSION_CODE }}
+      UPDATE_CHANNEL: ${{ needs.prepare.outputs.UPDATE_CHANNEL }}
     steps:
-      - name: Checkout code
+      - name: Checkout trusted release tooling
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 1
-
+          ref: main
+          persist-credentials: false
+      - name: Preserve trusted publisher
+        run: cp .github/scripts/android_updates.py "$RUNNER_TEMP/android_updates.py"
+      - name: Checkout verified source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.SOURCE_SHA }}
+          persist-credentials: false
       - name: Set up Flutter
         if: ${{ !inputs.signing_check_only }}
         uses: ./.github/actions/setup-flutter
-
-      - name: Prepare signed release inputs
+      - name: Prepare signing identity
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          INPUT_VERSION_NAME: ${{ inputs.version_name }}
-          INPUT_VERSION_CODE: ${{ inputs.version_code }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -59,29 +105,6 @@ jobs:
           ANDROID_UPLOAD_CERT_SHA256: ${{ secrets.ANDROID_UPLOAD_CERT_SHA256 }}
         run: |
           set -euo pipefail
-
-          if [[ "$EVENT_NAME" == "release" ]]; then
-            # Release tags mirror pubspec's `version:` field: vX.Y.Z+BUILD.
-            tag="${RELEASE_TAG#v}"
-            if [[ "$tag" != *+* ]]; then
-              echo "Release tag '$RELEASE_TAG' must be vX.Y.Z+BUILD, for example v0.8.0+11." >&2
-              exit 1
-            fi
-            VERSION_NAME="${tag%%+*}"
-            VERSION_CODE="${tag##*+}"
-
-            pubspec_version="$(awk '/^version:/{print $2; exit}' pubspec.yaml)"
-            if [[ "$pubspec_version" != "$tag" ]]; then
-              echo "Release tag '$tag' does not match pubspec.yaml version '$pubspec_version'." >&2
-              exit 1
-            fi
-          else
-            VERSION_NAME="$INPUT_VERSION_NAME"
-            VERSION_CODE="$INPUT_VERSION_CODE"
-          fi
-
-          [[ "$VERSION_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]
-          [[ "$VERSION_CODE" =~ ^[1-9][0-9]*$ ]]
           : "${ANDROID_KEYSTORE_BASE64:?Missing ANDROID_KEYSTORE_BASE64 secret}"
           : "${ANDROID_KEYSTORE_PASSWORD:?Missing ANDROID_KEYSTORE_PASSWORD secret}"
           : "${ANDROID_KEY_ALIAS:?Missing ANDROID_KEY_ALIAS secret}"
@@ -115,6 +138,8 @@ jobs:
           fi
           echo "Signing certificate and private key verified."
 
+          [[ "${expected_fingerprint,,}" == "3341bbf406214b746b6f893d12a353652df6c9215feb6b2e58e541c2bb9dfb6e" ]]
+
           {
             echo "ANDROID_KEYSTORE_PATH=$keystore_path"
             echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD"
@@ -147,47 +172,36 @@ jobs:
             --build-number="$VERSION_CODE" \
             --target-platform android-arm64 \
             --split-debug-info=build/debug-info \
+            --dart-define=ENDURAIN_UPDATE_CHANNEL="$UPDATE_CHANNEL" \
             --dart-define=ENDURAIN_CRASH_REPORTING_DSN="${ENDURAIN_CRASH_REPORTING_DSN:-}"
 
-      - name: Verify signed APK
+      - name: Verify APK and create release manifest
         if: ${{ !inputs.signing_check_only }}
         shell: bash
-        env:
-          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
         run: |
           set -euo pipefail
-          test -s "$APK_PATH"
-          apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -path '*/apksigner' -type f | sort -V | tail -n 1)"
-          test -n "$apksigner"
-          "$apksigner" verify --verbose --print-certs "$APK_PATH"
-          actual_fingerprint="$(
-            "$apksigner" verify --print-certs "$APK_PATH" |
-              awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":", "", $2); print toupper($2); exit}'
-          )"
-          [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
+          export APKSIGNER="$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner"
+          export AAPT="$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt"
+          python3 "$RUNNER_TEMP/android_updates.py" manifest
 
-      - name: Upload APK as workflow artifact
-        if: github.event_name == 'workflow_dispatch' && !inputs.signing_check_only
+      - name: Upload verified APK and metadata
+        if: ${{ !inputs.signing_check_only }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: endurain-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: endurain-${{ env.UPDATE_CHANNEL }}-${{ env.VERSION_CODE }}
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/update.json
           if-no-files-found: error
 
-      - name: Attach APK to the release
-        if: github.event_name == 'release'
-        shell: bash
+      - name: Publish verified release
+        if: ${{ !inputs.signing_check_only && needs.prepare.outputs.UPDATE_CHANNEL != 'check' }}
         env:
-          UPLOAD_URL: ${{ github.event.release.upload_url }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
+          GH_TOKEN: ${{ github.token }}
+        run: python3 "$RUNNER_TEMP/android_updates.py" publish
+
+      - name: Remove signing material
+        if: always()
+        shell: bash
         run: |
-          set -euo pipefail
-          upload_url="${UPLOAD_URL%%\{*}"
-          curl --fail --show-error --location \
-            --request POST \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer $TOKEN" \
-            --header "Content-Type: application/vnd.android.package-archive" \
-            --data-binary "@$APK_PATH" \
-            "${upload_url}?name=app-release.apk"
+          rm -f "$RUNNER_TEMP/endurain-upload-key.jks" "$RUNNER_TEMP/android_updates.py"
