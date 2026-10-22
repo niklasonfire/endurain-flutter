@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:endurain/features/updates/update_screen.dart';
+import 'package:endurain/features/updates/screens/update_screen.dart';
 
 import 'dart:async';
 

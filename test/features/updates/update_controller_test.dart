@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/features/updates/update_controller.dart';
-import 'package:endurain/features/updates/update_installer.dart';
-import 'package:endurain/features/updates/update_release.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/features/updates/controllers/update_controller.dart';
+import 'package:endurain/features/updates/models/update_release.dart';
+import 'package:endurain/features/updates/models/update_status.dart';
+import 'package:endurain/features/updates/services/update_installer.dart';
 import 'package:fake_async/fake_async.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 

@@ -1,12 +1,10 @@
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/features/updates/update_installer.dart';
+import 'package:endurain/features/updates/models/installed_update_info.dart';
 
 enum UpdateChannel { stable, nightly }
 
-/// Distribution policy for this fork, separate from the update implementation.
-const updateRepository = 'niklasonfire/endurain-flutter';
-
 class UpdateRelease {
+  static const maxVersionCode = 2100000000;
   const UpdateRelease({
     required this.channel,
     required this.versionName,
@@ -36,8 +34,9 @@ class UpdateRelease {
     Map<String, dynamic> release,
     Map<String, dynamic> manifest,
     UpdateChannel channel,
-    InstalledUpdateInfo installed,
-  ) {
+    InstalledUpdateInfo installed, {
+    required String repository,
+  }) {
     Never invalid() => throw const AppException(AppErrorCode.updateInvalid);
     final tag = release['tag_name'];
     if (release['draft'] != false ||
@@ -55,7 +54,7 @@ class UpdateRelease {
     }
     final code = manifest['versionCode'] as int;
     if (code < 1 ||
-        code > 2100000000 ||
+        code > maxVersionCode ||
         (channel == UpdateChannel.nightly
             ? tag != 'nightly'
             : tag != 'v${manifest['versionName']}+$code')) {
@@ -110,7 +109,7 @@ class UpdateRelease {
       matches.single['browser_download_url']?.toString() ?? '',
     );
     if (uri == null ||
-        !isRepositoryDownload(uri) ||
+        !isRepositoryDownload(uri, repository) ||
         uri.pathSegments.last != selected['name'] ||
         uri.pathSegments[4] != tag) {
       invalid();
@@ -130,16 +129,16 @@ class UpdateRelease {
   }
 }
 
-bool isRepositoryDownload(Uri uri) =>
+bool isRepositoryDownload(Uri uri, String repository) =>
     uri.scheme == 'https' &&
     uri.host == 'github.com' &&
     !uri.hasPort &&
     uri.userInfo.isEmpty &&
-    uri.path.startsWith('/$updateRepository/releases/download/') &&
+    uri.path.startsWith('/$repository/releases/download/') &&
     uri.pathSegments.length == 6;
 
-bool isUpdateRedirect(Uri uri) =>
-    isRepositoryDownload(uri) ||
+bool isUpdateRedirect(Uri uri, String repository) =>
+    isRepositoryDownload(uri, repository) ||
     (uri.scheme == 'https' &&
         !uri.hasPort &&
         uri.userInfo.isEmpty &&

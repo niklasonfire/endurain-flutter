@@ -3,8 +3,11 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/features/updates/update_controller.dart';
-import 'package:endurain/features/updates/update_installer.dart';
+import 'package:endurain/features/updates/controllers/update_controller.dart';
+import 'package:endurain/features/updates/models/installed_update_info.dart';
+import 'package:endurain/features/updates/repositories/update_settings_repository.dart';
+import 'package:endurain/features/updates/services/update_installer.dart';
+import 'package:endurain/features/updates/services/update_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -92,12 +95,15 @@ class UpdateFixture {
 
   UpdateController controller({http.Client Function()? clients}) =>
       UpdateController(
-        preferences: preferences,
+        settings: UpdateSettingsRepository(preferences: preferences),
+        updates: UpdateService(
+          repository: 'niklasonfire/endurain-flutter',
+          clientFactory: clients ?? () => MockClient(response),
+          cacheDirectory: () async => cache,
+        ),
         installer: installer,
         recordingActive: () => recording,
         recordingChanges: recordingChanges,
-        cacheDirectory: () async => cache,
-        clientFactory: clients ?? () => MockClient(response),
       );
 
   void dispose() {

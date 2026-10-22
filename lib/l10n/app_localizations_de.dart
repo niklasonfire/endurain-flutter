@@ -31,6 +31,38 @@ class AppLocalizationsDe extends AppLocalizations {
   String get invalidUrl => 'Bitte gib eine gültige URL ein';
 
   @override
+  String get errorUpdateIncompatible =>
+      'Dieser Build unterstützt deine Android-Version oder Gerätearchitektur nicht.';
+
+  @override
+  String get errorUpdateInstallFailed =>
+      'Android konnte dieses Update nicht öffnen. Prüfe die Installationsfreigabe und versuche es erneut.';
+
+  @override
+  String get errorUpdateIntegrity =>
+      'Der Download ist unvollständig oder die Prüfsumme stimmt nicht überein. Bitte erneut herunterladen.';
+
+  @override
+  String get errorUpdateInvalid =>
+      'Die Release-Metadaten sind ungültig oder passen nicht zum APK.';
+
+  @override
+  String get errorUpdateNetwork =>
+      'GitHub konnte nicht erreicht werden. Bitte erneut versuchen.';
+
+  @override
+  String get errorUpdateRateLimited =>
+      'GitHub begrenzt die Anfragen. Bitte später erneut versuchen.';
+
+  @override
+  String get errorUpdateStorage =>
+      'Update-Dateien oder Einstellungen konnten nicht gespeichert werden. Prüfe den freien Speicher und versuche es erneut.';
+
+  @override
+  String get errorUpdateUnavailable =>
+      'Dieser Kanal ist vorübergehend nicht verfügbar oder enthält noch keinen Build. Bitte später erneut versuchen.';
+
+  @override
   String get errorActivityUploadFailed =>
       'Aktivität konnte nicht hochgeladen werden';
 
@@ -636,6 +668,76 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get myLocation => 'Mein Standort';
+
+  @override
+  String get updatesCheck => 'Nach Updates suchen';
+
+  @override
+  String get updatesCheckChannel => 'Prüf-Build';
+
+  @override
+  String get updatesCurrent => 'Du bist auf dem neuesten Stand.';
+
+  @override
+  String get updatesDownload => 'Herunterladen';
+
+  @override
+  String updatesDownloadSize(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get updatesInstall => 'Installieren';
+
+  @override
+  String updatesInstalled(String version, String channel) {
+    return 'Installiert: $version ($channel)';
+  }
+
+  @override
+  String get updatesInstallerOpened =>
+      'Installer geöffnet. Die Installation ist erst nach Änderung der installierten Version bestätigt.';
+
+  @override
+  String updatesLastChecked(String date) {
+    return 'Letzte erfolgreiche Prüfung: $date';
+  }
+
+  @override
+  String get updatesLocalChannel => 'Lokaler Build';
+
+  @override
+  String get updatesNightlyChannel => 'Nightly';
+
+  @override
+  String get updatesNightlyDescription =>
+      'Aktuelle geprüfte Builds. Können unfertige Änderungen enthalten.';
+
+  @override
+  String get updatesPermission =>
+      'Erlaube dieser App in den Android-Einstellungen die Installation von Updates. Tippe danach erneut auf Installieren.';
+
+  @override
+  String get updatesRecordingActive =>
+      'Beende deine Aktivitätsaufzeichnung, bevor du ein Update installierst.';
+
+  @override
+  String get updatesStableChannel => 'Stable';
+
+  @override
+  String get updatesSubtitle =>
+      'Auf GitHub nach Stable- oder Nightly-Builds suchen';
+
+  @override
+  String get updatesTitle => 'App-Updates';
+
+  @override
+  String get updatesUnsupported =>
+      'APK-Updates sind nur unter Android verfügbar.';
+
+  @override
+  String get updatesWaitingStable =>
+      'Auf den nächsten Stable-Build warten, der neuer als die installierte Version ist.';
 
   @override
   String get settingsTab => 'Einstellungen';
@@ -1678,95 +1780,4 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get errorActivityUploadInvalidGpx =>
       'Die gespeicherte GPX-Datei konnte nicht gelesen werden. Die lokale Aufnahme bleibt erhalten und kann exportiert werden.';
-
-  @override
-  String get updatesTitle => 'App-Updates';
-
-  @override
-  String get updatesSubtitle =>
-      'Auf GitHub nach Stable- oder Nightly-Builds suchen';
-
-  @override
-  String updatesInstalled(String version, String channel) {
-    return 'Installiert: $version ($channel)';
-  }
-
-  @override
-  String get updatesCheck => 'Nach Updates suchen';
-
-  @override
-  String updatesLastChecked(String date) {
-    return 'Letzte erfolgreiche Prüfung: $date';
-  }
-
-  @override
-  String get updatesNightlyDescription =>
-      'Aktuelle geprüfte Builds. Können unfertige Änderungen enthalten.';
-
-  @override
-  String get updatesUnsupported =>
-      'APK-Updates sind nur unter Android verfügbar.';
-
-  @override
-  String get updatesCurrent => 'Du bist auf dem neuesten Stand.';
-
-  @override
-  String get updatesWaitingStable =>
-      'Auf den nächsten Stable-Build warten, der neuer als die installierte Version ist.';
-
-  @override
-  String get updatesDownload => 'Herunterladen';
-
-  @override
-  String get updatesInstall => 'Installieren';
-
-  @override
-  String get updatesPermission =>
-      'Erlaube dieser App in den Android-Einstellungen die Installation von Updates. Tippe danach erneut auf Installieren.';
-
-  @override
-  String get updatesInstallerOpened =>
-      'Installer geöffnet. Die Installation ist erst nach Änderung der installierten Version bestätigt.';
-
-  @override
-  String get updatesRecordingActive =>
-      'Beende deine Aktivitätsaufzeichnung, bevor du ein Update installierst.';
-
-  @override
-  String get errorUpdateInvalid =>
-      'Die Release-Metadaten sind ungültig oder passen nicht zum APK.';
-
-  @override
-  String get errorUpdateIncompatible =>
-      'Dieser Build unterstützt deine Android-Version oder Gerätearchitektur nicht.';
-
-  @override
-  String get errorUpdateNetwork =>
-      'GitHub konnte nicht erreicht werden. Bitte erneut versuchen.';
-
-  @override
-  String get errorUpdateRateLimited =>
-      'GitHub begrenzt die Anfragen. Bitte später erneut versuchen.';
-
-  @override
-  String get errorUpdateUnavailable =>
-      'Dieser Kanal ist vorübergehend nicht verfügbar oder enthält noch keinen Build. Bitte später erneut versuchen.';
-
-  @override
-  String get errorUpdateIntegrity =>
-      'Der Download ist unvollständig oder die Prüfsumme stimmt nicht überein. Bitte erneut herunterladen.';
-
-  @override
-  String get errorUpdateInstallFailed =>
-      'Android konnte dieses Update nicht öffnen. Prüfe die Installationsfreigabe und versuche es erneut.';
-
-  @override
-  String get errorUpdateStorage =>
-      'Update-Dateien oder Einstellungen konnten nicht gespeichert werden. Prüfe den freien Speicher und versuche es erneut.';
-
-  @override
-  String get updatesLocalChannel => 'Lokaler Build';
-
-  @override
-  String get updatesCheckChannel => 'Prüf-Build';
 }

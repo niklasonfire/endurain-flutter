@@ -31,6 +31,38 @@ class AppLocalizationsDa extends AppLocalizations {
   String get invalidUrl => 'Indtast en gyldig URL';
 
   @override
+  String get errorUpdateIncompatible =>
+      'This build does not support your Android version or device architecture.';
+
+  @override
+  String get errorUpdateInstallFailed =>
+      'Android could not open this update. Check the installation permission and try again.';
+
+  @override
+  String get errorUpdateIntegrity =>
+      'The download is incomplete or its checksum does not match. Please download it again.';
+
+  @override
+  String get errorUpdateInvalid =>
+      'The release metadata is invalid or does not match the APK.';
+
+  @override
+  String get errorUpdateNetwork =>
+      'Could not contact GitHub. Please try again.';
+
+  @override
+  String get errorUpdateRateLimited =>
+      'GitHub is limiting requests. Please try again later.';
+
+  @override
+  String get errorUpdateStorage =>
+      'Could not save update files or settings. Check available storage and try again.';
+
+  @override
+  String get errorUpdateUnavailable =>
+      'This channel is temporarily unavailable or has no published build. Please try again later.';
+
+  @override
   String get errorActivityUploadFailed => 'Aktiviteten kunne ikke uploades';
 
   @override
@@ -628,6 +660,74 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get myLocation => 'Min placering';
+
+  @override
+  String get updatesCheck => 'Check for updates';
+
+  @override
+  String get updatesCheckChannel => 'Verification build';
+
+  @override
+  String get updatesCurrent => 'You are up to date.';
+
+  @override
+  String get updatesDownload => 'Download';
+
+  @override
+  String updatesDownloadSize(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get updatesInstall => 'Install';
+
+  @override
+  String updatesInstalled(String version, String channel) {
+    return 'Installed: $version ($channel)';
+  }
+
+  @override
+  String get updatesInstallerOpened =>
+      'Installer opened. Installation is confirmed only after the installed version changes.';
+
+  @override
+  String updatesLastChecked(String date) {
+    return 'Last successful check: $date';
+  }
+
+  @override
+  String get updatesLocalChannel => 'Local build';
+
+  @override
+  String get updatesNightlyChannel => 'Nightly';
+
+  @override
+  String get updatesNightlyDescription =>
+      'Latest verified builds. May contain unfinished changes.';
+
+  @override
+  String get updatesPermission =>
+      'Allow this app to install updates in Android settings, then tap Install again.';
+
+  @override
+  String get updatesRecordingActive =>
+      'Finish your activity recording before installing an update.';
+
+  @override
+  String get updatesStableChannel => 'Stable';
+
+  @override
+  String get updatesSubtitle => 'Check GitHub for Stable or Nightly builds';
+
+  @override
+  String get updatesTitle => 'App updates';
+
+  @override
+  String get updatesUnsupported => 'APK updates are available on Android only.';
+
+  @override
+  String get updatesWaitingStable =>
+      'Waiting for the next Stable build newer than your installed version.';
 
   @override
   String get settingsTab => 'Indstillinger';
@@ -1658,93 +1758,4 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get errorActivityUploadInvalidGpx =>
       'The saved GPX file could not be read. The local recording is preserved and can be exported.';
-
-  @override
-  String get updatesTitle => 'App updates';
-
-  @override
-  String get updatesSubtitle => 'Check GitHub for Stable or Nightly builds';
-
-  @override
-  String updatesInstalled(String version, String channel) {
-    return 'Installed: $version ($channel)';
-  }
-
-  @override
-  String get updatesCheck => 'Check for updates';
-
-  @override
-  String updatesLastChecked(String date) {
-    return 'Last successful check: $date';
-  }
-
-  @override
-  String get updatesNightlyDescription =>
-      'Latest verified builds. May contain unfinished changes.';
-
-  @override
-  String get updatesUnsupported => 'APK updates are available on Android only.';
-
-  @override
-  String get updatesCurrent => 'You are up to date.';
-
-  @override
-  String get updatesWaitingStable =>
-      'Waiting for the next Stable build newer than your installed version.';
-
-  @override
-  String get updatesDownload => 'Download';
-
-  @override
-  String get updatesInstall => 'Install';
-
-  @override
-  String get updatesPermission =>
-      'Allow this app to install updates in Android settings, then tap Install again.';
-
-  @override
-  String get updatesInstallerOpened =>
-      'Installer opened. Installation is confirmed only after the installed version changes.';
-
-  @override
-  String get updatesRecordingActive =>
-      'Finish your activity recording before installing an update.';
-
-  @override
-  String get errorUpdateInvalid =>
-      'The release metadata is invalid or does not match the APK.';
-
-  @override
-  String get errorUpdateIncompatible =>
-      'This build does not support your Android version or device architecture.';
-
-  @override
-  String get errorUpdateNetwork =>
-      'Could not contact GitHub. Please try again.';
-
-  @override
-  String get errorUpdateRateLimited =>
-      'GitHub is limiting requests. Please try again later.';
-
-  @override
-  String get errorUpdateUnavailable =>
-      'This channel is temporarily unavailable or has no published build. Please try again later.';
-
-  @override
-  String get errorUpdateIntegrity =>
-      'The download is incomplete or its checksum does not match. Please download it again.';
-
-  @override
-  String get errorUpdateInstallFailed =>
-      'Android could not open this update. Check the installation permission and try again.';
-
-  @override
-  String get errorUpdateStorage =>
-      'Could not save update files or settings. Check available storage and try again.';
-
-  @override
-  String get updatesLocalChannel => 'Local build';
-
-  @override
-  String get updatesCheckChannel => 'Verification build';
 }

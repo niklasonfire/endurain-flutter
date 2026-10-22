@@ -1,12 +1,16 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
-import 'package:endurain/features/updates/update_controller.dart';
-import 'package:endurain/features/updates/update_release.dart';
+import 'package:endurain/features/updates/controllers/update_controller.dart';
+import 'package:endurain/features/updates/models/update_release.dart';
+import 'package:endurain/features/updates/models/update_status.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 
 class UpdateScreen extends StatefulWidget {
   const UpdateScreen({super.key, this.controller});
@@ -17,16 +21,19 @@ class UpdateScreen extends StatefulWidget {
 }
 
 class _UpdateScreenState extends State<UpdateScreen>
-    with WidgetsBindingObserver {
+    with OwnedControllers, WidgetsBindingObserver {
   late final UpdateController _controller;
+  static const _bytesPerMegabyte = 1024 * 1024;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller =
-        widget.controller ??
-        AppScope.servicesOf(context, listen: false).createUpdateController();
+    _controller = registerController(
+      widget.controller,
+      () =>
+          AppScope.servicesOf(context, listen: false).createUpdateController(),
+    );
     unawaited(_controller.load());
   }
 
@@ -38,7 +45,6 @@ class _UpdateScreenState extends State<UpdateScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (widget.controller == null) _controller.dispose();
     super.dispose();
   }
 
@@ -58,31 +64,28 @@ class _UpdateScreenState extends State<UpdateScreen>
               status == UpdateStatus.checking ||
               status == UpdateStatus.downloading;
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.paddingStandard),
             children: [
               if (installed != null)
                 Text(
                   l10n.updatesInstalled(
                     '${installed.versionName}+${installed.versionCode}',
-                    switch (const String.fromEnvironment(
-                      'ENDURAIN_UPDATE_CHANNEL',
-                      defaultValue: 'local',
-                    )) {
-                      'stable' => 'Stable',
-                      'nightly' => 'Nightly',
+                    switch (_controller.installedChannel) {
+                      'stable' => l10n.updatesStableChannel,
+                      'nightly' => l10n.updatesNightlyChannel,
                       'check' => l10n.updatesCheckChannel,
                       _ => l10n.updatesLocalChannel,
                     },
                   ),
                 ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.paddingStandard),
               AdaptiveListSection(
                 children: [
                   for (final channel in UpdateChannel.values)
                     AdaptiveListTile(
                       title: channel == UpdateChannel.stable
-                          ? 'Stable'
-                          : 'Nightly',
+                          ? l10n.updatesStableChannel
+                          : l10n.updatesNightlyChannel,
                       subtitle: channel == UpdateChannel.nightly
                           ? l10n.updatesNightlyDescription
                           : null,
@@ -95,7 +98,7 @@ class _UpdateScreenState extends State<UpdateScreen>
                     ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.paddingStandard),
               AdaptiveButton(
                 onPressed: busy || installed?.supported != true
                     ? null
@@ -108,7 +111,7 @@ class _UpdateScreenState extends State<UpdateScreen>
                     '${MaterialLocalizations.of(context).formatFullDate(_controller.lastChecked!.toLocal())} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(_controller.lastChecked!.toLocal()))}',
                   ),
                 ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.paddingStandard),
               if (status == UpdateStatus.loading ||
                   status == UpdateStatus.checking)
                 const Center(child: AdaptiveLoadingIndicator()),
@@ -126,15 +129,16 @@ class _UpdateScreenState extends State<UpdateScreen>
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
-                  '${MaterialLocalizations.of(context).formatFullDate(release.builtAt.toLocal())} • ${(release.size / 1048576).toStringAsFixed(1)} MB',
+                  '${MaterialLocalizations.of(context).formatFullDate(release.builtAt.toLocal())} • ${l10n.updatesDownloadSize(NumberFormat('0.0', l10n.localeName).format(release.size / _bytesPerMegabyte))}',
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.paddingSmall),
                 Text(release.notes),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.paddingStandard),
                 if (status == UpdateStatus.downloading) ...[
                   LinearProgressIndicator(value: _controller.progress),
                   Text(
-                    '${((_controller.progress ?? 0) * 100).toStringAsFixed(0)}%',
+                    NumberFormat.percentPattern(l10n.localeName)
+                        .format(_controller.progress ?? 0),
                   ),
                   AdaptiveButton(
                     onPressed: _controller.cancel,

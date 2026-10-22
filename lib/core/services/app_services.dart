@@ -1,5 +1,7 @@
-import 'package:endurain/features/updates/update_controller.dart';
-import 'package:endurain/features/updates/update_installer.dart';
+import 'package:endurain/features/updates/repositories/update_settings_repository.dart';
+import 'package:endurain/features/updates/services/update_service.dart';
+import 'package:endurain/features/updates/controllers/update_controller.dart';
+import 'package:endurain/features/updates/services/update_installer.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
@@ -306,7 +308,9 @@ class AppServices {
 
   /// Creates the route-owned manual APK update module for this distribution.
   UpdateController createUpdateController() => UpdateController(
-    preferences: preferences,
+    settings: UpdateSettingsRepository(preferences: preferences),
+    updates: UpdateService(repository: config.updateRepository),
+    installedChannel: config.updateChannel,
     installer: const AndroidUpdateInstaller(),
     recordingChanges: activityRecordingController,
     recordingActive: () {

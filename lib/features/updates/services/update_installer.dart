@@ -1,23 +1,6 @@
+import 'package:endurain/features/updates/models/installed_update_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
-class InstalledUpdateInfo {
-  const InstalledUpdateInfo({
-    required this.applicationId,
-    required this.versionName,
-    required this.versionCode,
-    required this.supportedAbis,
-    required this.sdkInt,
-    required this.supported,
-  });
-
-  final String applicationId;
-  final String versionName;
-  final int versionCode;
-  final List<String> supportedAbis;
-  final int sdkInt;
-  final bool supported;
-}
 
 class UpdateInstallerException implements Exception {
   const UpdateInstallerException(this.code, this.message);

@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:endurain/features/updates/update_controller.dart';
-import 'package:endurain/features/updates/update_screen.dart';
+import 'package:endurain/features/updates/controllers/update_controller.dart';
+import 'package:endurain/features/updates/models/update_status.dart';
+import 'package:endurain/features/updates/screens/update_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
