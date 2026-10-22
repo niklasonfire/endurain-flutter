@@ -31,6 +31,38 @@
     "description": "Mensagem de validação para URL inválido - Usado em: validators.dart"
   },
   "@sectionErrors": "=== ERROS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
+  "errorUpdateIncompatible": "Esta compilação não suporta a versão do Android ou arquitetura do dispositivo.",
+  "@errorUpdateIncompatible": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateInstallFailed": "O Android não conseguiu abrir esta atualização. Verifique a permissão de instalação e tente novamente.",
+  "@errorUpdateInstallFailed": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateIntegrity": "A transferência está incompleta ou a soma de verificação não corresponde. Transfira novamente.",
+  "@errorUpdateIntegrity": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateInvalid": "Os metadados da versão são inválidos ou não correspondem ao APK.",
+  "@errorUpdateInvalid": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateNetwork": "Não foi possível contactar o GitHub. Tente novamente.",
+  "@errorUpdateNetwork": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateRateLimited": "O GitHub está a limitar os pedidos. Tente mais tarde.",
+  "@errorUpdateRateLimited": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateStorage": "Não foi possível guardar os ficheiros ou definições. Verifique o espaço disponível e tente novamente.",
+  "@errorUpdateStorage": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
+  "errorUpdateUnavailable": "Este canal está temporariamente indisponível ou ainda não tem uma compilação publicada. Tente mais tarde.",
+  "@errorUpdateUnavailable": {
+    "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"
+  },
   "errorActivityUploadFailed": "Não foi possível enviar a atividade",
   "@errorActivityUploadFailed": {
     "description": "Erro genérico de envio de atividade - Usado em: error_localizations.dart"
@@ -766,6 +798,101 @@
   "myLocation": "A minha localização",
   "@myLocation": {
     "description": "Dica do botão do mapa que centra na localização do utilizador - Usado em: map_screen.dart"
+  },
+  "@sectionUpdates": "=== UPDATES (features/updates/screens/update_screen.dart) ===",
+  "updatesCheck": "Procurar atualizações",
+  "@updatesCheck": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesCheckChannel": "Compilação de verificação",
+  "@updatesCheckChannel": {
+    "description": "Installed build distribution - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesCurrent": "A aplicação está atualizada.",
+  "@updatesCurrent": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesDownload": "Transferir",
+  "@updatesDownload": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesDownloadSize": "{size} MB",
+  "@updatesDownloadSize": {
+    "description": "Update channel or download size - Used in: features/updates/screens/update_screen.dart",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "updatesInstall": "Instalar",
+  "@updatesInstall": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesInstalled": "Instalado: {version} ({channel})",
+  "@updatesInstalled": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "updatesInstallerOpened": "Instalador aberto. A instalação só é confirmada quando a versão instalada mudar.",
+  "@updatesInstallerOpened": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesLastChecked": "Última verificação bem-sucedida: {date}",
+  "@updatesLastChecked": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "updatesLocalChannel": "Compilação local",
+  "@updatesLocalChannel": {
+    "description": "Installed build distribution - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesNightlyChannel": "Nightly",
+  "@updatesNightlyChannel": {
+    "description": "Update channel or download size - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesNightlyDescription": "Compilações verificadas mais recentes. Podem conter alterações incompletas.",
+  "@updatesNightlyDescription": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesPermission": "Permita que esta aplicação instale atualizações nas definições do Android e toque novamente em Instalar.",
+  "@updatesPermission": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesRecordingActive": "Termine a gravação da atividade antes de instalar uma atualização.",
+  "@updatesRecordingActive": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesStableChannel": "Stable",
+  "@updatesStableChannel": {
+    "description": "Update channel or download size - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesSubtitle": "Procurar versões Stable ou Nightly no GitHub",
+  "@updatesSubtitle": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesTitle": "Atualizações da aplicação",
+  "@updatesTitle": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesUnsupported": "As atualizações APK estão disponíveis apenas no Android.",
+  "@updatesUnsupported": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesWaitingStable": "A aguardar uma versão Stable mais recente do que a versão instalada.",
+  "@updatesWaitingStable": {
+    "description": "Manual app update text - Used in: features/updates/screens/update_screen.dart"
   },
   "@sectionSettings": "=== CONFIGURAÇÕES (features/settings/) ===",
   "settingsTab": "Configurações",

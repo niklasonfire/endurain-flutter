@@ -987,6 +987,9 @@ class ActivityRecorderService : Service() {
     companion object {
         private var activeInstance: ActivityRecorderService? = null
 
+        /** Called on the main thread before launching a process-replacing update. */
+        fun hasActiveService(): Boolean = activeInstance != null
+
         const val ACTION_START = "com.endurain.endurain.activity.action.START"
         const val ACTION_PAUSE = "com.endurain.endurain.activity.action.PAUSE"
         const val ACTION_RESUME = "com.endurain.endurain.activity.action.RESUME"

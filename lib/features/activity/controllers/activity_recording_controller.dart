@@ -87,6 +87,10 @@ class ActivityRecordingController extends SafeNotifier {
 
   ActivityRecordingState get state => _state;
 
+  /// Recovery may still be reading a persisted session while [state] is idle.
+  /// Package installation must wait until its outcome is known.
+  bool get isRecoveringRecording => _activeRecovery != null;
+
   ActivityType get selectedActivityType => _selectedActivityType;
 
   String? get completedGpx => _completedGpx;
@@ -178,8 +182,10 @@ class ActivityRecordingController extends SafeNotifier {
     }
     final recovery = _recoverActiveRecording().whenComplete(() {
       _activeRecovery = null;
+      notify();
     });
     _activeRecovery = recovery;
+    notify();
     return recovery;
   }
 

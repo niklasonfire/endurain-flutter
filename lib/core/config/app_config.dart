@@ -13,6 +13,11 @@
 class AppConfig {
   const AppConfig({
     this.apiBasePath = defaultApiBasePath,
+    this.updateRepository = 'niklasonfire/endurain-flutter',
+    this.updateChannel = const String.fromEnvironment(
+      'ENDURAIN_UPDATE_CHANNEL',
+      defaultValue: 'local',
+    ),
     this.allowedTileServerHosts,
     this.healthSyncEnabled = true,
     this.cloudBaseUrl,
@@ -27,6 +32,12 @@ class AppConfig {
   /// Exists here so a future API version bump changes one constant rather than
   /// every service that builds endpoint strings.
   final String apiBasePath;
+
+  /// Public APK distribution repository; GitHub requests never carry server auth.
+  final String updateRepository;
+
+  /// Installed build distribution, supplied by the shared Android publisher.
+  final String updateChannel;
 
   /// Optional set of allowed tile-server hostnames for this build, injected at
   /// build time from `ENDURAIN_ALLOWED_TILE_HOSTS` (`--dart-define`) as a

@@ -51,6 +51,12 @@ Used by: `features/home/` and the bottom navigation
 - Weekly overview, goal progress, recent activities and fixed recording action
 - Home strings are translated in English, German and Portuguese; other locales currently use the English fallback.
 
+### 8. **UPDATES**
+Used by: `features/updates/screens/update_screen.dart`
+- Manual Stable/Nightly checks, installed distribution, download progress, and installer permission/status text
+- Update strings are sorted by key within this section. Updater error messages live in **ERRORS** and are localized by `error_localizations.dart`.
+- English, German, and Portuguese translations are provided; other locales currently use English fallback text while preserving catalogue parity.
+
 ## Adding New Translations
 
 When adding a new translation:

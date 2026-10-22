@@ -1,3 +1,8 @@
+import 'package:endurain/features/updates/repositories/update_settings_repository.dart';
+import 'package:endurain/features/updates/services/update_service.dart';
+import 'package:endurain/features/updates/controllers/update_controller.dart';
+import 'package:endurain/features/updates/services/update_installer.dart';
+import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
 import 'package:endurain/features/goals/repositories/api_goals_repository.dart';
@@ -300,4 +305,22 @@ class AppServices {
   AutoPauseSettingsController createAutoPauseSettingsController() {
     return AutoPauseSettingsController(repository: _activity.autoPauseSettings);
   }
+
+  /// Creates the route-owned manual APK update module for this distribution.
+  UpdateController createUpdateController() => UpdateController(
+    settings: UpdateSettingsRepository(preferences: preferences),
+    updates: UpdateService(repository: config.updateRepository),
+    installedChannel: config.updateChannel,
+    installer: const AndroidUpdateInstaller(),
+    recordingChanges: activityRecordingController,
+    recordingActive: () {
+      final state = activityRecordingController.state;
+      return activityRecordingController.isRecoveringRecording ||
+          state.isActive ||
+          state.status == ActivityRecordingStatus.stopping ||
+          state.canRecover ||
+          (state.status == ActivityRecordingStatus.completed &&
+              activityRecordingController.completedLocalActivityId == null);
+    },
+  );
 }

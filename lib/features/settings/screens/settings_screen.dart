@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+import 'package:endurain/features/updates/screens/update_screen.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -297,6 +300,20 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         );
                       },
                     ),
+                    if (!kIsWeb &&
+                        defaultTargetPlatform == TargetPlatform.android)
+                      AdaptiveListTile(
+                        leading: const AdaptiveIcon(
+                          materialIcon: Icons.system_update,
+                          cupertinoIcon: CupertinoIcons.arrow_down_circle,
+                        ),
+                        title: l10n.updatesTitle,
+                        subtitle: l10n.updatesSubtitle,
+                        onTap: () => adaptivePush<void>(
+                          context,
+                          (context) => const UpdateScreen(),
+                        ),
+                      ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
                         materialIcon: Icons.code,

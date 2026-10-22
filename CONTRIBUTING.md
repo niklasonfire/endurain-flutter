@@ -14,9 +14,9 @@ If an issue already exists, comment on it to signal your intent so work isn't du
 
 ## Contributor License Agreement
 
-Before a pull request can be merged, every contributor must accept the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md) in the pull request checklist. It grants the Project Owner a broad, irrevocable license to use and relicense accepted contributions under any terms, including future commercial, proprietary, or dual-license terms. Contributors retain their copyright.
+For pull requests targeting `endurain-project/endurain-flutter`, every contributor must accept the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md) in the pull request checklist before merging. It grants the Project Owner a broad, irrevocable license to use and relicense accepted contributions under any terms, including future commercial, proprietary, or dual-license terms. Contributors retain their copyright. Pull requests targeting this fork do not require that acceptance.
 
-By checking the agreement box and submitting or updating the pull request, you electronically sign the agreement for that contribution. Only do so when you have the authority to grant those rights, including any approval required by your employer. Pull requests without the checked agreement are blocked by the required `Contributor License Agreement / Verify contributor agreement` status check and must not be merged.
+By checking the agreement box and submitting or updating the pull request, you electronically sign the agreement for that contribution. Only do so when you have the authority to grant those rights, including any approval required by your employer. Upstream pull requests without the checked agreement are blocked by the required `Contributor License Agreement / Verify contributor agreement` status check and must not be merged.
 
 ## Pull Request Size — The Most Important Rule
 
@@ -60,6 +60,11 @@ PRs that are too large to review efficiently will be asked to be split before th
 ## Branches and CI in this fork
 
 The binding agent workflow is in [AGENTS.md](AGENTS.md#branch-workflow).
+The Contributor License Agreement check runs only in the original
+`endurain-project/endurain-flutter` repository named by that agreement. Pull
+requests targeting this fork do not require its acceptance checkbox. Upstream
+contributions still follow upstream's contribution requirements.
+
 For work in `niklasonfire/endurain-flutter`, start a focused branch from the
 latest `origin/main`: `feat/<topic>`, `fix/<topic>`, `ci/<topic>`, or
 `docs/<topic>`. Keep related follow-up changes on that branch and integrate
@@ -122,7 +127,7 @@ dart run tool/check_coverage.dart \
    feat: add GPX export for activities
    docs: clarify Docker environment variables
    ```
-5. **Push and open a PR** against `niklasonfire/endurain-flutter:main` when working in this fork, filling in the PR template completely and accepting the Contributor License Agreement
+5. **Push and open a PR** against `niklasonfire/endurain-flutter:main` when working in this fork, filling in the applicable PR template fields. The CLA acceptance checkbox is required only for contributions targeting the original upstream repository.
 
 ## Response Time Expectations
 

@@ -453,7 +453,25 @@ GitHub Actions release builds require these repository secrets:
 - `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`: upload-key credentials.
 - `ANDROID_UPLOAD_CERT_SHA256`: expected SHA-256 certificate fingerprint, with or without colon separators.
 
-For a published release, tag the commit as `vX.Y.Z+BUILD` mirroring pubspec's `version:` field (for example `v0.8.0+11`). CI splits the tag into the Android `versionName` (`0.8.0`) and `versionCode` (`11`), and fails the build if the tag does not match `pubspec.yaml`. Because Google Play requires a strictly increasing `versionCode`, bump the build number in `pubspec.yaml` before tagging. Manual workflow runs instead require an explicit semantic `version_name` and positive, monotonically increasing `version_code`.
+In this fork, **Build Android** allocates increasing Android build numbers for
+both update channels. A successful complete Main CI run produces the rolling
+`nightly` prerelease. To publish Stable, run the workflow from `main`, select
+`stable`, and supply `version_name` (`X.Y.Z`) and the full `source_commit` SHA
+that already passed complete Main CI. The workflow creates `vX.Y.Z+CODE` after
+verifying the signed APK; do not pre-create that tag. Select `check` to keep the
+APK as a workflow artifact without publishing. Version names and codes use
+Flutter build overrides rather than requiring a matching `pubspec.yaml` bump.
+
+On Android, **Settings → App updates** lets users select Stable or Nightly,
+manually check for updates, download a verified APK, and open Android's
+installation confirmation. A newer Nightly waits for a higher Stable build
+number when switching channels. Installation is blocked while a recording or
+its finalization is pending. There is no automatic background update check.
+
+Both channels preserve the existing local package and signing identity. For
+updates to an installed local APK, follow [BUILDING_LOCAL.md](BUILDING_LOCAL.md)
+and reuse its existing key. See [Android update publishing](docs/android-update-publishing.md)
+for the release contract, workflow inputs, numbering, and failure recovery.
 
 Manual runs also offer `signing_check_only`. Enable it to check the uploaded
 keystore, certificate fingerprint and private-key password without compiling or
@@ -510,7 +528,8 @@ lib/
 │   ├── health/               # HealthKit/Health Connect import, sync, and access screens
 │   ├── map/                  # Map screen, map settings, and location state
 │   ├── sensors/              # Bluetooth heart-rate sensor pairing and live BPM
-│   └── settings/             # Settings and server configuration screens
+│   ├── settings/             # Settings and server configuration screens
+│   └── updates/              # Manual GitHub release checks, verified downloads, Android installation
 ├── shared/
 │   ├── adaptive/             # Material/Cupertino adaptive components
 │   ├── state/                # Shared state helpers and controllers

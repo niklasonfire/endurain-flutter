@@ -974,5 +974,132 @@
   "errorActivityUploadInvalidGpx": "Die gespeicherte GPX-Datei konnte nicht gelesen werden. Die lokale Aufnahme bleibt erhalten und kann exportiert werden.",
   "@errorActivityUploadInvalidGpx": {
     "description": "Malformed or unreadable GPX upload error - Used in: core/utils/error_localizations.dart"
+  },
+  "@sectionUpdates": "=== UPDATES (features/updates/screens/update_screen.dart) ===",
+  "updatesCheck": "Nach Updates suchen",
+  "@updatesCheck": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesCheckChannel": "Prüf-Build",
+  "@updatesCheckChannel": {
+    "description": "Installed build distribution - Used in: features/updates/update_screen.dart"
+  },
+  "updatesCurrent": "Du bist auf dem neuesten Stand.",
+  "@updatesCurrent": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesDownload": "Herunterladen",
+  "@updatesDownload": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesDownloadSize": "{size} MB",
+  "@updatesDownloadSize": {
+    "description": "Update channel or download size - Used in: features/updates/screens/update_screen.dart",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "updatesInstall": "Installieren",
+  "@updatesInstall": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesInstalled": "Installiert: {version} ({channel})",
+  "@updatesInstalled": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "updatesInstallerOpened": "Installer geöffnet. Die Installation ist erst nach Änderung der installierten Version bestätigt.",
+  "@updatesInstallerOpened": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesLastChecked": "Letzte erfolgreiche Prüfung: {date}",
+  "@updatesLastChecked": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "updatesLocalChannel": "Lokaler Build",
+  "@updatesLocalChannel": {
+    "description": "Installed build distribution - Used in: features/updates/update_screen.dart"
+  },
+  "updatesNightlyChannel": "Nightly",
+  "@updatesNightlyChannel": {
+    "description": "Update channel or download size - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesNightlyDescription": "Aktuelle geprüfte Builds. Können unfertige Änderungen enthalten.",
+  "@updatesNightlyDescription": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesPermission": "Erlaube dieser App in den Android-Einstellungen die Installation von Updates. Tippe danach erneut auf Installieren.",
+  "@updatesPermission": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesRecordingActive": "Beende deine Aktivitätsaufzeichnung, bevor du ein Update installierst.",
+  "@updatesRecordingActive": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesStableChannel": "Stable",
+  "@updatesStableChannel": {
+    "description": "Update channel or download size - Used in: features/updates/screens/update_screen.dart"
+  },
+  "updatesSubtitle": "Auf GitHub nach Stable- oder Nightly-Builds suchen",
+  "@updatesSubtitle": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesTitle": "App-Updates",
+  "@updatesTitle": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesUnsupported": "APK-Updates sind nur unter Android verfügbar.",
+  "@updatesUnsupported": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "updatesWaitingStable": "Auf den nächsten Stable-Build warten, der neuer als die installierte Version ist.",
+  "@updatesWaitingStable": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateIncompatible": "Dieser Build unterstützt deine Android-Version oder Gerätearchitektur nicht.",
+  "@errorUpdateIncompatible": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateInstallFailed": "Android konnte dieses Update nicht öffnen. Prüfe die Installationsfreigabe und versuche es erneut.",
+  "@errorUpdateInstallFailed": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateIntegrity": "Der Download ist unvollständig oder die Prüfsumme stimmt nicht überein. Bitte erneut herunterladen.",
+  "@errorUpdateIntegrity": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateInvalid": "Die Release-Metadaten sind ungültig oder passen nicht zum APK.",
+  "@errorUpdateInvalid": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateNetwork": "GitHub konnte nicht erreicht werden. Bitte erneut versuchen.",
+  "@errorUpdateNetwork": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateRateLimited": "GitHub begrenzt die Anfragen. Bitte später erneut versuchen.",
+  "@errorUpdateRateLimited": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateStorage": "Update-Dateien oder Einstellungen konnten nicht gespeichert werden. Prüfe den freien Speicher und versuche es erneut.",
+  "@errorUpdateStorage": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
+  },
+  "errorUpdateUnavailable": "Dieser Kanal ist vorübergehend nicht verfügbar oder enthält noch keinen Build. Bitte später erneut versuchen.",
+  "@errorUpdateUnavailable": {
+    "description": "Manual app update text - Used in: features/updates/update_screen.dart"
   }
 }

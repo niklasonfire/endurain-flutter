@@ -5,10 +5,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import com.endurain.endurain.activity.ActivityRecorderChannel
+import com.endurain.endurain.updates.UpdateInstallerChannel
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterFragmentActivity() {
+    private var updateInstallerChannel: UpdateInstallerChannel? = null
     private var recorderChannel: ActivityRecorderChannel? = null
     private var deviceMeasurementSystemChannel: DeviceMeasurementSystemChannel? = null
 
@@ -22,12 +24,17 @@ class MainActivity : FlutterFragmentActivity() {
         deviceMeasurementSystemChannel = DeviceMeasurementSystemChannel().also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
+        updateInstallerChannel = UpdateInstallerChannel(this).also {
+            it.register(flutterEngine.dartExecutor.binaryMessenger)
+        }
         recorderChannel = ActivityRecorderChannel(applicationContext).also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        updateInstallerChannel?.unregister()
+        updateInstallerChannel = null
         deviceMeasurementSystemChannel?.unregister()
         deviceMeasurementSystemChannel = null
         recorderChannel?.unregister()
