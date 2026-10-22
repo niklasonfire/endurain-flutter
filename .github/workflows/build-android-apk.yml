@@ -79,6 +79,7 @@ jobs:
       VERSION_NAME: ${{ needs.prepare.outputs.VERSION_NAME }}
       VERSION_CODE: ${{ needs.prepare.outputs.VERSION_CODE }}
       UPDATE_CHANNEL: ${{ needs.prepare.outputs.UPDATE_CHANNEL }}
+      APK_PATH: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
     steps:
       - name: Checkout trusted release tooling
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -171,6 +172,8 @@ jobs:
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \
             --target-platform android-arm64 \
+            --split-per-abi \
+            --android-project-arg=force-version-code-ignoring-abi=true \
             --split-debug-info=build/debug-info \
             --dart-define=ENDURAIN_UPDATE_CHANNEL="$UPDATE_CHANNEL" \
             --dart-define=ENDURAIN_CRASH_REPORTING_DSN="${ENDURAIN_CRASH_REPORTING_DSN:-}"
@@ -190,7 +193,7 @@ jobs:
         with:
           name: endurain-${{ env.UPDATE_CHANNEL }}-${{ env.VERSION_CODE }}
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
+            ${{ env.APK_PATH }}
             build/update.json
           if-no-files-found: error
 
