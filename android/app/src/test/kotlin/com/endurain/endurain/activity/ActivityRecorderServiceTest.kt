@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
@@ -23,6 +25,8 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ServiceController
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.SensorEventBuilder
+import org.robolectric.shadows.ShadowSensor
 import java.util.Date
 
 @RunWith(RobolectricTestRunner::class)
@@ -69,16 +73,129 @@ class ActivityRecorderServiceTest {
             controllers.add(it)
         }
 
-    private fun fix(latitude: Double, timeMillis: Long = System.currentTimeMillis()) {
+    private fun fix(latitude: Double, timeMillis: Long = System.currentTimeMillis(), altitude: Double? = null, speed: Float? = null) {
         shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(1))
         shadowOf(locations).simulateLocation(Location(LocationManager.GPS_PROVIDER).apply {
             this.latitude = latitude
             longitude = -8.0
             time = timeMillis
             accuracy = 5f
+            if (altitude != null) this.altitude = altitude
+            if (speed != null) this.speed = speed
             elapsedRealtimeNanos = android.os.SystemClock.elapsedRealtimeNanos()
         })
         shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun pressure(
+        manager: SensorManager,
+        sensor: Sensor,
+        hpa: Float,
+        accuracy: Int = SensorManager.SENSOR_STATUS_ACCURACY_HIGH,
+    ) {
+        shadowOf(manager).sendSensorEventToListeners(SensorEventBuilder.newBuilder()
+            .setSensor(sensor)
+            .setValues(floatArrayOf(hpa))
+            .setAccuracy(accuracy)
+            .setTimestamp(android.os.SystemClock.elapsedRealtimeNanos())
+            .build())
+    }
+
+    @Test
+    fun barometerCorrectsPersistedAndEmittedAltitudeAndStopsWhilePaused() {
+        val events = mutableListOf<Map<*, *>>()
+        ActivityRecorderCoordinator.attach(object : EventChannel.EventSink {
+            override fun success(event: Any?) { events.add(event as Map<*, *>) }
+            override fun error(code: String, message: String?, details: Any?) = Unit
+            override fun endOfStream() = Unit
+        })
+        val manager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = ShadowSensor.newInstance(Sensor.TYPE_PRESSURE)
+        shadowOf(manager).addSensor(sensor)
+        store.saveSession(session())
+        val controller = service()
+        controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_START), 0, 1)
+        assertEquals(1, shadowOf(manager).listeners.size)
+
+        pressure(manager, sensor, 1000f)
+        fix(41.1, altitude = 100.0)
+        pressure(manager, sensor, 1000f)
+        fix(41.1001, altitude = 120.0)
+        assertEquals(listOf(100.0, 100.0), store.readPoints().map { it.elevationMeters })
+        val emitted = events.last { it["type"] == "pointBatchAvailable" }["points"] as List<*>
+        assertEquals(100.0, (emitted.last() as Map<*, *>)["ele"])
+        assertEquals(1000.0, store.readPoints().last().pressureHpa!!, 0.0)
+
+        store.saveSession(session(ActiveActivitySessionData.STATUS_PAUSED))
+        controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_PAUSE), 0, 2)
+        assertTrue(shadowOf(manager).listeners.isEmpty())
+
+        store.saveSession(session())
+        controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_RESUME), 0, 3)
+        pressure(manager, sensor, 1000f)
+        fix(41.1002, altitude = 150.0)
+        assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
+        pressure(manager, sensor, 900f, SensorManager.SENSOR_STATUS_UNRELIABLE)
+        fix(41.1003, altitude = 150.0)
+        assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
+        assertNull(store.readPoints().last().pressureHpa)
+        pressure(manager, sensor, 990f)
+        fix(41.1004, altitude = 150.0)
+        assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
+        pressure(manager, sensor, Float.NaN)
+        fix(41.1005, altitude = 150.0)
+        assertNull(store.readPoints().last().pressureHpa)
+        controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_STOP), 0, 4)
+        assertTrue(shadowOf(manager).listeners.isEmpty())
+    }
+
+    @Test
+    fun automaticPauseReleasesPressureAndResumeDoesNotCountWeatherDrift() {
+        val manager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = ShadowSensor.newInstance(Sensor.TYPE_PRESSURE)
+        shadowOf(manager).addSensor(sensor)
+        store.saveSession(session().copy(autoPauseEnabled = true, autoPauseDelaySeconds = 1))
+        val controller = service()
+        controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_START), 0, 1)
+        val start = System.currentTimeMillis()
+        pressure(manager, sensor, 1000f)
+        fix(41.1, start, altitude = 100.0, speed = 1f)
+        pressure(manager, sensor, 1000f)
+        fix(41.1, start + 2_000, altitude = 120.0, speed = 0f)
+        assertTrue(store.loadSession()!!.pausedAutomatically)
+        assertTrue(shadowOf(manager).listeners.isEmpty())
+        val count = store.pointCount()
+        pressure(manager, sensor, 990f)
+        for (index in 1..3) {
+            fix(41.1 + index * 0.00001, start + 10_000 + index * 1_000, altitude = 150.0, speed = 1f)
+        }
+        assertEquals(ActiveActivitySessionData.STATUS_RECORDING, store.loadSession()!!.status)
+        assertEquals(count + 1, store.pointCount())
+        assertEquals(1, shadowOf(manager).listeners.size)
+        assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
+        pressure(manager, sensor, 990f)
+        fix(41.10004, start + 14_000, altitude = 150.0, speed = 1f)
+        assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
+    }
+
+    @Test
+    fun missingOrFailedBarometerKeepsGpsRecordingWorking() {
+        val manager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        for (sensorPresent in listOf(false, true)) {
+            store.clear()
+            if (sensorPresent) {
+                shadowOf(manager).addSensor(ShadowSensor.newInstance(Sensor.TYPE_PRESSURE))
+                shadowOf(manager).setForceListenersToFail(true)
+            }
+            store.saveSession(session())
+            val controller = service()
+            controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_START), 0, 1)
+            fix(41.1, altitude = 100.0)
+            fix(41.1001, altitude = 110.0)
+            assertEquals(listOf(100.0, 110.0), store.readPoints().map { it.elevationMeters })
+            assertNull(store.readPoints().last().pressureHpa)
+            controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_STOP), 0, 2)
+        }
     }
 
     @Test

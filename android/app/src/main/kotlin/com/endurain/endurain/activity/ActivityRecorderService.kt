@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -38,6 +39,7 @@ class ActivityRecorderService : Service() {
     private lateinit var store: ActiveActivityStore
     private var locationManager: LocationManager? = null
     private var locationListener: LocationListener? = null
+    private lateinit var barometer: RecordingBarometer
     private var collectingSessionId: String? = null
     private var nextPointOffset = 0
 
@@ -63,6 +65,7 @@ class ActivityRecorderService : Service() {
         store = ActiveActivityStore.of(applicationContext)
         locationManager =
             getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+        barometer = RecordingBarometer(getSystemService(Context.SENSOR_SERVICE) as? SensorManager)
         createNotificationChannel()
     }
 
@@ -280,6 +283,7 @@ class ActivityRecorderService : Service() {
             return
         }
         collectingSessionId = store.loadSession()?.localSessionId
+        barometer.start(store.lastPoint())
         acquireWakeLock()
         scheduleNextTimeAnnouncement()
     }
@@ -351,6 +355,7 @@ class ActivityRecorderService : Service() {
 
     private fun stopCollection() {
         collectingSessionId = null
+        barometer.stop()
         // Released first and unconditionally: the listener may already be null
         // (e.g. a start that never registered a provider), and the wake lock
         // must never outlive collection.
@@ -494,15 +499,21 @@ class ActivityRecorderService : Service() {
         }
         lastPointEpochMillis = nowMillis
 
+        val elevation = barometer.elevation(location)
         val point = RecordedActivityPointData(
             timestamp = IsoTime.format(Date(nowMillis)),
             latitude = location.latitude,
             longitude = location.longitude,
             segmentIndex = segmentIndex,
-            elevationMeters = if (location.hasAltitude()) location.altitude else null,
+            elevationMeters = elevation.elevationMeters,
+            gpsElevationMeters = elevation.gpsElevationMeters,
+            pressureHpa = elevation.pressureHpa,
+            gpsElevationOffsetMeters = elevation.gpsOffsetMeters,
+            elevationReferenceMeters = elevation.lastElevationMeters.takeIf { elevation.elevationMeters == null },
             horizontalAccuracyMeters =
                 if (location.hasAccuracy()) location.accuracy.toDouble() else null,
-            verticalAccuracyMeters = verticalAccuracy(location),
+            // GPS vertical accuracy does not describe the barometric estimate.
+            verticalAccuracyMeters = if (elevation.pressureHpa == null) verticalAccuracy(location) else null,
             headingDegrees = if (location.hasBearing()) location.bearing.toDouble() else null,
             headingAccuracyDegrees = bearingAccuracy(location),
             speedMetersPerSecond = if (location.hasSpeed()) location.speed.toDouble() else null,
@@ -698,6 +709,7 @@ class ActivityRecorderService : Service() {
             pausedAutomatically = false,
         )
         store.saveSession(resumed)
+        barometer.start(store.lastPoint())
         resumedFromPause = true
         ActivityRecorderCoordinator.emitSession(
             ActivityRecorderCoordinator.TYPE_AUTO_RESUMED,
@@ -726,6 +738,7 @@ class ActivityRecorderService : Service() {
             pausedAutomatically = true,
         )
         store.saveSession(paused)
+        barometer.stop()
         ActivityRecorderCoordinator.emitSession(
             ActivityRecorderCoordinator.TYPE_AUTO_PAUSED,
             paused,
