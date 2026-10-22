@@ -19,6 +19,16 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
   final details = error.details;
 
   return switch (error.code) {
+    AppErrorCode.updateInvalid => l10n.errorUpdateInvalid,
+    AppErrorCode.updateIncompatible => l10n.errorUpdateIncompatible,
+    AppErrorCode.updateNetwork => l10n.errorUpdateNetwork,
+    AppErrorCode.updateRateLimited => l10n.errorUpdateRateLimited,
+    AppErrorCode.updateUnavailable => l10n.errorUpdateUnavailable,
+    AppErrorCode.updateIntegrity => l10n.errorUpdateIntegrity,
+    AppErrorCode.updateInstallFailed => l10n.errorUpdateInstallFailed,
+    AppErrorCode.updateRecordingActive => l10n.updatesRecordingActive,
+    AppErrorCode.updateStorage => l10n.errorUpdateStorage,
+
     AppErrorCode.activeActivityStoreReadFailed =>
       l10n.errorActivityLocalLoadFailed,
     AppErrorCode.activeActivityStoreWriteFailed =>

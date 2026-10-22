@@ -2917,6 +2917,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The saved GPX file could not be read. The local recording is preserved and can be exported.'**
   String get errorActivityUploadInvalidGpx;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'App updates'**
+  String get updatesTitle;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Check GitHub for Stable or Nightly builds'**
+  String get updatesSubtitle;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Installed: {version} ({channel})'**
+  String updatesInstalled(String version, String channel);
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get updatesCheck;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Last successful check: {date}'**
+  String updatesLastChecked(String date);
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Latest verified builds. May contain unfinished changes.'**
+  String get updatesNightlyDescription;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'APK updates are available on Android only.'**
+  String get updatesUnsupported;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'You are up to date.'**
+  String get updatesCurrent;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the next Stable build newer than your installed version.'**
+  String get updatesWaitingStable;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get updatesDownload;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get updatesInstall;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allow this app to install updates in Android settings, then tap Install again.'**
+  String get updatesPermission;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Installer opened. Installation is confirmed only after the installed version changes.'**
+  String get updatesInstallerOpened;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your activity recording before installing an update.'**
+  String get updatesRecordingActive;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The release metadata is invalid or does not match the APK.'**
+  String get errorUpdateInvalid;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This build does not support your Android version or device architecture.'**
+  String get errorUpdateIncompatible;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not contact GitHub. Please try again.'**
+  String get errorUpdateNetwork;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub is limiting requests. Please try again later.'**
+  String get errorUpdateRateLimited;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This channel is temporarily unavailable or has no published build. Please try again later.'**
+  String get errorUpdateUnavailable;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The download is incomplete or its checksum does not match. Please download it again.'**
+  String get errorUpdateIntegrity;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Android could not open this update. Check the installation permission and try again.'**
+  String get errorUpdateInstallFailed;
+
+  /// Manual app update text - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save update files or settings. Check available storage and try again.'**
+  String get errorUpdateStorage;
+
+  /// Installed build distribution - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Local build'**
+  String get updatesLocalChannel;
+
+  /// Installed build distribution - Used in: features/updates/update_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Verification build'**
+  String get updatesCheckChannel;
 }
 
 class _AppLocalizationsDelegate

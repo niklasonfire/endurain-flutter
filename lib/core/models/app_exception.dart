@@ -1,4 +1,13 @@
 enum AppErrorCode {
+  updateInvalid,
+  updateIncompatible,
+  updateNetwork,
+  updateRateLimited,
+  updateUnavailable,
+  updateIntegrity,
+  updateInstallFailed,
+  updateRecordingActive,
+  updateStorage,
   activeActivityStoreReadFailed,
   activeActivityStoreWriteFailed,
   activityGpxCleanupFailed,
