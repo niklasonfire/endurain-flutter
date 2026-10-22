@@ -9,6 +9,7 @@ import android.content.pm.Signature
 import android.content.pm.SigningInfo
 import android.os.Build
 import android.provider.Settings
+import androidx.core.content.FileProvider
 import com.endurain.endurain.activity.ActiveActivitySessionData
 import com.endurain.endurain.activity.ActiveActivityStore
 import com.endurain.endurain.activity.ActivityRecorderService
@@ -61,6 +62,13 @@ class UpdateInstallerTest {
             }
         }
         packages.installPackage(installed)
+        // Android attaches providers for each process. Mirror that lifecycle because
+        // Robolectric changes the cache directory between tests while AndroidX keeps
+        // the authority's path strategy in a static cache.
+        val providerInfo = requireNotNull(activity.packageManager.resolveContentProvider(
+            "$PACKAGE.updates", PackageManager.GET_META_DATA,
+        ))
+        FileProvider().attachInfo(activity, providerInfo)
         packages.setPackageArchiveInfo(apk.path, packageInfo(100042))
         packages.setCanRequestPackageInstalls(true)
     }
