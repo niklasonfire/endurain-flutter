@@ -167,6 +167,11 @@ def manifest_from_apk(apk, aapt, apksigner, channel, version, code, sha):
 
 def publish(api, manifest, apk):
     channel, code, sha = manifest['channel'], manifest['versionCode'], manifest['commit']
+    asset = manifest['assets'][0]
+    with apk.open('rb') as source:
+        digest = hashlib.file_digest(source, 'sha256').hexdigest()
+    if apk.stat().st_size != asset['size'] or digest != asset['sha256']:
+        raise ValueError('APK bytes no longer match verified metadata')
     if channel not in ('stable', 'nightly'):
         raise ValueError("Check builds cannot publish")
     if code <= max(release_codes(api), default=21):
