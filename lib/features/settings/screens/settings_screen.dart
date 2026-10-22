@@ -118,223 +118,231 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
 
     return AdaptiveScaffold(
       title: l10n.settingsScreen,
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(UIConstants.paddingStandard),
         children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(UIConstants.paddingStandard),
-              children: [
-                AdaptiveListSection(
-                  children: [
-                    if (widget.isGuest)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.login,
-                          cupertinoIcon: CupertinoIcons.square_arrow_right,
-                        ),
-                        title: l10n.signInConnectServer,
-                        subtitle: l10n.signInConnectServerSubtitle,
-                        onTap: widget.onSignIn,
-                      )
-                    else
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.dns,
-                          cupertinoIcon: CupertinoIcons.globe,
-                        ),
-                        title: l10n.serverSettings,
-                        subtitle: serverUrl == null || serverUrl.isEmpty
-                            ? null
-                            : l10n.connectedToServer(serverUrl),
-                        onTap: () {
-                          adaptivePush<void>(
-                            context,
-                            (context) =>
-                                ServerSettingsScreen(onLogout: widget.onLogout),
-                          );
-                        },
-                      ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.language,
-                        cupertinoIcon: CupertinoIcons.textformat,
-                      ),
-                      title: l10n.language,
-                      subtitle: languageSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const LanguageSettingsScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.straighten,
-                        cupertinoIcon: CupertinoIcons.arrow_left_right,
-                      ),
-                      title: l10n.unitsTitle,
-                      subtitle: l10n.unitsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const UnitsSettingsScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.history,
-                        cupertinoIcon: CupertinoIcons.time,
-                      ),
-                      title: l10n.activityHistoryTitle,
-                      subtitle: l10n.activityHistorySettingsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const ActivityHistoryScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveSwitchListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.description,
-                        cupertinoIcon: CupertinoIcons.doc_text,
-                      ),
-                      title: l10n.activityRetainUploadedGpx,
-                      subtitle: l10n.activityRetainUploadedGpxSubtitle,
-                      value: _controller.retainUploadedGpx,
-                      onChanged: _controller.setRetainUploadedGpx,
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.pause_circle_outline,
-                        cupertinoIcon: CupertinoIcons.pause_circle,
-                      ),
-                      title: l10n.activityAutoPauseTitle,
-                      subtitle: l10n.activityAutoPauseSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const AutoPauseSettingsScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.record_voice_over,
-                        cupertinoIcon: CupertinoIcons.speaker_2,
-                      ),
-                      title: l10n.audioAnnouncementsTitle,
-                      subtitle: l10n.audioAnnouncementsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const AudioAnnouncementSettingsScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.admin_panel_settings_outlined,
-                        cupertinoIcon: CupertinoIcons.shield,
-                      ),
-                      title: l10n.deviceAccessTitle,
-                      subtitle: l10n.deviceAccessSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => DeviceAccessScreen(
-                            healthSyncEnabled: _healthSyncEnabled,
-                          ),
-                        );
-                      },
-                    ),
-                    if (_healthSyncEnabled && !widget.isGuest)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.monitor_heart,
-                          cupertinoIcon: CupertinoIcons.heart,
-                        ),
-                        title: l10n.healthSyncSettingsTitle,
-                        subtitle: l10n.healthSyncSettingsSubtitle,
-                        onTap: () {
-                          adaptivePush<void>(
-                            context,
-                            (context) => const HealthSyncScreen(),
-                          );
-                        },
-                      ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.sensors,
-                        cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
-                      ),
-                      title: l10n.sensorsTitle,
-                      subtitle: l10n.sensorsSettingsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const SensorSettingsScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.bug_report,
-                        cupertinoIcon: CupertinoIcons.waveform_path_ecg,
-                      ),
-                      title: l10n.diagnostics,
-                      subtitle: l10n.diagnosticsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => DiagnosticsScreen(
-                            diagnostics:
-                                widget.diagnostics ??
-                                AppScope.servicesOf(
-                                  context,
-                                  listen: false,
-                                ).diagnostics,
-                          ),
-                        );
-                      },
-                    ),
-                    if (!kIsWeb &&
-                        defaultTargetPlatform == TargetPlatform.android)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.system_update,
-                          cupertinoIcon: CupertinoIcons.arrow_down_circle,
-                        ),
-                        title: l10n.updatesTitle,
-                        subtitle: l10n.updatesSubtitle,
-                        onTap: () => adaptivePush<void>(
-                          context,
-                          (context) => const UpdateScreen(),
-                        ),
-                      ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.code,
-                        cupertinoIcon:
-                            CupertinoIcons.chevron_left_slash_chevron_right,
-                      ),
-                      title: l10n.sourceCode,
-                      subtitle: l10n.sourceCodeSubtitle,
-                      onTap: _openSourceCode,
-                    ),
-                  ],
+          AdaptiveListSection(
+            children: [
+              if (widget.isGuest)
+                AdaptiveListTile(
+                  leading: const AdaptiveIcon(
+                    materialIcon: Icons.login,
+                    cupertinoIcon: CupertinoIcons.square_arrow_right,
+                  ),
+                  title: l10n.signInConnectServer,
+                  subtitle: l10n.signInConnectServerSubtitle,
+                  onTap: widget.onSignIn,
+                )
+              else
+                AdaptiveListTile(
+                  leading: const AdaptiveIcon(
+                    materialIcon: Icons.dns,
+                    cupertinoIcon: CupertinoIcons.globe,
+                  ),
+                  title: l10n.serverSettings,
+                  subtitle: serverUrl == null || serverUrl.isEmpty
+                      ? null
+                      : l10n.connectedToServer(serverUrl),
+                  onTap: () {
+                    adaptivePush<void>(
+                      context,
+                      (context) =>
+                          ServerSettingsScreen(onLogout: widget.onLogout),
+                    );
+                  },
                 ),
-              ],
-            ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.language,
+                  cupertinoIcon: CupertinoIcons.textformat,
+                ),
+                title: l10n.language,
+                subtitle: languageSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => const LanguageSettingsScreen(),
+                  );
+                },
+              ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.straighten,
+                  cupertinoIcon: CupertinoIcons.arrow_left_right,
+                ),
+                title: l10n.unitsTitle,
+                subtitle: l10n.unitsSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => const UnitsSettingsScreen(),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: UIConstants.paddingStandard),
+          AdaptiveListSection(
+            children: [
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.history,
+                  cupertinoIcon: CupertinoIcons.time,
+                ),
+                title: l10n.activityHistoryTitle,
+                subtitle: l10n.activityHistorySettingsSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => const ActivityHistoryScreen(),
+                  );
+                },
+              ),
+              AdaptiveSwitchListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.description,
+                  cupertinoIcon: CupertinoIcons.doc_text,
+                ),
+                title: l10n.activityRetainUploadedGpx,
+                subtitle: l10n.activityRetainUploadedGpxSubtitle,
+                value: _controller.retainUploadedGpx,
+                onChanged: _controller.setRetainUploadedGpx,
+              ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.pause_circle_outline,
+                  cupertinoIcon: CupertinoIcons.pause_circle,
+                ),
+                title: l10n.activityAutoPauseTitle,
+                subtitle: l10n.activityAutoPauseSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => const AutoPauseSettingsScreen(),
+                  );
+                },
+              ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.record_voice_over,
+                  cupertinoIcon: CupertinoIcons.speaker_2,
+                ),
+                title: l10n.audioAnnouncementsTitle,
+                subtitle: l10n.audioAnnouncementsSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => const AudioAnnouncementSettingsScreen(),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: UIConstants.paddingStandard),
+          AdaptiveListSection(
+            children: [
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.admin_panel_settings_outlined,
+                  cupertinoIcon: CupertinoIcons.shield,
+                ),
+                title: l10n.deviceAccessTitle,
+                subtitle: l10n.deviceAccessSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => DeviceAccessScreen(
+                      healthSyncEnabled: _healthSyncEnabled,
+                    ),
+                  );
+                },
+              ),
+              if (_healthSyncEnabled && !widget.isGuest)
+                AdaptiveListTile(
+                  leading: const AdaptiveIcon(
+                    materialIcon: Icons.monitor_heart,
+                    cupertinoIcon: CupertinoIcons.heart,
+                  ),
+                  title: l10n.healthSyncSettingsTitle,
+                  subtitle: l10n.healthSyncSettingsSubtitle,
+                  onTap: () {
+                    adaptivePush<void>(
+                      context,
+                      (context) => const HealthSyncScreen(),
+                    );
+                  },
+                ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.sensors,
+                  cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
+                ),
+                title: l10n.sensorsTitle,
+                subtitle: l10n.sensorsSettingsSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => const SensorSettingsScreen(),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: UIConstants.paddingStandard),
+          AdaptiveListSection(
+            children: [
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.bug_report,
+                  cupertinoIcon: CupertinoIcons.waveform_path_ecg,
+                ),
+                title: l10n.diagnostics,
+                subtitle: l10n.diagnosticsSubtitle,
+                onTap: () {
+                  adaptivePush<void>(
+                    context,
+                    (context) => DiagnosticsScreen(
+                      diagnostics:
+                          widget.diagnostics ??
+                          AppScope.servicesOf(
+                            context,
+                            listen: false,
+                          ).diagnostics,
+                    ),
+                  );
+                },
+              ),
+              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+                AdaptiveListTile(
+                  leading: const AdaptiveIcon(
+                    materialIcon: Icons.system_update,
+                    cupertinoIcon: CupertinoIcons.arrow_down_circle,
+                  ),
+                  title: l10n.updatesTitle,
+                  subtitle: l10n.updatesSubtitle,
+                  onTap: () => adaptivePush<void>(
+                    context,
+                    (context) => const UpdateScreen(),
+                  ),
+                ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.code,
+                  cupertinoIcon:
+                      CupertinoIcons.chevron_left_slash_chevron_right,
+                ),
+                title: l10n.sourceCode,
+                subtitle: l10n.sourceCodeSubtitle,
+                onTap: _openSourceCode,
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               UIConstants.paddingStandard,
-              0,
+              UIConstants.paddingLarge,
               UIConstants.paddingStandard,
-              UIConstants.paddingStandard,
+              UIConstants.paddingCompact,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

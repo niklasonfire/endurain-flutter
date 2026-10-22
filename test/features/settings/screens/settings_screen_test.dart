@@ -10,6 +10,7 @@ import 'package:endurain/features/settings/repositories/locale_settings_reposito
 import 'package:endurain/features/settings/screens/settings_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -81,18 +82,98 @@ void main() {
     expect(find.text(l10n.languageSystemDefault), findsOneWidget);
     expect(find.text(l10n.activityHistoryTitle), findsOneWidget);
     expect(find.text(l10n.activityRetainUploadedGpx), findsOneWidget);
+    await tester.scrollUntilVisible(find.text(l10n.deviceAccessTitle), 200);
     expect(find.text(l10n.deviceAccessTitle), findsOneWidget);
     expect(find.byIcon(Icons.description), findsOneWidget);
     expect(
       tester.getTopLeft(find.byIcon(Icons.description)).dx,
       tester.getTopLeft(find.byIcon(Icons.dns)).dx,
     );
+    await tester.scrollUntilVisible(find.text(l10n.sourceCode), 200);
     expect(find.text(l10n.diagnostics), findsOneWidget);
     expect(find.text(l10n.sourceCode), findsOneWidget);
     expect(find.text(l10n.sourceCodeSubtitle), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text(l10n.endurainTrademarkNotice),
+      200,
+    );
     expect(find.textContaining('Endurain • 1.2.3'), findsOneWidget);
     expect(find.text(l10n.endurainTrademarkNotice), findsOneWidget);
   });
+
+  for (final isApple in [false, true]) {
+    testWidgets(
+      'Settings footer scrolls above tabs on a small ${isApple ? 'Apple' : 'Android'} screen with large text',
+      (tester) async {
+        PlatformUtils.debugIsApplePlatformOverride = isApple;
+        await tester.binding.setSurfaceSize(const Size(390, 700));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final localeController = buildLocaleController();
+        addTearDown(localeController.dispose);
+
+        await tester.pumpWidget(
+          AdaptiveApp(
+            title: 'Test',
+            home: TestAppScope(
+              child: MediaQuery(
+                data: const MediaQueryData(
+                  size: Size(390, 700),
+                  textScaler: TextScaler.linear(1.5),
+                  padding: EdgeInsets.only(top: 24, bottom: 24),
+                ),
+                child: AdaptiveBottomNavigation(
+                  selectedIndex: 1,
+                  tabs: [
+                    AdaptiveTab(
+                      routeName: '/home',
+                      label: l10n.homeTab,
+                      materialIcon: Icons.home_rounded,
+                      cupertinoIcon: CupertinoIcons.house_fill,
+                      builder: (_) => const SizedBox.shrink(),
+                    ),
+                    AdaptiveTab(
+                      routeName: '/settings',
+                      label: l10n.settingsTab,
+                      materialIcon: Icons.settings,
+                      cupertinoIcon: CupertinoIcons.settings,
+                      builder: (_) => SettingsScreen(
+                        controller: buildSettingsController(),
+                        localeController: localeController,
+                        urlLauncherService: FakeUrlLauncherService(
+                          launched: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final notice = find.text(l10n.endurainTrademarkNotice);
+        final tab = find.text(l10n.homeTab);
+        final tabPosition = tester.getTopLeft(tab);
+        expect(notice.hitTestable(), findsNothing);
+
+        await tester.scrollUntilVisible(notice, 300);
+        await tester.ensureVisible(notice);
+        await tester.pumpAndSettle();
+
+        expect(notice.hitTestable(), findsOneWidget);
+        expect(find.textContaining('Endurain • 1.2.3'), findsOneWidget);
+        expect(tester.getBottomLeft(notice).dy, lessThan(tabPosition.dy));
+        expect(tester.getTopLeft(tab), tabPosition);
+        expect(tester.takeException(), isNull);
+
+        await tester.scrollUntilVisible(find.text(l10n.serverSettings), -300);
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.serverSettings).hitTestable(), findsOneWidget);
+        expect(notice.hitTestable(), findsNothing);
+      },
+    );
+  }
 
   testWidgets('SettingsScreen opens the source code repository', (
     tester,
