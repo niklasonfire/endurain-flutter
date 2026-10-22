@@ -62,6 +62,14 @@ dependencies:
   path_provider: ^2.1.6
 
   # Non-secret key/value storage for display and language preferences.
+  #
+  # TODO: shared_preferences_android 2.5.0-2.5.1 breaks release builds (R8
+  # renames the Kotlin classes it calls over JNI; flutter/flutter#194649).
+  # android/app/proguard-rules.pro works around it. Once 2.5.2 (which ships its
+  # own consumer rules, flutter/packages#13311) is on pub.dev: upgrade it, raise
+  # the transitive floor, then delete the rules, the proguardFiles line in
+  # android/app/build.gradle.kts and
+  # test/architecture/android_proguard_rules_test.dart.
   shared_preferences: ^2.5.5
 
   # HTTP client for API requests
@@ -78,7 +86,7 @@ dependencies:
   # pure-Dart package resolves to the latest and captures the same Dart/Flutter
   # errors the local diagnostics recorder already hooks. Native-crash capture
   # can be added later by swapping the injected CrashReporter adapter.
-  sentry: ^9.30.0
+  sentry: ^10.1.0
 
   # System browser OAuth/SSO flow with deep-link callback
   app_links: ^7.2.1
@@ -109,7 +117,7 @@ dependencies:
   # Services) and actively maintained across Android/iOS/desktop/web. It also
   # requests the BLE runtime permissions itself, so no separate
   # permission_handler dependency is needed.
-  universal_ble: ^2.3.0
+  universal_ble: ^3.1.0
 
   # Standalone Material/Cupertino design packages (Flutter 3.47+), decoupled
   # from the core SDK so they can ship on their own release cadence.
