@@ -57,9 +57,36 @@ PRs that are too large to review efficiently will be asked to be split before th
 - Pure refactor PRs (no behaviour change) are easiest to review. Keep them separate from feature or fix PRs
 - Include a clear explanation of what improved and why
 
+## Branches and CI in this fork
+
+The binding agent workflow is in [AGENTS.md](AGENTS.md#branch-workflow).
+For work in `niklasonfire/endurain-flutter`, start a focused branch from the
+latest `origin/main`: `feat/<topic>`, `fix/<topic>`, `ci/<topic>`, or
+`docs/<topic>`. Keep related follow-up changes on that branch and integrate
+through a PR targeting this fork's `main`.
+
+Before implementing a feature or fix, perform the
+[upstream check](AGENTS.md#upstream-check-for-features-and-fixes): inspect
+relevant upstream issues, open PRs, and merged changes, then record links
+and the implications for the local approach. Prefer existing upstream
+solutions and keep general fixes separable from fork-specific work.
+With an explicit user instruction, a focused contribution can be submitted
+from our fork to `endurain-project/endurain-flutter` after checking its
+current contribution requirements.
+
+Feature-branch pushes do not start the Flutter/Android pipeline. Open a PR
+to enable automatic checks, or manually run **Local runner CI** beforehand.
+Code changes pushed to `main` are checked again after integration.
+Markdown-only changes and documentation screenshots skip expensive Flutter,
+Android, and iOS jobs; lightweight completion checks still report success.
+Mixed documentation and code changes run the applicable checks. Manual
+Local runner CI runs bypass the documentation filter, including its
+`smoke_only` toolchain check. iOS PR checks retain their platform/dependency
+scope; code pushes to `main` run iOS verification.
+
 ## Testing and Quality Checks
 
-Before opening a PR, run the same checks as CI:
+For Flutter/Dart changes, run the same checks as CI before opening a PR:
 
 ```bash
 dart format --output=none --set-exit-if-changed .
@@ -95,7 +122,7 @@ dart run tool/check_coverage.dart \
    feat: add GPX export for activities
    docs: clarify Docker environment variables
    ```
-5. **Push and open a PR** against the `main` branch, filling in the PR template completely and accepting the Contributor License Agreement
+5. **Push and open a PR** against `niklasonfire/endurain-flutter:main` when working in this fork, filling in the PR template completely and accepting the Contributor License Agreement
 
 ## Response Time Expectations
 

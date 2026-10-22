@@ -2,7 +2,7 @@ name: Local runner CI
 
 on:
   push:
-    branches: [main, 'feat/**', 'fix/**', 'ci/**']
+    branches: [main]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -22,9 +22,15 @@ env:
   FLUTTER_VERSION: 3.47.3
 
 jobs:
-  verify:
+  changes:
+    uses: ./.github/workflows/classify-ci-changes.yml
+
+  checks:
+    name: Flutter and Android checks
+    needs: changes
     # The privileged runner is reserved for code from this fork.
     if: >-
+      needs.changes.outputs.run_ci == 'true' &&
       github.repository == 'niklasonfire/endurain-flutter' &&
       (github.event_name != 'pull_request' ||
        github.event.pull_request.head.repo.full_name == github.repository)
@@ -93,3 +99,26 @@ jobs:
           name: endurain-local-debug-${{ github.run_number }}
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+
+  # Preserve the existing required-check name even when builds are skipped.
+  verify:
+    needs: [changes, checks]
+    if: >-
+      always() && github.repository == 'niklasonfire/endurain-flutter' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify CI outcome
+        env:
+          CLASSIFICATION: ${{ needs.changes.result }}
+          RUN_CI: ${{ needs.changes.outputs.run_ci }}
+          CHECKS: ${{ needs.checks.result }}
+        run: |
+          test "$CLASSIFICATION" = success
+          if [ "$RUN_CI" = true ]; then
+            test "$CHECKS" = success
+          else
+            test "$CHECKS" = skipped
+            echo "Documentation-only change: Flutter and Android checks skipped."
+          fi

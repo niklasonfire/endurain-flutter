@@ -366,12 +366,17 @@ flutter test
 ### What CI verifies (and what it does not)
 
 CI runs formatting, Dart analysis, the Dart test suite with a coverage
-threshold, the Kotlin unit tests, and a debug Android build.
+threshold, the Kotlin unit tests, and a debug Android build. In this fork,
+automatic Flutter/Android runs happen on pull requests and pushes to `main`;
+other branch pushes can be checked manually. Markdown-only changes and
+images under `docs/screenshots/` skip expensive builds and tests while
+completion checks still report success. See [the branch and CI workflow](CONTRIBUTING.md#branches-and-ci-in-this-fork).
 
 A separate iOS workflow builds the app for the simulator and runs the native
 XCTests in `ios/RunnerTests` on a macOS runner. Pull requests only run it when
 they change `ios/**`, `pubspec.yaml`, `pubspec.lock`, the workflow or its
-shared actions; pushes to `main` always run it. It takes about 15 minutes, so
+shared actions or change-classification logic; pushes to `main` run it for
+changes beyond documentation. It takes about 15 minutes, so
 for quicker feedback while changing `ios/**`, build locally first:
 
 ```bash

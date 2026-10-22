@@ -1,20 +1,11 @@
 name: iOS
 
-# The macOS job is the slowest one, so pull requests only run it when they
-# touch the iOS project, plugin dependencies or this workflow. Pushes to main
-# always run it, since a merge can break the iOS project even when neither
-# side did on its own.
+# Classify changes on Linux before allocating a macOS runner.
 on:
   push:
     branches:
       - main
   pull_request:
-    paths:
-      - "ios/**"
-      - "pubspec.yaml"
-      - "pubspec.lock"
-      - ".github/workflows/ios.yml"
-      - ".github/actions/**"
 
 env:
   # Keep in sync with ci.yml.
@@ -29,8 +20,13 @@ permissions:
   contents: read
 
 jobs:
-  ios-test:
-    name: iOS build and unit tests
+  changes:
+    uses: ./.github/workflows/classify-ci-changes.yml
+
+  ios-build:
+    name: Build and test on macOS
+    needs: changes
+    if: needs.changes.outputs.run_ios == 'true'
     # macOS runners cannot use container jobs, so unlike ci.yml this job does
     # not use the CI builder image and checks out Flutter at the pinned version.
     runs-on: macos-26
@@ -81,3 +77,24 @@ jobs:
             -scheme Runner \
             -destination "id=$SIMULATOR_UDID" \
             CODE_SIGNING_ALLOWED=NO
+
+  # Keep the existing status-check name available for every PR.
+  ios-test:
+    name: iOS build and unit tests
+    needs: [changes, ios-build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify iOS outcome
+        env:
+          CLASSIFICATION: ${{ needs.changes.result }}
+          RUN_IOS: ${{ needs.changes.outputs.run_ios }}
+          CHECKS: ${{ needs.ios-build.result }}
+        run: |
+          test "$CLASSIFICATION" = success
+          if [ "$RUN_IOS" = true ]; then
+            test "$CHECKS" = success
+          else
+            test "$CHECKS" = skipped
+            echo "No iOS-relevant changes: macOS checks skipped."
+          fi
