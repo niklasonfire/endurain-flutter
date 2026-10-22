@@ -60,6 +60,11 @@ PRs that are too large to review efficiently will be asked to be split before th
 ## Branches and CI in this fork
 
 The binding agent workflow is in [AGENTS.md](AGENTS.md#branch-workflow).
+The Contributor License Agreement check runs only in the original
+`endurain-project/endurain-flutter` repository named by that agreement. Pull
+requests targeting this fork do not require its acceptance checkbox. Upstream
+contributions still follow upstream's contribution requirements.
+
 For work in `niklasonfire/endurain-flutter`, start a focused branch from the
 latest `origin/main`: `feat/<topic>`, `fix/<topic>`, `ci/<topic>`, or
 `docs/<topic>`. Keep related follow-up changes on that branch and integrate

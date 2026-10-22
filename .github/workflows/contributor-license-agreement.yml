@@ -14,6 +14,9 @@ permissions:
 jobs:
   validate:
     name: Verify contributor agreement
+    # The agreement names the upstream repository; this fork does not require
+    # contributors to attest to that agreement for fork-only pull requests.
+    if: github.repository == 'endurain-project/endurain-flutter'
     runs-on: ubuntu-latest
     steps:
       # Run the validator from the trusted base ref so a pull request cannot
