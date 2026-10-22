@@ -6,6 +6,22 @@ While experimental, I actively and successfully use this fork myself. Features m
 
 This fork is built out of appreciation for Endurain and is not intended to compete with the upstream project in any way. It provides space for exploration and ideas that may inspire future development.
 
+## Experimental fork screenshots
+
+These previews show the screens added in this fork: a Home dashboard with weekly progress and goals, server activity browsing, activity details with route-linked charts, and training statistics. They are rendered from the actual Flutter screens in the Android light theme using anonymized, running-classified GPS recordings from the CC-BY-4.0-licensed GeoPrivacy Open Data dataset. Distances, durations, pace, and weekly totals are calculated from the GPX files; the goal is a demonstration setting.
+
+| Home | Activities | Statistics |
+| --- | --- | --- |
+| <img src="docs/screenshots/home.png" alt="Home dashboard with weekly activity totals, a running goal, and the recording button" width="250"> | <img src="docs/screenshots/activities.png" alt="Server activity list with search, filters, route previews, and sport-specific metrics" width="250"> | <img src="docs/screenshots/statistics.png" alt="Weekly training statistics with distance, duration, activity counts, and a daily breakdown" width="250"> |
+
+| Activity details | Activity charts |
+| --- | --- |
+| <img src="docs/screenshots/activity-details.png" alt="Activity details with running metrics and a route map" width="300"> | <img src="docs/screenshots/activity-charts.png" alt="Scrolled activity details with the route map and a pace chart linked to the selected route position" width="300"> |
+
+Track data: **Mäkinen, V., Brauer, A. and Oksanen, J. / GeoPrivacy project, Finnish Geospatial Research Institute, National Land Survey of Finland**, [GeoPrivacy Open Data (2023/11)](https://doi.org/10.23729/a86e508a-8798-4720-9b06-0b9db8fc6b8e), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dates and track endpoints are anonymized; the three independent records are grouped for demonstration. The source contains no heart-rate or elevation samples; the statistics screen totals the supplied elevation gains as zero. The source also requires privacy-preserving reuse. See [track sources and processing](docs/screenshot-track-sources.md).
+
+Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). See [screenshot generation](tool/screenshots/README.md) to refresh these images.
+
 <div align="center">
   <img src="assets/logo/brand_logo_light_theme.png" width="128" height="128">
 
@@ -24,6 +40,7 @@ This fork is built out of appreciation for Endurain and is not intended to compe
 
 ## Table of Contents
 
+- [Experimental fork screenshots](#experimental-fork-screenshots)
 - [What is Endurain mobile app?](#what-is-endurain-mobile)
 - [Current Features](#current-features)
 - [Roadmap](#roadmap)
