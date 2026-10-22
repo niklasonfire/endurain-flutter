@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
 import 'package:endurain/features/goals/repositories/api_goals_repository.dart';
@@ -54,11 +53,6 @@ import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 
-import 'package:endurain/features/osmand/osmand_host_bridge.dart';
-import 'package:endurain/features/osmand/osmand_import_ledger.dart';
-import 'package:endurain/features/osmand/osmand_recording_importer.dart';
-import 'package:endurain/features/osmand/osmand_recordings_controller.dart';
-
 /// The application's composition root.
 ///
 /// [AppServices] wires the shared [AppInfrastructure] and the per-feature
@@ -75,35 +69,7 @@ import 'package:endurain/features/osmand/osmand_recordings_controller.dart';
 /// - activity → health: the local-history controller's default health-import
 ///   cleanup is injected here (see [createLocalActivityHistoryController]).
 class AppServices {
-  AppServices({
-    this.config = AppConfig.defaults,
-    OsmandHostBridge? osmandHostBridge,
-  }) : osmandHostBridge =
-           osmandHostBridge ??
-           (config.osmandHostEnabled &&
-                   defaultTargetPlatform == TargetPlatform.android
-               ? const OsmandHostBridge()
-               : const UnsupportedOsmandHostBridge());
-
-  /// Shared native host adapter. Unsupported standalone builds never call the
-  /// OsmAnd platform channel. Tests can inject a fake through the constructor.
-  final OsmandHostBridge osmandHostBridge;
-
-  OsmandRecordingsController createOsmandRecordingsController({
-    OsmandHostBridge? bridge,
-    OsmandRecordingImporter? importer,
-  }) => OsmandRecordingsController(
-    bridge: bridge ?? osmandHostBridge,
-    importer:
-        importer ??
-        OsmandRecordingImporter(
-          repository: localActivities,
-          uploadQueue: activityUploadQueue,
-          ledger: OsmandImportLedger(preferences),
-          bridge: bridge ?? osmandHostBridge,
-        ),
-    currentProfile: authSession.getConnectionProfile,
-  );
+  AppServices({this.config = AppConfig.defaults});
 
   /// Runtime configuration shared by every service.
   final AppConfig config;

@@ -158,11 +158,6 @@ class ActivityModule {
   ActivityLocationRecorder createLocationRecorder({
     LocationService? locationService,
   }) {
-    if (_infra.config.osmandHostEnabled) {
-      throw StateError(
-        'OsmAnd owns recording in this build. Open the host recorder instead.',
-      );
-    }
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS) {
       return NativeActivityRecorderChannel();
@@ -250,7 +245,6 @@ class ActivityModule {
   /// finishes. On iOS and elsewhere the Dart links stay connected throughout, so
   /// reconnection is always allowed. Passed to [SensorsModule] as its gate.
   bool canAutoReconnectSensors() {
-    if (_infra.config.osmandHostEnabled) return false;
     if (!usesNativeHeartRateHandoff(defaultTargetPlatform)) {
       return true;
     }

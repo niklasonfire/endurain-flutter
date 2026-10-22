@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/home/screens/home_screen.dart';
@@ -40,8 +39,7 @@ class AppBottomNav extends StatefulWidget {
 
 class _AppBottomNavState extends State<AppBottomNav> {
   late final HomeController _home;
-  ActivityRecordingController? _recording;
-  late final bool _osmandHostEnabled;
+  late final ActivityRecordingController _recording;
   late final StreamSubscription<void> _uploadSubscription;
   ActivityUploadStatus _lastUploadStatus = ActivityUploadStatus.idle;
   int _selectedIndex = 0;
@@ -52,20 +50,16 @@ class _AppBottomNavState extends State<AppBottomNav> {
     super.initState();
     final services = AppScope.servicesOf(context, listen: false);
     _home = services.createHomeController();
-    _osmandHostEnabled = services.config.osmandHostEnabled;
-    if (!_osmandHostEnabled) {
-      final recording = services.activityRecordingController;
-      _recording = recording;
-      _lastUploadStatus = recording.uploadStatus;
-      recording.addListener(_recordingChanged);
-    }
+    _recording = services.activityRecordingController;
+    _lastUploadStatus = _recording.uploadStatus;
+    _recording.addListener(_recordingChanged);
     _uploadSubscription = services.activityUploadQueue.onDrainCompleted.listen(
       (_) => unawaited(_home.refresh()),
     );
   }
 
   void _recordingChanged() {
-    final status = _recording!.uploadStatus;
+    final status = _recording.uploadStatus;
     if (_lastUploadStatus != status &&
         (status == ActivityUploadStatus.uploaded ||
             status == ActivityUploadStatus.cleanupFailed)) {
@@ -79,21 +73,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
     if (_recordingScreenOpen) return;
     _recordingScreenOpen = true;
     try {
-      if (_osmandHostEnabled) {
-        await AppScope.servicesOf(
-          tabContext,
-          listen: false,
-        ).osmandHostBridge.openRecording();
-      } else {
-        await adaptivePush<void>(tabContext, (_) => const MapScreen());
-      }
-    } catch (_) {
-      if (tabContext.mounted) {
-        await DialogUtils.showErrorDialog(
-          tabContext,
-          AppLocalizations.of(tabContext)!.activityRecordingFailed,
-        );
-      }
+      await adaptivePush<void>(tabContext, (_) => const MapScreen());
     } finally {
       _recordingScreenOpen = false;
       if (mounted) unawaited(_home.refresh());
@@ -102,7 +82,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
 
   @override
   void dispose() {
-    _recording?.removeListener(_recordingChanged);
+    _recording.removeListener(_recordingChanged);
     unawaited(_uploadSubscription.cancel());
     _home.dispose();
     super.dispose();
@@ -126,12 +106,12 @@ class _AppBottomNavState extends State<AppBottomNav> {
             onRecordActivity: () => unawaited(_openRecording(context)),
             onOpenActivities: () => setState(() => _selectedIndex = 1),
             hasActiveRecording:
-                (_recording?.state.isActive ?? false) ||
-                (_recording?.state.canRecover ?? false) ||
-                _recording?.state.status == ActivityRecordingStatus.completed ||
-                _recording?.state.status == ActivityRecordingStatus.stopping,
+                _recording.state.isActive ||
+                _recording.state.canRecover ||
+                _recording.state.status == ActivityRecordingStatus.completed ||
+                _recording.state.status == ActivityRecordingStatus.stopping,
             isRecordingPaused:
-                _recording?.state.status == ActivityRecordingStatus.paused,
+                _recording.state.status == ActivityRecordingStatus.paused,
           ),
         ),
         AdaptiveTab(

@@ -77,9 +77,3 @@ firebase_options.dart
 # Sensitive data
 secrets.dart
 config/secrets.yaml
-
-# Reproducible OsmAnd PoC source/dependency checkouts and downloaded binaries
-/poc/osmand/upstream/
-/poc/osmand/resources/
-/poc/osmand/core-legacy/
-/poc/osmand/downloads/

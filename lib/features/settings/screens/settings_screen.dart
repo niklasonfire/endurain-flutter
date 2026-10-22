@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/features/osmand/osmand_recordings_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -62,7 +61,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
   late final SettingsController _controller;
   late final bool _healthSyncEnabled;
-  late final bool _osmandHostEnabled;
   late final UrlLauncherService _urlLauncherService;
 
   @override
@@ -70,7 +68,6 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
     super.initState();
     final services = AppScope.servicesOf(context, listen: false);
     _healthSyncEnabled = services.config.healthSyncEnabled;
-    _osmandHostEnabled = services.config.osmandHostEnabled;
     _urlLauncherService = widget.urlLauncherService ?? services.urlLauncher;
     _controller = registerController(
       widget.controller,
@@ -78,27 +75,6 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
       onChanged: _onControllerChanged,
     );
     unawaited(_controller.load());
-  }
-
-  Future<void> _openOsmandRecording({bool mapOnly = false}) async {
-    try {
-      final bridge = AppScope.servicesOf(
-        context,
-        listen: false,
-      ).osmandHostBridge;
-      if (mapOnly) {
-        await bridge.openMap();
-      } else {
-        await bridge.openRecording();
-      }
-    } catch (_) {
-      if (mounted) {
-        await DialogUtils.showErrorDialog(
-          context,
-          AppLocalizations.of(context)!.activityRecordingFailed,
-        );
-      }
-    }
   }
 
   void _onControllerChanged() {
@@ -202,30 +178,6 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         );
                       },
                     ),
-                    if (_osmandHostEnabled)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.map,
-                          cupertinoIcon: CupertinoIcons.map,
-                        ),
-                        title: l10n.mapTab,
-                        subtitle: 'OsmAnd',
-                        onTap: () =>
-                            unawaited(_openOsmandRecording(mapOnly: true)),
-                      ),
-                    if (_osmandHostEnabled)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.route,
-                          cupertinoIcon: CupertinoIcons.map,
-                        ),
-                        title: l10n.activityHistoryTitle,
-                        subtitle: 'OsmAnd GPX',
-                        onTap: () => adaptivePush<void>(
-                          context,
-                          (_) => const OsmandRecordingsScreen(),
-                        ),
-                      ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
                         materialIcon: Icons.history,
@@ -256,18 +208,13 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         cupertinoIcon: CupertinoIcons.speaker_2,
                       ),
                       title: l10n.audioAnnouncementsTitle,
-                      subtitle: _osmandHostEnabled
-                          ? l10n.osmandNativeSettingsUnavailable
-                          : l10n.audioAnnouncementsSubtitle,
-                      onTap: _osmandHostEnabled
-                          ? null
-                          : () {
-                              adaptivePush<void>(
-                                context,
-                                (context) =>
-                                    const AudioAnnouncementSettingsScreen(),
-                              );
-                            },
+                      subtitle: l10n.audioAnnouncementsSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const AudioAnnouncementSettingsScreen(),
+                        );
+                      },
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
@@ -306,17 +253,13 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
                       ),
                       title: l10n.sensorsTitle,
-                      subtitle: _osmandHostEnabled
-                          ? l10n.osmandNativeSettingsUnavailable
-                          : l10n.sensorsSettingsSubtitle,
-                      onTap: _osmandHostEnabled
-                          ? null
-                          : () {
-                              adaptivePush<void>(
-                                context,
-                                (context) => const SensorSettingsScreen(),
-                              );
-                            },
+                      subtitle: l10n.sensorsSettingsSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const SensorSettingsScreen(),
+                        );
+                      },
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
