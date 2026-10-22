@@ -1,3 +1,11 @@
+## Personal experimental fork
+
+This is a personal, experimental fork of [Endurain's mobile app](https://github.com/endurain-project/endurain-flutter). It is a playground for trying out potential features and exploring how Endurain could look and feel in the future.
+
+While experimental, I actively and successfully use this fork myself. Features may still be unfinished, change significantly, or be removed as ideas evolve. These experiments reflect my personal ideas and do not represent the upstream project's plans or direction.
+
+This fork is built out of appreciation for Endurain and is not intended to compete with the upstream project in any way. It provides space for exploration and ideas that may inspire future development.
+
 <div align="center">
   <img src="assets/logo/brand_logo_light_theme.png" width="128" height="128">
 
