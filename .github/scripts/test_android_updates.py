@@ -3,14 +3,16 @@
 import base64
 import copy
 import json
+import os
 from pathlib import Path
 import tempfile
+import sys
 import unittest
 import urllib.error
 from unittest.mock import patch
 
 from android_updates import (
-    CERTIFICATE, REPOSITORY, SkipBuild, manifest_from_apk, prepare, publish,
+    CERTIFICATE, REPOSITORY, SkipBuild, main, manifest_from_apk, prepare, publish,
 )
 
 SHA = 'a' * 40
@@ -302,6 +304,17 @@ class ApkManifestTests(unittest.TestCase):
             return manifest_from_apk(self.apk, 'aapt', 'apksigner', 'stable',
                                      '0.12.0', 100042, SHA)
 
+    def test_cli_uses_explicit_ci_apk_path_for_manifest(self):
+        output = Path(self.temp.name) / 'update.json'
+        env = {'APK_PATH': str(self.apk), 'AAPT': 'aapt', 'APKSIGNER': 'apksigner',
+               'UPDATE_CHANNEL': 'stable', 'VERSION_NAME': '0.12.0',
+               'VERSION_CODE': '100042', 'SOURCE_SHA': SHA}
+        with patch.dict(os.environ, env), patch.object(sys, 'argv', [
+            'android_updates.py', 'manifest', '--manifest', str(output)
+        ]), patch('subprocess.check_output', side_effect=[self.facts, self.signature]):
+            main()
+        self.assertEqual(json.loads(output.read_text())['assets'][0]['size'], 3)
+
     def test_manifest_uses_verified_apk_facts_and_bytes(self):
         actual = self.manifest()
         expected = metadata()
@@ -318,6 +331,12 @@ class ApkManifestTests(unittest.TestCase):
                 self.facts = baseline.replace(old, replacement)
                 with self.assertRaises(ValueError):
                     self.manifest()
+
+    def test_multi_abi_apk_cannot_be_published_as_arm64_only(self):
+        self.facts = self.facts.replace("native-code: 'arm64-v8a'",
+                                        "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'")
+        with self.assertRaisesRegex(ValueError, "only arm64-v8a.*armeabi-v7a.*x86_64"):
+            self.manifest()
 
     def test_another_certificate_or_multiple_signers_fail(self):
         for signature in ['Signer #1 certificate SHA-256 digest: ' + '0' * 64,

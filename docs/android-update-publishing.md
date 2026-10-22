@@ -50,7 +50,13 @@ relative to the previous release in that channel when available.
 
 Metadata is created from `aapt` and `apksigner` output for the actual APK, checking
 package, version, ABI and the pinned certificate. Asset length and SHA-256 come
-from the APK bytes. The initial ABI is `arm64-v8a`. APK names are unique:
+from the APK bytes. The initial ABI is `arm64-v8a`. CI uses `--split-per-abi` to exclude other
+architectures' dependency libraries: `--target-platform android-arm64` alone
+only limits Flutter compilation and can retain other native ABIs. It selects
+`app-arm64-v8a-release.apk` explicitly for validation, artifacts and publication.
+`--android-project-arg=force-version-code-ignoring-abi=true` prevents Flutter's
+split packaging from adding an ABI-specific offset to the allocated version code.
+The validator still requires exactly one native ABI. APK names are unique:
 `endurain-local-CODE-arm64-v8a.apk`. The schema is documented in
 [in-app-update-channels.md](in-app-update-channels.md#kanäle-und-release-vertrag).
 

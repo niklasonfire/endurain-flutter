@@ -169,8 +169,11 @@ def manifest_from_apk(apk, aapt, apksigner, channel, version, code, sha):
     certs = re.findall(r'Signer #[0-9]+ certificate SHA-256 digest: ([a-fA-F0-9:]+)', signature)
     if not package or package.groups() != (APPLICATION_ID, str(code), version):
         raise ValueError("APK package/version does not match release inputs")
-    if not sdk or not abi or abi.group(1).strip() != "'arm64-v8a'":
-        raise ValueError("APK SDK or ABI metadata invalid")
+    if not sdk:
+        raise ValueError("APK minimum SDK metadata missing")
+    if not abi or abi.group(1).strip() != "'arm64-v8a'":
+        actual_abis = abi.group(1).strip() if abi else 'missing'
+        raise ValueError(f"APK must contain only arm64-v8a native libraries; found {actual_abis}")
     if len(certs) != 1 or certs[0].replace(':', '').lower() != CERTIFICATE:
         raise ValueError("APK certificate does not match installed distribution")
     name = f'endurain-local-{code}-arm64-v8a.apk'
@@ -244,7 +247,7 @@ def publish(api, manifest, apk):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('command', choices=['prepare', 'manifest', 'publish'])
-    parser.add_argument('--apk', type=Path, default=Path('build/app/outputs/flutter-apk/app-release.apk'))
+    parser.add_argument('--apk', type=Path, default=Path(os.environ.get('APK_PATH', 'build/app/outputs/flutter-apk/app-release.apk')))
     parser.add_argument('--manifest', type=Path, default=Path('build/update.json'))
     args = parser.parse_args()
     if args.command == 'prepare':
