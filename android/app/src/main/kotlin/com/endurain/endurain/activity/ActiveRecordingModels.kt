@@ -182,6 +182,11 @@ data class RecordedActivityPointData(
     val heartRateBpm: Int? = null,
     val powerWatts: Int? = null,
     val cadenceRpm: Int? = null,
+    // Native recovery inputs only; Flutter consumes the already corrected `ele`.
+    val gpsElevationMeters: Double? = null,
+    val pressureHpa: Double? = null,
+    val gpsElevationOffsetMeters: Double? = null,
+    val elevationReferenceMeters: Double? = null,
 ) {
     fun toJson(): JSONObject {
         return JSONObject().apply {
@@ -190,6 +195,10 @@ data class RecordedActivityPointData(
             put("lon", longitude)
             put("seg", segmentIndex)
             elevationMeters?.let { put("ele", it) }
+            gpsElevationMeters?.let { put("gpsEle", it) }
+            pressureHpa?.let { put("pressureHpa", it) }
+            gpsElevationOffsetMeters?.let { put("gpsEleOffset", it) }
+            elevationReferenceMeters?.let { put("eleReference", it) }
             horizontalAccuracyMeters?.let { put("hAcc", it) }
             verticalAccuracyMeters?.let { put("vAcc", it) }
             headingDegrees?.let { put("head", it) }
@@ -247,6 +256,10 @@ data class RecordedActivityPointData(
                 longitude = longitude,
                 segmentIndex = json.optInt("seg", 0),
                 elevationMeters = json.optDoubleOrNull("ele"),
+                gpsElevationMeters = json.optDoubleOrNull("gpsEle"),
+                pressureHpa = json.optDoubleOrNull("pressureHpa"),
+                gpsElevationOffsetMeters = json.optDoubleOrNull("gpsEleOffset"),
+                elevationReferenceMeters = json.optDoubleOrNull("eleReference"),
                 horizontalAccuracyMeters = json.optDoubleOrNull("hAcc"),
                 verticalAccuracyMeters = json.optDoubleOrNull("vAcc"),
                 headingDegrees = json.optDoubleOrNull("head"),

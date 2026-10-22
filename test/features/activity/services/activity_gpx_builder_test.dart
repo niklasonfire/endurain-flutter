@@ -2,12 +2,38 @@ import 'package:endurain/features/activity/models/activity_recording_state.dart'
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ActivityGpxBuilder', () {
     const builder = ActivityGpxBuilder();
+
+    test(
+      'exports corrected native height through recovery and track conversion',
+      () {
+        final point = RecordedActivityPoint.fromJson({
+          't': '2026-10-22T13:00:00.000Z',
+          'lat': 50.0,
+          'lon': 7.0,
+          'seg': 0,
+          'ele': 100.0,
+          'gpsEle': 120.0,
+          'pressureHpa': 1000.0,
+        });
+        final gpx = builder.build(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.completed,
+            activityType: ActivityType.run,
+            points: [point.toTrackPoint()],
+          ),
+        );
+
+        expect(gpx, contains('<ele>100.0</ele>'));
+        expect(gpx, isNot(contains('<ele>120.0</ele>')));
+      },
+    );
 
     test('builds GPX for valid points', () {
       final gpx = builder.build(
