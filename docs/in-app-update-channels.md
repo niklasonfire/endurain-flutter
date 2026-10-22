@@ -1,6 +1,6 @@
 # Vorschlag: In-App-Updates über GitHub Releases
 
-Stand: 22. Oktober 2026. Recherche und Umsetzungsspezifikation für den direkt als APK verteilten Android-Fork `niklasonfire/endurain-flutter`. Die drei Pakete werden auf `feat/in-app-update-channels` umgesetzt; Bedienung und Release-Vertrag sind im Folgenden beschrieben. Die Bedienungsanleitung für den Publisher steht in [android-update-publishing.md](android-update-publishing.md).
+Stand: 22. Oktober 2026. Recherche und Umsetzungsspezifikation für den direkt als APK verteilten Android-Fork `niklasonfire/endurain-flutter`. Die drei Pakete sind auf `feat/in-app-update-channels` umgesetzt; Bedienung und Release-Vertrag sind im Folgenden beschrieben. Die Bedienungsanleitung für den Publisher steht in [android-update-publishing.md](android-update-publishing.md).
 
 ## Empfehlung und Bedienung
 
@@ -88,13 +88,15 @@ Die [lokale Build-Dokumentation](../BUILDING_LOCAL.md) nennt als zuletzt geliefe
 Ein eigenes Modul unter `lib/features/updates/` bündelt Release-Auflösung, Metadatenprüfung, Versionsvergleich, Download und Installation hinter einer kleinen Interface. Die Oberfläche steuert `check(channel)`, Download/Abbruch und Installation und beobachtet eindeutige Zustände. GitHub-HTTP-Zugriff und Plattforminstallation werden injiziert, damit Fehler und Kanalwechsel ohne echtes Netzwerk oder Installer prüfbar bleiben.
 
 - Einstieg in [SettingsScreen](../lib/features/settings/screens/settings_screen.dart), eigene Update-Seite und eigener Controller nach dem vorhandenen Screen-/Controller-Muster.
-- Kanal in [AppPreferencesStore](../lib/core/services/app_preferences_store.dart); Verdrahtung in [AppServices](../lib/core/services/app_services.dart). Installierten Code über den vorhandenen [PackageInfoService](../lib/core/services/platform/package_info_service.dart) lesen; derzeit zeigt Settings nur `version`.
+- Kanal und letzter Prüfzeitpunkt liegen über das [UpdateSettingsRepository](../lib/features/updates/repositories/update_settings_repository.dart) im vorhandenen [AppPreferencesStore](../lib/core/services/app_preferences_store.dart); Verdrahtung in [AppServices](../lib/core/services/app_services.dart). Der [Android-Adapter](../lib/features/updates/services/update_installer.dart) liest installierte Version, Package, SDK und ABIs frisch über den nativen PackageManager. So prüft die Rückkehr vom Installer den tatsächlichen Paketstand; die bisherige Versionsanzeige in Settings verwendet weiterhin den [PackageInfoService](../lib/core/services/platform/package_info_service.dart).
 - Bereits vorhandene Pakete `http`, `crypto`, `path_provider`, `package_info_plus` und `url_launcher` decken Netzwerk, SHA-256, Cache und Browser-Fallback ab. Kein großes Updater-Paket erforderlich; Downloads streamen, zeitlich begrenzen, abbrechen und Teil-Dateien entfernen.
 - Kleiner Android-Adapter für Installer und Berechtigung. [REQUEST_INSTALL_PACKAGES und canRequestPackageInstalls](https://developer.android.com/reference/android/content/pm/PackageManager#canRequestPackageInstalls()) plus Systemseite für die Freigabe dieser App als Installationsquelle; nach Rückkehr erneut prüfen. APK über einen eng auf das Update-Verzeichnis begrenzten [FileProvider](https://developer.android.com/reference/androidx/core/content/FileProvider) mit temporärer Leseberechtigung übergeben. Das aktuelle App-Manifest enthält diese Update-Deklarationen noch nicht.
 
 SHA-256 erkennt beschädigte oder vermischte Downloads. Es ersetzt keinen unabhängigen Vertrauensanker: Die Android-Signatur bleibt entscheidend. Vor dem Installer möglichst Package-ID, eingebetteten Code und Signierzertifikat des heruntergeladenen APK mit der installierten App vergleichen; Android prüft die eigentliche Installation ebenfalls.
 
 Der GitHub-Updater ist eine Fork-/Distributionsfunktion. Allgemeine Update-Logik und Tests getrennt von Fork-Repository, Kanalpolitik und Package-Konfiguration halten. Für iOS wird in dieser ersten Version keine APK-Funktion angezeigt; Store-Distribution bräuchte einen eigenen Updateweg.
+
+Die Umsetzung folgt den vorhandenen Schichten: [Controller](../lib/features/updates/controllers/update_controller.dart) für Nutzerzustände und Übergänge, [UpdateService](../lib/features/updates/services/update_service.dart) für GitHub, verifizierte Downloads und Cache, Repository für persistierte Einstellungen und [Screen](../lib/features/updates/screens/update_screen.dart) mit `OwnedControllers`. Repository und eingebauter Build-Kanal werden über `AppConfig` injiziert. Die bestehenden Verhaltenstests prüfen diesen Ablauf weiterhin über die öffentliche Modulschnittstelle.
 
 ## Einbindung in unsere CI
 
@@ -111,3 +113,20 @@ Die eigentliche Änderung lässt sich in drei fokussierte Schritte aufteilen: Re
 ## Verifikation bei der Umsetzung
 
 Gezielte Tests für kanalrichtige Auswahl, wechselnde Nightly-Metadaten, höhere/gleiche/niedrigere Codes, fehlende Assets, 404/403/Timeout, Prüfsummenfehler, Downloadabbruch, veraltete Check-Antwort nach Kanalwechsel und gesperrte Installation bei aktiver Aufnahme. CI-Tests für beide Triggerpfade, übersprungene Prüfungen, veraltete Runs, monotone Codes und Paket-/Zertifikatsabweichungen. Auf einem Android-Gerät: bisheriges lokales APK → Nightly → neueres Stable mit erhaltenen Einstellungen und Aufzeichnungen, verweigerte Installationsfreigabe, Rückkehr aus Systemeinstellungen und abgebrochener Installer. Zusätzlich vollständige Checks gemäß Repository-Vorgaben vor integrierter Auslieferung.
+
+## Umsetzungsstand und lokale Prüfergebnisse
+
+Die drei Pakete sind lokal committed. Abschließend geprüfter Code: `8eead82` auf `feat/in-app-update-channels`; nachfolgende Änderungen an dieser Notiz dokumentieren ausschließlich die Ergebnisse.
+
+- Vollständiger Flutter-Lauf nach der Schichtentrennung: **1.759 Tests bestanden, ein bestehender Skip**.
+- Coverage mit den Ausschlüssen der vorhandenen CI: **91,47 %**; Gesamt- und Dateigrenzen bestanden.
+- `flutter analyze`: keine Befunde. Formatprüfung: **505 Dart-Dateien, keine Änderungen**.
+- Python-Skripte der CI: **27 Tests bestanden**, davon 18 neue Publisher-Vertragstests.
+- Native Android-App-Suite: **151 Tests bestanden**, davon 13 neue Installer-Tests; keine Fehler oder Skips. `:app:assembleDebug` erfolgreich; APK-Signaturprüfung erfolgreich.
+- Unabhängiges abschließendes Review gegen `de91a23`: **Standards 0 offene Befunde, Spec 0 bestätigte Abweichungen**. Die im ersten Standards-Review erkannten Schichtungs-, Konfigurations- und Lokalisierungsprobleme sind korrigiert.
+
+Regressionstests haben zusätzlich die erneute Prüfung der APK-Bytes vor dem Upload, die Erhaltung einer an den Installer übergebenen Datei beim erneuten Öffnen der Seite, den Stable-Wartezustand nach App-Rückkehr und die Sperre bis zum dauerhaften Abschluss einer Aufnahme abgesichert. Der Android-Testaufbau hängt den FileProvider je Robolectric-Kontext frisch an, damit dessen statischer Pfadcache keine temporären Verzeichnisse anderer Tests übernimmt.
+
+Der Android-Debug-Build ist eine Kompilierprüfung: Package `com.endurain.endurain.local`, lokale Build-Overrides `0.11.1+22`, minSdk 26, targetSdk 36. Er verwendet das Debug-Zertifikat und ist kein mit der bestehenden Release-Identität signiertes Update-Artefakt. Es wurden keine Signiersecrets geändert oder online geprüft und keine Workflow-Ausführung, Veröffentlichung, Push oder Geräteinstallation vorgenommen.
+
+Vor der ersten Verteilung bleiben der tatsächliche CI-Signaturabgleich und der oben beschriebene Geräte-Upgradeversuch erforderlich. Nach Integration in `main` kann der vorbereitete Workflow Nightly veröffentlichen; die erste Version mit Updater wird einmal über den bisherigen Verteilungsweg installiert.
