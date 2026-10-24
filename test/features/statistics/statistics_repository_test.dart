@@ -45,7 +45,8 @@ void main() {
     'uses full server aggregate and excludes gym distance from total',
     () async {
       final repo = repository((request) async {
-        expect(request.url.path, '/api/v1/activities_summaries/month');
+        expect(request.url.path, '/api/v1/activities/summaries');
+        expect(request.url.queryParameters['period'], 'month');
         expect(request.url.queryParameters['date'], '2026-10-18');
         return http.Response(
           jsonEncode({
@@ -233,7 +234,8 @@ void main() {
       var requests = 0;
       final repo = repository((request) async {
         requests++;
-        expect(request.url.path, '/api/v1/activities_summaries/year');
+        expect(request.url.path, '/api/v1/activities/summaries');
+        expect(request.url.queryParameters['period'], 'year');
         expect(request.url.queryParameters, {
           'year': '2025',
           'type': 'Trail run',

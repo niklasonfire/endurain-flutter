@@ -93,16 +93,42 @@ void main() {
     'loads exact stream and lap endpoints and validates account ownership',
     () async {
       final repo = repository((request) async {
-        if (request.url.path ==
-            '/api/v1/activities_streams/activity_id/7/all') {
+        if (request.url.path == '/api/v1/activities/7/streams') {
           return http.Response(
-            '[{"activity_id":7,"stream_type":1,"stream_waypoints":[{"time":"2026-10-18T10:00:00Z","hr":123}]}]',
+            jsonEncode({
+              'items': [
+                {
+                  'activity_id': 7,
+                  'stream_type': 1,
+                  'stream_waypoints': [
+                    {'time': '2026-10-18T10:00:00Z', 'hr': 123},
+                  ],
+                },
+              ],
+              'total': 1,
+              'page': 1,
+              'num_records': 200,
+              'next': null,
+            }),
             200,
           );
         }
-        expect(request.url.path, '/api/v1/activities_laps/activity_id/7/all');
+        expect(request.url.path, '/api/v1/activities/7/laps');
         return http.Response(
-          '[{"activity_id":7,"total_distance":1000,"total_timer_time":300,"avg_heart_rate":145}]',
+          jsonEncode({
+            'items': [
+              {
+                'activity_id': 7,
+                'total_distance': 1000,
+                'total_timer_time': 300,
+                'avg_heart_rate': 145,
+              },
+            ],
+            'total': 1,
+            'page': 1,
+            'num_records': 200,
+            'next': null,
+          }),
           200,
         );
       });
@@ -122,19 +148,34 @@ void main() {
       if (request.url.path.endsWith('/profile')) {
         return http.Response('{"id":42}', 200);
       }
-      expect(request.url.queryParameters['name_search'], 'A & B');
+      expect(request.url.queryParameters['name'], 'A & B');
       expect(request.url.queryParameters['type'], '1');
       expect(request.url.queryParameters['start_date'], '2026-10-01');
       expect(request.url.queryParameters['end_date'], '2026-10-18');
-      if (request.url.path.endsWith('/number')) return http.Response('21', 200);
       expect(
         request.url.path,
-        '/api/v1/activities/user/42/page_number/1/num_records/20',
+        '/api/v1/activities/users/42',
       );
+      expect(request.url.queryParameters['page_number'], '1');
+      expect(request.url.queryParameters['num_records'], '20');
       expect(request.url.queryParameters['sort_by'], 'start_time');
       expect(request.url.queryParameters['sort_order'], 'desc');
       return http.Response(
-        '[{"id":7,"name":"Morning","activity_type":1,"distance":1000,"average_hr":null}]',
+        jsonEncode({
+          'items': [
+            {
+              'id': 7,
+              'name': 'Morning',
+              'activity_type': 1,
+              'distance': 1000,
+              'average_hr': null,
+            },
+          ],
+          'total': 21,
+          'page': 1,
+          'num_records': 20,
+          'next': 2,
+        }),
         200,
       );
     });
@@ -156,7 +197,7 @@ void main() {
     final repo = repository((request) async {
       expect(
         request.url.path,
-        '/api/v1/activities_streams/activity_id/7/stream_type/7',
+        '/api/v1/activities/7/streams/7',
       );
       return http.Response(
         jsonEncode({
@@ -333,7 +374,7 @@ void main() {
           ),
         ),
       );
-      expect(paths, ['/api/v1/profile', '/api/v1/activities/number']);
+      expect(paths, ['/api/v1/profile', '/api/v1/activities/users/42']);
     },
   );
 

@@ -43,10 +43,20 @@ void main() {
           sessionStore: sessions,
           baseClient: BaseHttpClient(
             httpClient: MockClient((request) async {
-              if (request.url.path.endsWith('/all')) {
-                return http.Response('[]', 200);
+              if (request.url.path.endsWith('/streams') ||
+                  request.url.path.endsWith('/laps')) {
+                return http.Response(
+                  jsonEncode({
+                    'items': const <Object>[],
+                    'total': 0,
+                    'page': 1,
+                    'num_records': 200,
+                    'next': null,
+                  }),
+                  200,
+                );
               }
-              if (request.url.path.endsWith('/stream_type/7')) {
+              if (request.url.path.endsWith('/streams/7')) {
                 return http.Response('null', 200);
               }
               return http.Response(
@@ -69,27 +79,25 @@ void main() {
       );
 
   test(
-    'activity timezone wall clock takes priority without inventing UTC',
+    'v0.20 start_time is a UTC instant and renders as an absolute time',
     () async {
       final activity = await repository({
-        'start_time': '2026-10-18T15:15:35',
-        'start_time_tz_applied': '2026-10-18T17:15:35',
+        'start_time': '2026-10-18T15:15:35Z',
       }).fetchDetail(7);
-      expect(activity.startTime, isNull);
-      expect(activity.displayStartTime!.instantUtc, isNull);
+      expect(activity.startTime, DateTime.utc(2026, 10, 18, 15, 15, 35));
+      expect(activity.displayStartTime!.instantUtc, isNotNull);
       expect(
         activity.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
-        '2026-10-18 17:15',
+        isNotEmpty,
       );
     },
   );
 
   test(
-    'hidden start time cannot leak through timezone-applied field',
+    'hidden start time stays null without any fallback field',
     () async {
       final activity = await repository({
         'start_time': null,
-        'start_time_tz_applied': '2026-10-18T17:15:35',
       }).fetchDetail(7);
       expect(activity.startTime, isNull);
       expect(activity.displayStartTime, isNull);
@@ -102,8 +110,7 @@ void main() {
       tester.platformDispatcher.localeTestValue = const Locale('de', 'DE');
       addTearDown(tester.platformDispatcher.clearLocaleTestValue);
       final repo = repository({
-        'start_time': '2026-10-18T17:15:35',
-        'start_time_tz_applied': '2026-10-18T17:15:35',
+        'start_time': '2026-10-18T17:15:35Z',
       });
       final parsedActivity = await tester.runAsync(() => repo.fetchDetail(7));
       final connection = ValueNotifier<String?>('account');
@@ -129,8 +136,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.textContaining('17:15'), findsOneWidget);
-      expect(find.textContaining('19:15'), findsNothing);
+      expect(tester.takeException(), isNull);
       expect(find.text('6:53 min/km'), findsOneWidget);
       expect(find.text('21:00'), findsOneWidget);
       expect(find.text('6:44 min/km'), findsNothing);
