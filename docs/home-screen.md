@@ -24,7 +24,7 @@ controller. The map provides a back action to Home; native/system back works too
 
 ## Data contracts
 
-* The weekly summary uses `GET /api/v1/activities_summaries/week` with a
+* The weekly summary uses `GET /api/v1/activities/summaries?period=week` with a
   `YYYY-MM-DD` date. The server defines the weekly boundary. UTC dates match the
   existing Statistics feature. Day bars represent duration in one accent color:
   the endpoint does not provide sport-specific daily segments.

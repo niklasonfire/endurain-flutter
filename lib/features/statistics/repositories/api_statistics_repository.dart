@@ -34,10 +34,12 @@ class ApiStatisticsRepository implements StatisticsRepository {
             '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
       if (query.sport != null) 'type': _sportFilterName(query.sport!.apiName),
     };
+    // v0.20.0: summaries moved from /activities_summaries/{period} to
+    // /activities/summaries with a period query parameter.
     final response = await _api.getJson(
       Uri(
-        path: '/api/v1/activities_summaries/${query.period.name}',
-        queryParameters: params,
+        path: '/api/v1/activities/summaries',
+        queryParameters: {...params, 'period': query.period.name},
       ).toString(),
       expectedOrigin: profile.origin,
       expectedProfileId: profile.id,

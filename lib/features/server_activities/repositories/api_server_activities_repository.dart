@@ -82,27 +82,32 @@ class ApiServerActivitiesRepository
     // required by the activity endpoint. Never infer it from credentials.
     final user = _object(await _get('/api/v1/profile', profile));
     final userId = _positiveInt(user['id']);
-    final filters = <String, String>{
-      if (query.search.trim().isNotEmpty) 'name_search': query.search.trim(),
-      if (query.activityType != null) 'type': '${query.activityType}',
-      if (query.startDate != null) 'start_date': _date(query.startDate!),
-      if (query.endDate != null) 'end_date': _date(query.endDate!),
-    };
-    final count = await _get(
-      _endpoint('$_activities/number', filters),
-      profile,
-    );
-    if (count is! int || count < 0) _invalid();
-    final rows = await _get(
-      _endpoint(
-        '$_activities/user/$userId/page_number/$page/num_records/$pageSize',
-        {...filters, 'sort_by': 'start_time', 'sort_order': 'desc'},
+    // v0.20.0: one paginated request replaces the separate /activities/number
+    // count plus the page-number path route; the total travels in the
+    // response envelope.
+    final envelope = _object(
+      await _get(
+        _endpoint(
+          '$_activities/users/$userId',
+          <String, String>{
+            if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
+            if (query.activityType != null) 'type': '${query.activityType}',
+            if (query.startDate != null) 'start_date': _date(query.startDate!),
+            if (query.endDate != null) 'end_date': _date(query.endDate!),
+            'page_number': '$page',
+            'num_records': '$pageSize',
+            'sort_by': 'start_time',
+            'sort_order': 'desc',
+          },
+        ),
+        profile,
       ),
-      profile,
     );
-    if (rows != null && rows is! List) _invalid();
+    final rows = envelope['items'];
+    final count = envelope['total'];
+    if (rows is! List || count is! int || count < 0) _invalid();
     return ServerActivityPage(
-      items: rows == null ? [] : (rows as List).map(_activity).toList(),
+      items: rows.map(_activity).toList(),
       page: page,
       pageSize: pageSize,
       total: count,
@@ -132,8 +137,9 @@ class ApiServerActivitiesRepository
   Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
+    // v0.20.0: streams live under /activities/{id}/streams/{type}.
     final stream = await _get(
-      '/api/v1/activities_streams/activity_id/$activityId/stream_type/7',
+      '$_activities/$activityId/streams/7',
       profile,
     );
     if (stream == null) return const [];
@@ -176,7 +182,7 @@ class ApiServerActivitiesRepository
 
   @override
   Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
-    final rows = await _detailRows('activities_streams', activityId);
+    final rows = await _detailRows('streams', activityId);
     final graphs = <ServerActivityGraph>[];
     for (final row in rows) {
       if (!ServerGraphMetric.values.any(
@@ -195,7 +201,7 @@ class ApiServerActivitiesRepository
   Future<List<ServerActivityLap>> fetchLaps(int activityId) async =>
       List.unmodifiable(
         (await _detailRows(
-          'activities_laps',
+          'laps',
           activityId,
         )).map(ServerActivityLap.fromJson),
       );
@@ -206,11 +212,16 @@ class ApiServerActivitiesRepository
   ) async {
     _validateId(activityId);
     final profile = await _connection();
-    final result = await _get(
-      '/api/v1/$resource/activity_id/$activityId/all',
-      profile,
+    // v0.20.0: child collections live under /activities/{id}/<resource> and
+    // return a paginated envelope instead of a bare array. One maximum-size
+    // page covers every stream type and lap of a single activity.
+    final envelope = _object(
+      await _get(
+        '$_activities/$activityId/$resource?page_number=1&num_records=200',
+        profile,
+      ),
     );
-    if (result == null) return const [];
+    final result = envelope['items'];
     if (result is! List) _invalid();
     return result.map((value) {
       final row = _object(value);
@@ -221,13 +232,11 @@ class ApiServerActivitiesRepository
 
   static ServerActivity _activity(Object? value) {
     final data = _object(value);
-    // A masked raw start time must not be revealed by the parallel display field.
+    // v0.20.0 removed the start_time_tz_applied wall-clock field; start_time
+    // is now always a UTC instant. A masked start time stays null end to end.
     final displayStartTime = data['start_time'] == null
         ? null
-        : ServerActivityStartTime.fromApi(
-            timezoneApplied: data['start_time_tz_applied'],
-            fallback: data['start_time'],
-          );
+        : ServerActivityStartTime.fromApi(fallback: data['start_time']);
     return ServerActivity(
       id: _positiveInt(data['id']),
       name: _text(data['name']) ?? '',
