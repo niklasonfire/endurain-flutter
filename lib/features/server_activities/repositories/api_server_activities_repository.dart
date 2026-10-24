@@ -232,6 +232,7 @@ class ApiServerActivitiesRepository
         : ServerActivityStartTime.fromApi(
             timezoneApplied: data['start_time_tz_applied'],
             fallback: data['start_time'],
+            timezone: data['timezone'],
           );
     return ServerActivity(
       id: _positiveInt(data['id']),
