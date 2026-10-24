@@ -64,14 +64,10 @@ void main() {
         expect(endpoints.activityTypesEndpoint, '/api/v1/activities/types');
       });
 
-      test('activityCountEndpoint', () {
-        expect(endpoints.activityCountEndpoint, '/api/v1/activities/number');
-      });
-
-      test('activityPageEndpoint', () {
+      test('activityListEndpoint', () {
         expect(
-          endpoints.activityPageEndpoint(42, 2, 50),
-          '/api/v1/activities/user/42/page_number/2/num_records/50',
+          endpoints.activityListEndpoint(42),
+          '/api/v1/activities/users/42',
         );
       });
 
@@ -82,22 +78,19 @@ void main() {
       test('activityRouteStreamEndpoint', () {
         expect(
           endpoints.activityRouteStreamEndpoint(7),
-          '/api/v1/activities_streams/activity_id/7/stream_type/7',
+          '/api/v1/activities/7/streams/7',
         );
       });
 
       test('activityStreamsEndpoint', () {
         expect(
           endpoints.activityStreamsEndpoint(7),
-          '/api/v1/activities_streams/activity_id/7/all',
+          '/api/v1/activities/7/streams',
         );
       });
 
       test('activityLapsEndpoint', () {
-        expect(
-          endpoints.activityLapsEndpoint(7),
-          '/api/v1/activities_laps/activity_id/7/all',
-        );
+        expect(endpoints.activityLapsEndpoint(7), '/api/v1/activities/7/laps');
       });
 
       test('activitySummariesEndpoint', () {
@@ -169,14 +162,10 @@ void main() {
         expect(v2.activityTypesEndpoint, '/api/v2/activities/types');
       });
 
-      test('activityCountEndpoint uses v2 base', () {
-        expect(v2.activityCountEndpoint, '/api/v2/activities/number');
-      });
-
-      test('activityPageEndpoint uses v2 base', () {
+      test('activityListEndpoint uses v2 base', () {
         expect(
-          v2.activityPageEndpoint(42, 2, 50),
-          '/api/v2/activities/user/42/page_number/2/num_records/50',
+          v2.activityListEndpoint(42),
+          '/api/v2/activities/users/42',
         );
       });
 
@@ -187,22 +176,19 @@ void main() {
       test('activityRouteStreamEndpoint uses v2 base', () {
         expect(
           v2.activityRouteStreamEndpoint(7),
-          '/api/v2/activities_streams/activity_id/7/stream_type/7',
+          '/api/v2/activities/7/streams/7',
         );
       });
 
       test('activityStreamsEndpoint uses v2 base', () {
         expect(
           v2.activityStreamsEndpoint(7),
-          '/api/v2/activities_streams/activity_id/7/all',
+          '/api/v2/activities/7/streams',
         );
       });
 
       test('activityLapsEndpoint uses v2 base', () {
-        expect(
-          v2.activityLapsEndpoint(7),
-          '/api/v2/activities_laps/activity_id/7/all',
-        );
+        expect(v2.activityLapsEndpoint(7), '/api/v2/activities/7/laps');
       });
 
       test('activitySummariesEndpoint uses v2 base', () {

@@ -85,27 +85,31 @@ class ApiServerActivitiesRepository
     // required by the activity endpoint. Never infer it from credentials.
     final user = _object(await _get(_endpoints.profileEndpoint, profile));
     final userId = _positiveInt(user['id']);
-    final filters = <String, String>{
-      if (query.search.trim().isNotEmpty) 'name_search': query.search.trim(),
-      if (query.activityType != null) 'type': '${query.activityType}',
-      if (query.startDate != null) 'start_date': _date(query.startDate!),
-      if (query.endDate != null) 'end_date': _date(query.endDate!),
-    };
-    final count = await _get(
-      _endpoint(_endpoints.activityCountEndpoint, filters),
-      profile,
-    );
-    if (count is! int || count < 0) _invalid();
-    final rows = await _get(
-      _endpoint(
-        _endpoints.activityPageEndpoint(userId, page, pageSize),
-        {...filters, 'sort_by': 'start_time', 'sort_order': 'desc'},
+    // One paginated request carries both the rows and the matching total in
+    // its response envelope, so list and count are an atomic snapshot.
+    final envelope = _object(
+      await _get(
+        _endpoint(
+          _endpoints.activityListEndpoint(userId),
+          <String, String>{
+            if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
+            if (query.activityType != null) 'type': '${query.activityType}',
+            if (query.startDate != null) 'start_date': _date(query.startDate!),
+            if (query.endDate != null) 'end_date': _date(query.endDate!),
+            'page_number': '$page',
+            'num_records': '$pageSize',
+            'sort_by': 'start_time',
+            'sort_order': 'desc',
+          },
+        ),
+        profile,
       ),
-      profile,
     );
-    if (rows != null && rows is! List) _invalid();
+    final rows = envelope['items'];
+    final count = envelope['total'];
+    if (rows is! List || count is! int || count < 0) _invalid();
     return ServerActivityPage(
-      items: rows == null ? [] : (rows as List).map(_activity).toList(),
+      items: rows.map(_activity).toList(),
       page: page,
       pageSize: pageSize,
       total: count,
@@ -137,10 +141,21 @@ class ApiServerActivitiesRepository
   Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
-    final stream = await _get(
-      _endpoints.activityRouteStreamEndpoint(activityId),
-      profile,
-    );
+    // A missing GPS stream answers 404; that is the no-route state, not a
+    // load failure.
+    Object? stream;
+    try {
+      stream = await _get(
+        _endpoints.activityRouteStreamEndpoint(activityId),
+        profile,
+      );
+    } on AppException catch (error) {
+      if (error.statusCode != 404 ||
+          error.code != AppErrorCode.serverActivitiesFetchFailed) {
+        rethrow;
+      }
+      return const [];
+    }
     if (stream == null) return const [];
     final data = _object(stream);
     if (data['stream_type'] != 7 || data['activity_id'] != activityId) {
@@ -214,8 +229,18 @@ class ApiServerActivitiesRepository
   ) async {
     _validateId(activityId);
     final profile = await _connection();
-    final result = await _get(endpoint, profile);
-    if (result == null) return const [];
+    // Child collections are paginated; one maximum-size page covers every
+    // stream type and lap of a single activity.
+    final envelope = _object(
+      await _get(
+        _endpoint(endpoint, const {
+          'page_number': '1',
+          'num_records': '200',
+        }),
+        profile,
+      ),
+    );
+    final result = envelope['items'];
     if (result is! List) _invalid();
     return result.map((value) {
       final row = _object(value);
