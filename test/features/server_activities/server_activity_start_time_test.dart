@@ -72,4 +72,47 @@ void main() {
   test('missing API fields remain missing', () {
     expect(ServerActivityStartTime.fromApi(), isNull);
   });
+
+  test('absolute start time renders in the recorded timezone', () {
+    final start = ServerActivityStartTime.fromApi(
+      fallback: '2026-10-18T15:15:35Z',
+      timezone: 'America/New_York',
+    )!;
+    expect(start.isAbsolute, isTrue);
+    expect(start.format(display), '2026-10-18 11:15:35.000');
+  });
+
+  test('recorded timezone applies its DST rules, not a fixed offset', () {
+    final summer = ServerActivityStartTime.fromApi(
+      fallback: '2026-07-18T15:15:35Z',
+      timezone: 'America/New_York',
+    )!;
+    final winter = ServerActivityStartTime.fromApi(
+      fallback: '2026-01-18T15:15:35Z',
+      timezone: 'America/New_York',
+    )!;
+    expect(summer.format(display), '2026-07-18 11:15:35.000');
+    expect(winter.format(display), '2026-01-18 10:15:35.000');
+  });
+
+  test('offset-free wall clock ignores the recorded timezone', () {
+    final start = ServerActivityStartTime.fromApi(
+      fallback: '2026-10-18T15:15:35',
+      timezone: 'America/New_York',
+    )!;
+    expect(start.isAbsolute, isFalse);
+    expect(start.format(display), '2026-10-18 15:15:35.000');
+  });
+
+  for (final value in <Object?>[null, '', '  ', 4711, 'Not/AZone']) {
+    test('missing or invalid recorded timezone falls back to device local: '
+        '$value', () {
+      final instant = DateTime.utc(2026, 10, 18, 15, 15, 35);
+      final start = ServerActivityStartTime.fromApi(
+        fallback: '2026-10-18T15:15:35Z',
+        timezone: value,
+      )!;
+      expect(start.format(display), display.format(instant.toLocal()));
+    });
+  }
 }

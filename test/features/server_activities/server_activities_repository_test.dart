@@ -247,6 +247,49 @@ void main() {
     );
   });
 
+  test('detail renders the start time in the recorded IANA timezone', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"id":7,"name":"Ride","activity_type":2,"start_time":"2026-10-18T15:15:35Z","timezone":"America/New_York"}',
+        200,
+      ),
+    );
+    final detail = await repo.fetchDetail(7);
+    expect(detail.startTime, DateTime.utc(2026, 10, 18, 15, 15, 35));
+    expect(
+      detail.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
+      '2026-10-18 11:15',
+    );
+  });
+
+  test('detail without a timezone field keeps device-local display', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"id":7,"name":"Ride","activity_type":2,"start_time":"2026-10-18T15:15:35Z"}',
+        200,
+      ),
+    );
+    final detail = await repo.fetchDetail(7);
+    expect(
+      detail.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
+      DateFormat('yyyy-MM-dd HH:mm').format(
+        DateTime.utc(2026, 10, 18, 15, 15, 35).toLocal(),
+      ),
+    );
+  });
+
+  test('recorded timezone cannot resurrect a masked start time', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"id":7,"name":"Ride","activity_type":2,"start_time":null,"timezone":"America/New_York"}',
+        200,
+      ),
+    );
+    final detail = await repo.fetchDetail(7);
+    expect(detail.startTime, isNull);
+    expect(detail.displayStartTime, isNull);
+  });
+
   test(
     'malformed envelopes and server errors surface typed failures',
     () async {
