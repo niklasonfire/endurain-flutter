@@ -42,4 +42,31 @@ class ApiEndpoints {
   /// Status of a background ingestion job created by an upload (`202`).
   String activityIngestionJobEndpoint(String jobId) =>
       '$_base/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
+
+  // Activity browsing endpoints
+  String get activityTypesEndpoint => '$_base/activities/types';
+  String get activityCountEndpoint => '$_base/activities/number';
+  String activityPageEndpoint(int userId, int page, int pageSize) =>
+      '$_base/activities/user/$userId/page_number/$page/num_records/$pageSize';
+  String activityDetailEndpoint(int activityId) =>
+      '$_base/activities/$activityId';
+
+  /// GPS route stream (`stream_type` 7) of one activity.
+  String activityRouteStreamEndpoint(int activityId) =>
+      '$_base/activities_streams/activity_id/$activityId/stream_type/7';
+
+  /// Every recorded stream of one activity.
+  String activityStreamsEndpoint(int activityId) =>
+      '$_base/activities_streams/activity_id/$activityId/all';
+
+  /// Every recorded lap of one activity.
+  String activityLapsEndpoint(int activityId) =>
+      '$_base/activities_laps/activity_id/$activityId/all';
+
+  // Statistics endpoints
+  String activitySummariesEndpoint(String period) =>
+      '$_base/activities_summaries/$period';
+
+  // Goals endpoints
+  String get profileGoalsResultsEndpoint => '$_base/profile/goals/results';
 }

@@ -38,6 +38,19 @@ void main() {
       expect(config.isConfigured, isTrue);
     });
 
+    test('default ingestion job path follows the endpoint builder', () {
+      const config = ActivityUploadConfig(endpoint: '/upload', fieldName: 'file');
+
+      expect(
+        config.ingestionJobEndpoint('job 1'),
+        '/api/v1/activities/ingestion-jobs/job%201',
+      );
+      expect(
+        config.ingestionJobEndpoint('job 1'),
+        ApiEndpoints.defaults.activityIngestionJobEndpoint('job 1'),
+      );
+    });
+
     test('uploads GPX with configured endpoint and field', () async {
       String? endpoint;
       String? filePath;

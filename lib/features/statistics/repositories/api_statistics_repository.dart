@@ -1,4 +1,5 @@
 import 'package:endurain/features/statistics/repositories/statistics_response_adapter.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
@@ -9,10 +10,13 @@ class ApiStatisticsRepository implements StatisticsRepository {
   ApiStatisticsRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
+    ApiEndpoints? endpoints,
   }) : _api = apiClient,
-       _sessions = sessionStore;
+       _sessions = sessionStore,
+       _endpoints = endpoints ?? ApiEndpoints.defaults;
   final ApiClient _api;
   final AuthSessionStore _sessions;
+  final ApiEndpoints _endpoints;
   // v0.19.4 type_breakdown uses display names such as "Run workout".
   // Its type filter accepts canonical names such as "Run"; "Workout"
   // itself is already canonical and must remain intact.
@@ -36,7 +40,7 @@ class ApiStatisticsRepository implements StatisticsRepository {
     };
     final response = await _api.getJson(
       Uri(
-        path: '/api/v1/activities_summaries/${query.period.name}',
+        path: _endpoints.activitySummariesEndpoint(query.period.name),
         queryParameters: params,
       ).toString(),
       expectedOrigin: profile.origin,
