@@ -64,8 +64,9 @@ class ApiEndpoints {
       '$_base/activities_laps/activity_id/$activityId/all';
 
   // Statistics endpoints
-  String activitySummariesEndpoint(String period) =>
-      '$_base/activities_summaries/$period';
+  /// Activity summaries for one period. v0.20.1 moved the period from the
+  /// path into a `period` query parameter on a single summaries resource.
+  String get activitySummariesEndpoint => '$_base/activities/summaries';
 
   // Goals endpoints
   String get profileGoalsResultsEndpoint => '$_base/profile/goals/results';
