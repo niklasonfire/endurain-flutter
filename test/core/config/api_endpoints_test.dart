@@ -95,8 +95,8 @@ void main() {
 
       test('activitySummariesEndpoint', () {
         expect(
-          endpoints.activitySummariesEndpoint('month'),
-          '/api/v1/activities_summaries/month',
+          endpoints.activitySummariesEndpoint,
+          '/api/v1/activities/summaries',
         );
       });
 
@@ -193,8 +193,8 @@ void main() {
 
       test('activitySummariesEndpoint uses v2 base', () {
         expect(
-          v2.activitySummariesEndpoint('week'),
-          '/api/v2/activities_summaries/week',
+          v2.activitySummariesEndpoint,
+          '/api/v2/activities/summaries',
         );
       });
 

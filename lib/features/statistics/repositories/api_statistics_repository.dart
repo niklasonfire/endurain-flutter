@@ -17,8 +17,9 @@ class ApiStatisticsRepository implements StatisticsRepository {
   final ApiClient _api;
   final AuthSessionStore _sessions;
   final ApiEndpoints _endpoints;
-  // v0.19.4 type_breakdown uses display names such as "Run workout".
-  // Its type filter accepts canonical names such as "Run"; "Workout"
+  // v0.20.1 type_breakdown still labels types with display names such as
+  // "Run workout" (backend set_activity_name_based_on_activity_type). Its
+  // "type" filter accepts canonical names such as "Run"; "Workout"
   // itself is already canonical and must remain intact.
   static String _sportFilterName(String name) =>
       name.trim().replaceFirst(RegExp(r' workout$', caseSensitive: false), '');
@@ -31,6 +32,9 @@ class ApiStatisticsRepository implements StatisticsRepository {
     }
     final date = query.date;
     final params = <String, String>{
+      // v0.20.1 moved the period from the path into a `period` query
+      // parameter on the single summaries resource.
+      'period': query.period.name,
       if (query.period == StatisticsPeriod.year)
         'year': '${date.year}'
       else
@@ -40,7 +44,7 @@ class ApiStatisticsRepository implements StatisticsRepository {
     };
     final response = await _api.getJson(
       Uri(
-        path: _endpoints.activitySummariesEndpoint(query.period.name),
+        path: _endpoints.activitySummariesEndpoint,
         queryParameters: params,
       ).toString(),
       expectedOrigin: profile.origin,
