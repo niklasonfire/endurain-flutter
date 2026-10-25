@@ -17,8 +17,8 @@ class Repository implements StatisticsRepository {
   }
 }
 
-/// Repository whose results carry offline read-cache provenance, like
-/// [CachedStatisticsRepository] does when it serves a cached view.
+/// Repository whose results carry offline read-cache provenance, like the
+/// cached statistics repository does when it serves a cached view.
 class CachedServingRepository
     implements StatisticsRepository, OfflineCacheProvenance {
   final Expando<OfflineCacheServeInfo> _provenance = Expando();
@@ -32,8 +32,10 @@ class CachedServingRepository
 
   @override
   Future<ActivityStatistics> fetch(StatisticsQuery query) async {
-    // A fresh instance per fetch, like a live repository returns: const
-    // instances are canonicalized and cannot carry per-result provenance.
+    // A fresh, non-const instance per fetch, like a live repository
+    // returns: const instances are canonicalized and cannot carry
+    // per-result provenance in an Expando.
+    // ignore: prefer_const_constructors
     final result = ActivityStatistics(
       totals: StatisticsMetrics.zero,
       buckets: const [],

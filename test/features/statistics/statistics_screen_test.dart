@@ -45,8 +45,8 @@ class Repository implements StatisticsRepository {
   }
 }
 
-/// Repository whose results carry offline read-cache provenance, like
-/// [CachedStatisticsRepository] does when it serves a cached view.
+/// Repository whose results carry offline read-cache provenance, like the
+/// cached statistics repository does when it serves a cached view.
 class CachedServingRepository extends Repository
     implements OfflineCacheProvenance {
   final Expando<OfflineCacheServeInfo> _provenance = Expando();
