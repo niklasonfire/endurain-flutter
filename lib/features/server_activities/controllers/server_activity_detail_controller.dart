@@ -1,3 +1,4 @@
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
@@ -40,6 +41,7 @@ class ServerActivityDetailController extends SafeNotifier {
   bool _accountChanged = false;
   int _detailGeneration = 0;
   int _routeGeneration = 0;
+  DateTime? _cacheFetchedAt;
 
   List<ServerActivityGraph> get graphs => _graphs;
   List<ServerActivityLap> get laps => _laps;
@@ -56,6 +58,10 @@ class ServerActivityDetailController extends SafeNotifier {
   bool get isRouteLoading => _routeLoading;
   bool get isAccountChanged => _accountChanged;
 
+  /// When the visible detail was served from the offline read cache, the time
+  /// its data was last fetched from the server; `null` for a live view.
+  DateTime? get cacheFetchedAt => _cacheFetchedAt;
+
   Future<void> load() async {
     if (isDisposed || _accountChanged) return;
     await Future.wait([_loadDetail(), loadRoute(), loadGraphs(), loadLaps()]);
@@ -65,10 +71,14 @@ class ServerActivityDetailController extends SafeNotifier {
     final generation = ++_detailGeneration;
     _loading = true;
     _error = null;
+    _cacheFetchedAt = null;
     notify();
     try {
       final result = await _repository.fetchDetail(activityId);
-      if (_valid && generation == _detailGeneration) _activity = result;
+      if (_valid && generation == _detailGeneration) {
+        _activity = result;
+        _cacheFetchedAt = _cacheProvenanceOf(result);
+      }
     } catch (error) {
       if (_valid && generation == _detailGeneration) _error = error;
     } finally {
@@ -166,7 +176,16 @@ class ServerActivityDetailController extends SafeNotifier {
     _routeError = null;
     _loading = false;
     _routeLoading = false;
+    _cacheFetchedAt = null;
     notify();
+  }
+
+  DateTime? _cacheProvenanceOf(ServerActivity result) {
+    return switch (_repository) {
+      final OfflineCacheProvenance provenance =>
+        provenance.provenanceOf(result)?.fetchedAt,
+      _ => null,
+    };
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
 
@@ -122,6 +123,66 @@ void main() {
     controller.dispose();
     connection.dispose();
   });
+
+  test(
+    'cached detail exposes the fetch time and a live refresh clears it',
+    () async {
+      final connection = ValueNotifier<String?>('a');
+      final repository = _ProvenanceRepository();
+      final controller = ServerActivityDetailController(
+        activityId: 1,
+        repository: repository,
+        connection: connection,
+      );
+      const cached = ServerActivity(id: 1, name: 'Cached run', activityType: 1);
+      repository.provenance[cached] = OfflineCacheServeInfo(
+        fetchedAt: DateTime.utc(2026, 10, 25, 8),
+      );
+      final loading = controller.load();
+      repository.details.single.complete(cached);
+      await loading;
+
+      expect(controller.activity?.name, 'Cached run');
+      expect(controller.cacheFetchedAt, DateTime.utc(2026, 10, 25, 8));
+
+      final online = controller.load();
+      repository.details.last.complete(
+        const ServerActivity(id: 1, name: 'Live run', activityType: 1),
+      );
+      await online;
+
+      expect(controller.activity?.name, 'Live run');
+      expect(controller.cacheFetchedAt, isNull);
+      controller.dispose();
+      connection.dispose();
+    },
+  );
+
+  test('connection change clears the cached detail fetch time', () async {
+    final connection = ValueNotifier<String?>('a');
+    final repository = _ProvenanceRepository();
+    final controller = ServerActivityDetailController(
+      activityId: 1,
+      repository: repository,
+      connection: connection,
+    );
+    const cached = ServerActivity(id: 1, name: 'Cached run', activityType: 1);
+    repository.provenance[cached] = OfflineCacheServeInfo(
+      fetchedAt: DateTime.utc(2026, 10, 25, 8),
+    );
+    final loading = controller.load();
+    repository.details.single.complete(cached);
+    await loading;
+    expect(controller.cacheFetchedAt, isNotNull);
+
+    connection.value = 'b';
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.cacheFetchedAt, isNull);
+    expect(controller.isAccountChanged, isTrue);
+    controller.dispose();
+    connection.dispose();
+  });
 }
 
 class _Repository implements ServerActivitiesRepository {
@@ -168,4 +229,32 @@ class _GraphRepository extends _Repository
     lapRequests.add(request);
     return request.future;
   }
+}
+
+class _ProvenanceRepository
+    implements ServerActivitiesRepository, OfflineCacheProvenance {
+  final details = <Completer<ServerActivity>>[];
+  final provenance = <ServerActivity, OfflineCacheServeInfo>{};
+
+  @override
+  Future<ServerActivity> fetchDetail(int activityId) {
+    final request = Completer<ServerActivity>();
+    details.add(request);
+    return request.future;
+  }
+
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) => provenance[result];
+
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async => const [];
+
+  @override
+  Future<List<int>> fetchActivityTypes() => throw UnimplementedError();
+  @override
+  Future<ServerActivityPage> fetchPage({
+    ServerActivityQuery query = const ServerActivityQuery(),
+    int page = 1,
+    int pageSize = 20,
+  }) => throw UnimplementedError();
 }

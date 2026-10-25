@@ -13,6 +13,7 @@ import 'package:endurain/features/server_activities/widgets/server_activity_rout
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:endurain/shared/widgets/cache_last_updated_chip.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -113,6 +114,10 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
                         _retry(
                           l10n.serverActivityDetailFailed,
                           _controller.load,
+                        ),
+                      if (_controller.cacheFetchedAt != null)
+                        CacheLastUpdatedChip(
+                          fetchedAt: _controller.cacheFetchedAt!,
                         ),
                       _header(_controller.activity!, l10n),
                       const SizedBox(height: 16),

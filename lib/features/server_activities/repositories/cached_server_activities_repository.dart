@@ -16,9 +16,8 @@ import 'package:endurain/features/server_activities/repositories/server_activiti
 /// Every successful fetch writes the raw server envelope to the offline read
 /// cache; a fetch that fails because the server could not be reached falls
 /// back to the cached payload of the **active identity** only, re-parsed
-/// through the same helpers as a live fetch. Everything else — detail, route,
-/// graphs, laps — passes straight through until later tickets extend the
-/// cache to them.
+/// through the same helpers as a live fetch. Graphs pass straight through
+/// until a later ticket extends the cache to them.
 class CachedServerActivitiesRepository
     implements
         ServerActivitiesRepository,
@@ -36,6 +35,9 @@ class CachedServerActivitiesRepository
 
   static const String _listConcept = 'activity-list';
   static const String _typesConcept = 'activity-types';
+  static const String _detailConceptPrefix = 'activity-detail:';
+  static const String _routeConceptPrefix = 'activity-route:';
+  static const String _lapsConceptPrefix = 'activity-laps:';
 
   final ServerActivitiesRawSource _inner;
   final OfflineCacheStore _cacheStore;
@@ -52,7 +54,7 @@ class CachedServerActivitiesRepository
     ServerActivityQuery query = const ServerActivityQuery(),
     int page = 1,
     int pageSize = 20,
-  }) async {
+  }) {
     final canonicalQuery = canonicalCacheQuery(
       ApiServerActivitiesRepository.activityListQueryParameters(
         query: query,
@@ -60,26 +62,91 @@ class CachedServerActivitiesRepository
         pageSize: pageSize,
       ),
     );
-    Object? envelope;
-    try {
-      envelope = await _inner.fetchActivityListEnvelope(
+    return _cacheThrough(
+      concept: _listConcept,
+      query: canonicalQuery,
+      fetch: () => _inner.fetchActivityListEnvelope(
         query: query,
         page: page,
         pageSize: pageSize,
-      );
+      ),
+      parse: (envelope) =>
+          ApiServerActivitiesRepository.parseActivityListEnvelope(
+            envelope: envelope,
+            page: page,
+            pageSize: pageSize,
+          ),
+    );
+  }
+
+  @override
+  Future<List<int>> fetchActivityTypes() => _cacheThrough(
+    concept: _typesConcept,
+    query: '',
+    fetch: _inner.fetchActivityTypesEnvelope,
+    parse: ApiServerActivitiesRepository.parseActivityTypesEnvelope,
+  );
+
+  @override
+  Future<ServerActivity> fetchDetail(int activityId) => _cacheThrough(
+    concept: '$_detailConceptPrefix$activityId',
+    query: '',
+    fetch: () => _inner.fetchDetailEnvelope(activityId),
+    parse: (envelope) => ApiServerActivitiesRepository.parseDetailEnvelope(
+      envelope: envelope,
+      activityId: activityId,
+    ),
+  );
+
+  @override
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) => _cacheThrough(
+    concept: '$_routeConceptPrefix$activityId',
+    query: '',
+    fetch: () => _inner.fetchRouteStreamEnvelope(activityId),
+    parse: (envelope) => ApiServerActivitiesRepository.parseRouteStreamEnvelope(
+      envelope: envelope,
+      activityId: activityId,
+    ),
+  );
+
+  @override
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) =>
+      _inner.fetchGraphs(activityId);
+
+  @override
+  Future<List<ServerActivityLap>> fetchLaps(int activityId) => _cacheThrough(
+    concept: '$_lapsConceptPrefix$activityId',
+    query: canonicalCacheQuery(
+      ApiServerActivitiesRepository.detailRowsQueryParameters,
+    ),
+    fetch: () => _inner.fetchLapsEnvelope(activityId),
+    parse: (envelope) => ApiServerActivitiesRepository.parseLapsEnvelope(
+      envelope: envelope,
+      activityId: activityId,
+    ),
+  );
+
+  /// Cache-through fetch of one concept (ADR-0001, decisions D1–D5): fetch
+  /// the raw envelope, write it to the cache on success, and on a
+  /// network-ish failure fall back to the cached payload of the active
+  /// identity, re-parsed through the same helpers as a live fetch.
+  Future<T> _cacheThrough<T extends Object>({
+    required String concept,
+    required String query,
+    required Future<Object?> Function() fetch,
+    required T Function(Object? envelope) parse,
+  }) async {
+    Object? envelope;
+    try {
+      envelope = await fetch();
     } on AppException catch (error) {
       final cached = await _serveFromCache(
         error,
-        concept: _listConcept,
-        query: canonicalQuery,
+        concept: concept,
+        query: query,
       );
       if (cached != null) {
-        final result = ApiServerActivitiesRepository.parseActivityListEnvelope(
-          envelope: cached.payload,
-          page: page,
-          pageSize: pageSize,
-        );
-        return _markCacheServed(result, cached.fetchedAt);
+        return _markCacheServed(parse(cached.payload), cached.fetchedAt);
       }
       rethrow;
     }
@@ -91,71 +158,15 @@ class CachedServerActivitiesRepository
       await _cacheStore.write(
         OfflineCacheEntry(
           profileId: profile.id,
-          concept: _listConcept,
-          query: canonicalQuery,
+          concept: concept,
+          query: query,
           payload: envelope,
           fetchedAt: _clock().toUtc(),
         ),
       );
     }
-    return ApiServerActivitiesRepository.parseActivityListEnvelope(
-      envelope: envelope,
-      page: page,
-      pageSize: pageSize,
-    );
+    return parse(envelope);
   }
-
-  @override
-  Future<List<int>> fetchActivityTypes() async {
-    Object? envelope;
-    try {
-      envelope = await _inner.fetchActivityTypesEnvelope();
-    } on AppException catch (error) {
-      final cached = await _serveFromCache(
-        error,
-        concept: _typesConcept,
-        query: '',
-      );
-      if (cached != null) {
-        return _markCacheServed(
-          ApiServerActivitiesRepository.parseActivityTypesEnvelope(
-            cached.payload,
-          ),
-          cached.fetchedAt,
-        );
-      }
-      rethrow;
-    }
-    final profile = await _connectionProfile();
-    if (profile != null) {
-      await _cacheStore.write(
-        OfflineCacheEntry(
-          profileId: profile.id,
-          concept: _typesConcept,
-          query: '',
-          payload: envelope,
-          fetchedAt: _clock().toUtc(),
-        ),
-      );
-    }
-    return ApiServerActivitiesRepository.parseActivityTypesEnvelope(envelope);
-  }
-
-  @override
-  Future<ServerActivity> fetchDetail(int activityId) =>
-      _inner.fetchDetail(activityId);
-
-  @override
-  Future<List<ServerRoutePoint>> fetchRoute(int activityId) =>
-      _inner.fetchRoute(activityId);
-
-  @override
-  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) =>
-      _inner.fetchGraphs(activityId);
-
-  @override
-  Future<List<ServerActivityLap>> fetchLaps(int activityId) =>
-      _inner.fetchLaps(activityId);
 
   /// Reads the cache for the active identity after a failed fetch.
   ///
