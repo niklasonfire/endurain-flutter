@@ -177,9 +177,9 @@ void main() {
       final controller = buildController();
       addTearDown(controller.dispose);
 
-      final cleared = await controller.clearOfflineData();
+      final result = await controller.clearOfflineData();
 
-      expect(cleared, isTrue);
+      expect(result, OfflineDataClearResult.cleared);
       expect(offlineCache.clearAllCalls, 1);
       expect(controller.isClearingOfflineData, isFalse);
     });
@@ -192,9 +192,9 @@ void main() {
         );
         addTearDown(controller.dispose);
 
-        final cleared = await controller.clearOfflineData();
+        final result = await controller.clearOfflineData();
 
-        expect(cleared, isFalse);
+        expect(result, OfflineDataClearResult.failed);
         expect(controller.isClearingOfflineData, isFalse);
       },
     );
@@ -209,9 +209,10 @@ void main() {
 
       final second = await controller.clearOfflineData();
 
-      expect(second, isFalse);
+      // A double-tap is not a failure: the first attempt owns the outcome.
+      expect(second, OfflineDataClearResult.ignored);
       slowCache.completeClear();
-      expect(await first, isTrue);
+      expect(await first, OfflineDataClearResult.cleared);
       expect(slowCache.clearAllCalls, 1);
     });
   });

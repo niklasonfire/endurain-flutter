@@ -89,7 +89,7 @@ class ServerActivityDetailController extends SafeNotifier {
       final result = await _repository.fetchDetail(activityId);
       if (_valid && generation == _detailGeneration) {
         _activity = result;
-        _cacheFetchedAt = _cacheProvenanceOf(result);
+        _cacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
       }
     } catch (error) {
       if (_valid && generation == _detailGeneration) _error = error;
@@ -135,7 +135,7 @@ class ServerActivityDetailController extends SafeNotifier {
           .fetchGraphs(activityId);
       if (_valid && generation == _graphGeneration) {
         _graphs = List.unmodifiable(result);
-        _graphCacheFetchedAt = _cacheProvenanceOf(result);
+        _graphCacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
       }
     } catch (error) {
       if (_valid && generation == _graphGeneration) _graphError = error;
@@ -160,7 +160,7 @@ class ServerActivityDetailController extends SafeNotifier {
           .fetchLaps(activityId);
       if (_valid && generation == _lapGeneration) {
         _laps = List.unmodifiable(result);
-        _lapCacheFetchedAt = _cacheProvenanceOf(result);
+        _lapCacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
       }
     } catch (error) {
       if (_valid && generation == _lapGeneration) _lapError = error;
@@ -170,14 +170,6 @@ class ServerActivityDetailController extends SafeNotifier {
         notify();
       }
     }
-  }
-
-  DateTime? _cacheProvenanceOf(Object result) {
-    return switch (_repository) {
-      final OfflineCacheProvenance provenance =>
-        provenance.provenanceOf(result)?.fetchedAt,
-      _ => null,
-    };
   }
 
   bool get _valid => !isDisposed && !_accountChanged;

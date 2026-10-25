@@ -22,6 +22,7 @@
   "@back": {
     "description": "Rótulo do botão Voltar - Usado em: login_screen.dart"
   },
+  "cacheLastUpdated": "Última atualização: {time}",
   "requiredField": "Este campo é obrigatório",
   "@requiredField": {
     "description": "Mensagem de validação para campos obrigatórios - Usado em: validators.dart"
@@ -30,8 +31,7 @@
   "@invalidUrl": {
     "description": "Mensagem de validação para URL inválido - Usado em: validators.dart"
   },
-    "cacheLastUpdated": "Última atualização: {time}",
-"@sectionErrors": "=== ERROS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
+  "@sectionErrors": "=== ERROS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
   "errorUpdateIncompatible": "Esta compilação não suporta a versão do Android ou arquitetura do dispositivo.",
   "@errorUpdateIncompatible": {
     "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"

@@ -79,6 +79,12 @@ class _FakeStore implements OfflineCacheStore {
 
   int readCalls = 0;
 
+  /// When set, [read] simulates a broken store (corrupt DB, full disk).
+  bool failReads = false;
+
+  /// When set, [write] simulates a broken store (corrupt DB, full disk).
+  bool failWrites = false;
+
   @override
   Future<OfflineCacheEntry?> read({
     required String profileId,
@@ -86,6 +92,7 @@ class _FakeStore implements OfflineCacheStore {
     required String query,
   }) async {
     readCalls++;
+    if (failReads) throw StateError('offline cache unreadable');
     return entries[offlineCacheKey(
       profileId: profileId,
       concept: concept,
@@ -95,6 +102,7 @@ class _FakeStore implements OfflineCacheStore {
 
   @override
   Future<void> write(OfflineCacheEntry entry) async {
+    if (failWrites) throw StateError('offline cache unwritable');
     entries[offlineCacheKey(
           profileId: entry.profileId,
           concept: entry.concept,
@@ -144,6 +152,10 @@ class _FakeRawSource implements ServerActivitiesRawSource {
   final listRequests =
       <({ServerActivityQuery query, int page, int pageSize})>[];
 
+  /// Invoked when the list envelope fetch starts, letting a test simulate an
+  /// account switch while the request is in flight.
+  void Function()? onListEnvelopeFetch;
+
   void goOffline() {
     listError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
     typesError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
@@ -161,6 +173,7 @@ class _FakeRawSource implements ServerActivitiesRawSource {
   }) async {
     listCalls++;
     listRequests.add((query: query, page: page, pageSize: pageSize));
+    onListEnvelopeFetch?.call();
     final error = listError;
     if (error != null) throw error;
     return listEnvelope;
@@ -309,6 +322,52 @@ void main() {
       store.entries.values.single.fetchedAt,
       DateTime.utc(2026, 10, 25, 10),
     );
+  });
+
+  test(
+    'a failing cache write never turns a successful live fetch into an error',
+    () async {
+      final repository = makeRepository();
+      store.failWrites = true;
+
+      final page = await repository.fetchPage();
+
+      expect(page.items.single.name, 'Morning run');
+      expect(repository.provenanceOf(page), isNull);
+      expect(store.entries, isEmpty);
+    },
+  );
+
+  test(
+    'a failing cache read lets the original fetch failure surface',
+    () async {
+      final repository = makeRepository();
+      await repository.fetchPage();
+      inner.goOffline();
+      inner.listEnvelope = null;
+      store.failReads = true;
+
+      await expectLater(
+        repository.fetchPage(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.serverActivitiesFetchFailed,
+          ),
+        ),
+      );
+    },
+  );
+
+  test('an account switch mid-flight never keys the cache write', () async {
+    final repository = makeRepository();
+    inner.onListEnvelopeFetch = () => profile = _profileB;
+
+    final page = await repository.fetchPage();
+
+    expect(page.items.single.name, 'Morning run');
+    expect(store.entries, isEmpty);
   });
 
   test('a network failure falls back to the cached payload', () async {

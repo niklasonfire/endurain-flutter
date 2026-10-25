@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
-import 'package:endurain/features/server_activities/models/server_activity_page.dart';
 import 'package:endurain/features/server_activities/models/server_activity_query.dart';
 import 'package:endurain/features/server_activities/models/server_route_point.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
@@ -113,7 +112,7 @@ class ServerActivitiesController extends SafeNotifier {
       _items = _unique(result.items);
       _page = result.page;
       _hasMore = result.hasMore;
-      _cacheFetchedAt = _cacheProvenanceOf(result);
+      _cacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
     } catch (error) {
       if (!_isCurrent(generation)) return;
       _error = error;
@@ -224,14 +223,6 @@ class ServerActivitiesController extends SafeNotifier {
     return List.unmodifiable(
       activities.where((activity) => ids.add(activity.id)),
     );
-  }
-
-  DateTime? _cacheProvenanceOf(ServerActivityPage result) {
-    return switch (_repository) {
-      final OfflineCacheProvenance provenance =>
-        provenance.provenanceOf(result)?.fetchedAt,
-      _ => null,
-    };
   }
 
   @override

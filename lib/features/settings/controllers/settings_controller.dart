@@ -6,6 +6,20 @@ import 'package:endurain/features/activity/repositories/activity_retention_setti
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
+/// Outcome of a clear-offline-data request.
+enum OfflineDataClearResult {
+  /// The wipe completed; the app behaves like a fresh install and the next
+  /// fetch while online repopulates the cache.
+  cleared,
+
+  /// The store failed to wipe; the user may retry.
+  failed,
+
+  /// A concurrent attempt was already in flight and this one was ignored;
+  /// the first attempt reports the outcome.
+  ignored,
+}
+
 /// View-model for the settings screen.
 ///
 /// Replaces the screen's previous `setState`-driven repository calls: the
@@ -124,21 +138,22 @@ class SettingsController extends SafeNotifier {
 
   /// Removes the offline read cache of every identity.
   ///
-  /// Returns whether the wipe completed; `false` covers both a failing store
-  /// and a concurrent attempt that was ignored while one was running. After a
+  /// The result distinguishes a completed wipe from a failing store and from
+  /// a concurrent attempt that was ignored while one was running, so a
+  /// double-tap never claims failure while the first tap succeeds. After a
   /// successful wipe the app behaves like a fresh install: the next fetch
   /// while online repopulates the cache.
-  Future<bool> clearOfflineData() async {
+  Future<OfflineDataClearResult> clearOfflineData() async {
     if (_isClearingOfflineData) {
-      return false;
+      return OfflineDataClearResult.ignored;
     }
     _isClearingOfflineData = true;
     notify();
     try {
       await _offlineCache.clearAll();
-      return true;
+      return OfflineDataClearResult.cleared;
     } catch (_) {
-      return false;
+      return OfflineDataClearResult.failed;
     } finally {
       _isClearingOfflineData = false;
       notify();

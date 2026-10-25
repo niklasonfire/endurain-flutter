@@ -55,6 +55,18 @@ abstract interface class OfflineCacheProvenance {
   OfflineCacheServeInfo? provenanceOf(Object result);
 }
 
+/// Reports when a repository result was served from the offline read cache.
+extension OfflineCacheProvenanceTiming on Object {
+  /// The time [result] was last fetched from the server, when this repository
+  /// tracks cache provenance and [result] came from the offline read cache;
+  /// `null` when the result came from the server (or nothing was loaded).
+  DateTime? offlineCacheFetchedAtOf(Object result) {
+    final provenance = this;
+    if (provenance is! OfflineCacheProvenance) return null;
+    return provenance.provenanceOf(result)?.fetchedAt;
+  }
+}
+
 /// Persistent raw-payload store behind the offline read cache (ADR-0001).
 abstract interface class OfflineCacheStore {
   /// Returns the cached entry for the identity/concept/query, or `null`.

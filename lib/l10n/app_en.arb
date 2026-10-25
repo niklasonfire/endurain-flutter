@@ -22,15 +22,7 @@
   "@back": {
     "description": "Back button label - Used in: login_screen.dart"
   },
-  "requiredField": "This field is required",
-  "@requiredField": {
-    "description": "Validation message for required fields - Used in: validators.dart"
-  },
-  "invalidUrl": "Please enter a valid URL",
-  "@invalidUrl": {
-    "description": "Validation message for invalid URL - Used in: validators.dart"
-  },
-    "cacheLastUpdated": "Last updated {time}",
+  "cacheLastUpdated": "Last updated {time}",
   "@cacheLastUpdated": {
     "description": "Offline read cache staleness chip - Used in: shared/widgets/cache_last_updated_chip.dart",
     "placeholders": {
@@ -39,7 +31,15 @@
       }
     }
   },
-"@sectionErrors": "=== ERRORS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
+  "requiredField": "This field is required",
+  "@requiredField": {
+    "description": "Validation message for required fields - Used in: validators.dart"
+  },
+  "invalidUrl": "Please enter a valid URL",
+  "@invalidUrl": {
+    "description": "Validation message for invalid URL - Used in: validators.dart"
+  },
+  "@sectionErrors": "=== ERRORS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
   "errorUpdateIncompatible": "This build does not support your Android version or device architecture.",
   "@errorUpdateIncompatible": {
     "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"

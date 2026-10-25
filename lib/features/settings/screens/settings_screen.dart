@@ -113,17 +113,24 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
     if (!confirmed || !mounted) {
       return;
     }
-    final cleared = await _controller.clearOfflineData();
+    final result = await _controller.clearOfflineData();
     if (!mounted) {
       return;
     }
-    if (cleared) {
-      await DialogUtils.showMessage(context, l10n.settingsClearOfflineDataDone);
-    } else {
-      await DialogUtils.showErrorDialog(
-        context,
-        l10n.settingsClearOfflineDataFailed,
-      );
+    switch (result) {
+      case OfflineDataClearResult.cleared:
+        await DialogUtils.showMessage(
+          context,
+          l10n.settingsClearOfflineDataDone,
+        );
+      case OfflineDataClearResult.failed:
+        await DialogUtils.showErrorDialog(
+          context,
+          l10n.settingsClearOfflineDataFailed,
+        );
+      case OfflineDataClearResult.ignored:
+        // A concurrent attempt is already reporting the outcome.
+        break;
     }
   }
 
