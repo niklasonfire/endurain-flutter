@@ -9,6 +9,7 @@ import 'package:endurain/features/statistics/models/activity_statistics.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:endurain/shared/widgets/cache_last_updated_chip.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -135,6 +136,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               padding: const EdgeInsets.all(16),
               children: [
                 _filters(l10n),
+                if (_controller.cacheFetchedAt != null)
+                  CacheLastUpdatedChip(fetchedAt: _controller.cacheFetchedAt!),
                 if (_controller.isLoading) const LinearProgressIndicator(),
                 if (_controller.error != null) ...[
                   Text(l10n.statsLoadFailed, textAlign: TextAlign.center),
