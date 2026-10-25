@@ -87,7 +87,11 @@ void main() {
         (_) async => http.Response(
           jsonEncode({
             'items': [
-              {'activity_id': 8, 'stream_type': 1, 'stream_waypoints': <Object>[]},
+              {
+                'activity_id': 8,
+                'stream_type': 1,
+                'stream_waypoints': <Object>[],
+              },
             ],
             'total': 1,
             'page': 1,
@@ -105,7 +109,11 @@ void main() {
         (_) async => http.Response(
           jsonEncode({
             'items': [
-              {'activity_id': 7, 'stream_type': 1, 'stream_waypoints': <String, Object?>{}},
+              {
+                'activity_id': 7,
+                'stream_type': 1,
+                'stream_waypoints': <String, Object?>{},
+              },
             ],
             'total': 1,
             'page': 1,
@@ -237,10 +245,7 @@ void main() {
   });
   test('maps stream 7 lat/lon, retaining zero and rejecting invalid or absent coordinates', () async {
     final repo = repository((request) async {
-      expect(
-        request.url.path,
-        '/api/v1/activities/7/streams/7',
-      );
+      expect(request.url.path, '/api/v1/activities/7/streams/7');
       return http.Response(
         jsonEncode({
           'activity_id': 7,
@@ -355,9 +360,8 @@ void main() {
     final detail = await repo.fetchDetail(7);
     expect(
       detail.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
-      DateFormat('yyyy-MM-dd HH:mm').format(
-        DateTime.utc(2026, 10, 18, 15, 15, 35).toLocal(),
-      ),
+      DateFormat('yyyy-MM-dd HH:mm')
+          .format(DateTime.utc(2026, 10, 18, 15, 15, 35).toLocal()),
     );
   });
 

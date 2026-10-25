@@ -49,8 +49,7 @@ class ApiEndpoints {
   /// Paginated activities of one user; `page_number` and `num_records`
   /// travel as query parameters and the total comes from the response
   /// envelope.
-  String activityListEndpoint(int userId) =>
-      '$_base/activities/users/$userId';
+  String activityListEndpoint(int userId) => '$_base/activities/users/$userId';
   String activityDetailEndpoint(int activityId) =>
       '$_base/activities/$activityId';
 

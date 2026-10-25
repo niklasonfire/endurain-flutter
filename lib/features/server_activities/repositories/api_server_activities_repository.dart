@@ -89,19 +89,16 @@ class ApiServerActivitiesRepository
     // its response envelope, so list and count are an atomic snapshot.
     final envelope = _object(
       await _get(
-        _endpoint(
-          _endpoints.activityListEndpoint(userId),
-          <String, String>{
-            if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
-            if (query.activityType != null) 'type': '${query.activityType}',
-            if (query.startDate != null) 'start_date': _date(query.startDate!),
-            if (query.endDate != null) 'end_date': _date(query.endDate!),
-            'page_number': '$page',
-            'num_records': '$pageSize',
-            'sort_by': 'start_time',
-            'sort_order': 'desc',
-          },
-        ),
+        _endpoint(_endpoints.activityListEndpoint(userId), <String, String>{
+          if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
+          if (query.activityType != null) 'type': '${query.activityType}',
+          if (query.startDate != null) 'start_date': _date(query.startDate!),
+          if (query.endDate != null) 'end_date': _date(query.endDate!),
+          'page_number': '$page',
+          'num_records': '$pageSize',
+          'sort_by': 'start_time',
+          'sort_order': 'desc',
+        }),
         profile,
       ),
     );
@@ -233,10 +230,7 @@ class ApiServerActivitiesRepository
     // stream type and lap of a single activity.
     final envelope = _object(
       await _get(
-        _endpoint(endpoint, const {
-          'page_number': '1',
-          'num_records': '200',
-        }),
+        _endpoint(endpoint, const {'page_number': '1', 'num_records': '200'}),
         profile,
       ),
     );

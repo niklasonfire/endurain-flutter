@@ -39,7 +39,10 @@ void main() {
     });
 
     test('default ingestion job path follows the endpoint builder', () {
-      const config = ActivityUploadConfig(endpoint: '/upload', fieldName: 'file');
+      const config = ActivityUploadConfig(
+        endpoint: '/upload',
+        fieldName: 'file',
+      );
 
       expect(
         config.ingestionJobEndpoint('job 1'),

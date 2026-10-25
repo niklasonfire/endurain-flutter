@@ -48,10 +48,9 @@ class ServerActivityStartTime {
     Object? fallback,
     Object? timezone,
   }) {
-    final zone =
-        timezone is String && timezone.trim().isNotEmpty
-            ? timezone.trim()
-            : null;
+    final zone = timezone is String && timezone.trim().isNotEmpty
+        ? timezone.trim()
+        : null;
     final start = _parse(timezoneApplied) ?? _parse(fallback);
     return start == null
         ? null

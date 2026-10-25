@@ -101,7 +101,10 @@ void main() {
       });
 
       test('profileGoalsResultsEndpoint', () {
-        expect(endpoints.profileGoalsResultsEndpoint, '/api/v1/profile/goals/results');
+        expect(
+          endpoints.profileGoalsResultsEndpoint,
+          '/api/v1/profile/goals/results',
+        );
       });
     });
 
@@ -163,10 +166,7 @@ void main() {
       });
 
       test('activityListEndpoint uses v2 base', () {
-        expect(
-          v2.activityListEndpoint(42),
-          '/api/v2/activities/users/42',
-        );
+        expect(v2.activityListEndpoint(42), '/api/v2/activities/users/42');
       });
 
       test('activityDetailEndpoint uses v2 base', () {
@@ -181,10 +181,7 @@ void main() {
       });
 
       test('activityStreamsEndpoint uses v2 base', () {
-        expect(
-          v2.activityStreamsEndpoint(7),
-          '/api/v2/activities/7/streams',
-        );
+        expect(v2.activityStreamsEndpoint(7), '/api/v2/activities/7/streams');
       });
 
       test('activityLapsEndpoint uses v2 base', () {
@@ -192,17 +189,11 @@ void main() {
       });
 
       test('activitySummariesEndpoint uses v2 base', () {
-        expect(
-          v2.activitySummariesEndpoint,
-          '/api/v2/activities/summaries',
-        );
+        expect(v2.activitySummariesEndpoint, '/api/v2/activities/summaries');
       });
 
       test('profileGoalsResultsEndpoint uses v2 base', () {
-        expect(
-          v2.profileGoalsResultsEndpoint,
-          '/api/v2/profile/goals/results',
-        );
+        expect(v2.profileGoalsResultsEndpoint, '/api/v2/profile/goals/results');
       });
     });
   });
