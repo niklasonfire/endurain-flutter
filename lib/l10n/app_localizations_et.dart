@@ -31,6 +31,11 @@ class AppLocalizationsEt extends AppLocalizations {
   String get invalidUrl => 'Sisestage kehtiv URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Viimati uuendatud: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -737,6 +742,29 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Sätted';
+
+  @override
+  String get settingsClearOfflineData => 'Kustuta võrguühenduseta andmed';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Eemaldab serveri andmete võrguühenduseta koopia sellest seadmest';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Kas kustutada võrguühenduseta andmed?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Kõik sellesse seadmesse salvestatud serveri andmete võrguühenduseta koopiad eemaldatakse. Serveris salvestatud andmeid ei kustutata.';
+
+  @override
+  String get settingsClearOfflineDataDone =>
+      'Võrguühenduseta andmed kustutatud';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Võrguühenduseta andmeid ei saanud kustutada. Proovige uuesti.';
 
   @override
   String get deviceAccessTitle => 'Seadme juurdepääs';

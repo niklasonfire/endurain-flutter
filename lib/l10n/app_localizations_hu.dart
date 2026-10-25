@@ -31,6 +31,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get invalidUrl => 'Adjon meg egy érvényes URL-t';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Utoljára frissítve: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -743,6 +748,28 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Beállítások';
+
+  @override
+  String get settingsClearOfflineData => 'Offline adatok törlése';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Eltávolítja a szerveradatok offline másolatát erről az eszközről';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Törli az offline adatokat?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Az eszközön tárolt összes szerveradat offline másolat el lesz távolítva. A kiszolgálón tárolt adatokat ez nem érinti.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline adatok törölve';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Az offline adatokat nem sikerült törölni. Próbálja újra.';
 
   @override
   String get deviceAccessTitle => 'Eszköz hozzáférés';

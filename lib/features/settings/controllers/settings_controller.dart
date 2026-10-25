@@ -1,9 +1,24 @@
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
+
+/// Outcome of a clear-offline-data request.
+enum OfflineDataClearResult {
+  /// The wipe completed; the app behaves like a fresh install and the next
+  /// fetch while online repopulates the cache.
+  cleared,
+
+  /// The store failed to wipe; the user may retry.
+  failed,
+
+  /// A concurrent attempt was already in flight and this one was ignored;
+  /// the first attempt reports the outcome.
+  ignored,
+}
 
 /// View-model for the settings screen.
 ///
@@ -23,19 +38,23 @@ class SettingsController extends SafeNotifier {
     required ActivityRetentionSettingsRepository retentionSettingsRepository,
     required MeasurementSystemController measurementSystemController,
     required SecureStorageService secureStorage,
+    required OfflineCacheStore offlineCache,
   }) : _packageInfoService = packageInfoService,
        _retentionSettings = retentionSettingsRepository,
        _measurementSystem = measurementSystemController,
-       _secureStorage = secureStorage;
+       _secureStorage = secureStorage,
+       _offlineCache = offlineCache;
 
   final PackageInfoService _packageInfoService;
   final ActivityRetentionSettingsRepository _retentionSettings;
   final MeasurementSystemController _measurementSystem;
   final SecureStorageService _secureStorage;
+  final OfflineCacheStore _offlineCache;
 
   String? _appVersion;
   String? _serverUrl;
   bool _retainUploadedGpx = true;
+  bool _isClearingOfflineData = false;
 
   /// The app version string, or `null` before it has loaded.
   String? get appVersion => _appVersion;
@@ -106,11 +125,38 @@ class SettingsController extends SafeNotifier {
     }
   }
 
+  /// Whether a clear-offline-data request is currently running.
+  bool get isClearingOfflineData => _isClearingOfflineData;
+
   /// Persists the unit preference. `null` restores the device-region default.
   ///
   /// Delegated to the app-lifetime controller so every screen re-renders.
   Future<void> setMeasurementSystem(MeasurementSystem? system) async {
     await _measurementSystem.setPreference(system);
     notify();
+  }
+
+  /// Removes the offline read cache of every identity.
+  ///
+  /// The result distinguishes a completed wipe from a failing store and from
+  /// a concurrent attempt that was ignored while one was running, so a
+  /// double-tap never claims failure while the first tap succeeds. After a
+  /// successful wipe the app behaves like a fresh install: the next fetch
+  /// while online repopulates the cache.
+  Future<OfflineDataClearResult> clearOfflineData() async {
+    if (_isClearingOfflineData) {
+      return OfflineDataClearResult.ignored;
+    }
+    _isClearingOfflineData = true;
+    notify();
+    try {
+      await _offlineCache.clearAll();
+      return OfflineDataClearResult.cleared;
+    } catch (_) {
+      return OfflineDataClearResult.failed;
+    } finally {
+      _isClearingOfflineData = false;
+      notify();
+    }
   }
 }

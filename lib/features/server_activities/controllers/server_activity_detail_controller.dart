@@ -1,3 +1,4 @@
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
@@ -31,6 +32,8 @@ class ServerActivityDetailController extends SafeNotifier {
   bool _isLapLoading = false;
   int _graphGeneration = 0;
   int _lapGeneration = 0;
+  DateTime? _graphCacheFetchedAt;
+  DateTime? _lapCacheFetchedAt;
   ServerActivity? _activity;
   List<ServerRoutePoint> _route = const [];
   Object? _error;
@@ -40,6 +43,7 @@ class ServerActivityDetailController extends SafeNotifier {
   bool _accountChanged = false;
   int _detailGeneration = 0;
   int _routeGeneration = 0;
+  DateTime? _cacheFetchedAt;
 
   List<ServerActivityGraph> get graphs => _graphs;
   List<ServerActivityLap> get laps => _laps;
@@ -48,6 +52,16 @@ class ServerActivityDetailController extends SafeNotifier {
   bool get isGraphLoading => _isGraphLoading;
   bool get isLapLoading => _isLapLoading;
 
+  /// When the graphs were served from the offline read cache, the time they
+  /// were last fetched from the server; `null` while they came from the
+  /// server (or nothing is loaded).
+  DateTime? get graphCacheFetchedAt => _graphCacheFetchedAt;
+
+  /// When the laps were served from the offline read cache, the time they
+  /// were last fetched from the server; `null` while they came from the
+  /// server (or nothing is loaded).
+  DateTime? get lapCacheFetchedAt => _lapCacheFetchedAt;
+
   ServerActivity? get activity => _activity;
   List<ServerRoutePoint> get route => _route;
   Object? get error => _error;
@@ -55,6 +69,10 @@ class ServerActivityDetailController extends SafeNotifier {
   bool get isLoading => _loading;
   bool get isRouteLoading => _routeLoading;
   bool get isAccountChanged => _accountChanged;
+
+  /// When the visible detail was served from the offline read cache, the time
+  /// its data was last fetched from the server; `null` for a live view.
+  DateTime? get cacheFetchedAt => _cacheFetchedAt;
 
   Future<void> load() async {
     if (isDisposed || _accountChanged) return;
@@ -65,10 +83,14 @@ class ServerActivityDetailController extends SafeNotifier {
     final generation = ++_detailGeneration;
     _loading = true;
     _error = null;
+    _cacheFetchedAt = null;
     notify();
     try {
       final result = await _repository.fetchDetail(activityId);
-      if (_valid && generation == _detailGeneration) _activity = result;
+      if (_valid && generation == _detailGeneration) {
+        _activity = result;
+        _cacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
+      }
     } catch (error) {
       if (_valid && generation == _detailGeneration) _error = error;
     } finally {
@@ -106,12 +128,14 @@ class ServerActivityDetailController extends SafeNotifier {
     final generation = ++_graphGeneration;
     _isGraphLoading = true;
     _graphError = null;
+    _graphCacheFetchedAt = null;
     notify();
     try {
       final result = await (repository as ServerActivityGraphRepository)
           .fetchGraphs(activityId);
       if (_valid && generation == _graphGeneration) {
         _graphs = List.unmodifiable(result);
+        _graphCacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
       }
     } catch (error) {
       if (_valid && generation == _graphGeneration) _graphError = error;
@@ -129,12 +153,14 @@ class ServerActivityDetailController extends SafeNotifier {
     final generation = ++_lapGeneration;
     _isLapLoading = true;
     _lapError = null;
+    _lapCacheFetchedAt = null;
     notify();
     try {
       final result = await (repository as ServerActivityGraphRepository)
           .fetchLaps(activityId);
       if (_valid && generation == _lapGeneration) {
         _laps = List.unmodifiable(result);
+        _lapCacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
       }
     } catch (error) {
       if (_valid && generation == _lapGeneration) _lapError = error;
@@ -160,12 +186,15 @@ class ServerActivityDetailController extends SafeNotifier {
     _lapError = null;
     _isGraphLoading = false;
     _isLapLoading = false;
+    _graphCacheFetchedAt = null;
+    _lapCacheFetchedAt = null;
     _activity = null;
     _route = const [];
     _error = null;
     _routeError = null;
     _loading = false;
     _routeLoading = false;
+    _cacheFetchedAt = null;
     notify();
   }
 

@@ -31,6 +31,11 @@ class AppLocalizationsSk extends AppLocalizations {
   String get invalidUrl => 'Zadajte platnú adresu URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Naposledy aktualizované: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -741,6 +746,27 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Nastavenia';
+
+  @override
+  String get settingsClearOfflineData => 'Vymazať offline údaje';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Odstráni offline kópiu údajov servera z tohto zariadenia';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Vymazať offline údaje?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Všetky offline kópie údajov servera uložené v tomto zariadení sa odstránia. Nič uložené na serveri sa nevymaže.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline údaje vymazané';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Offline údaje sa nepodarilo vymazať. Skúste to znova.';
 
   @override
   String get deviceAccessTitle => 'Prístup k zariadeniu';

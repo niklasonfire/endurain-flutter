@@ -31,6 +31,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invalidUrl => 'Por favor, insira um URL válido';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Última atualização: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'Esta compilação não suporta a versão do Android ou arquitetura do dispositivo.';
 
@@ -742,6 +747,27 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Configurações';
+
+  @override
+  String get settingsClearOfflineData => 'Limpar dados offline';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Remove a cópia offline dos dados do servidor deste dispositivo';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Limpar os dados offline?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Todas as cópias offline dos dados do servidor guardadas neste dispositivo serão removidas. Nada guardado no servidor é eliminado.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Dados offline limpos';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Não foi possível limpar os dados offline. Tente novamente.';
 
   @override
   String get deviceAccessTitle => 'Acesso ao dispositivo';

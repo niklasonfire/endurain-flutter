@@ -97,6 +97,43 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
     }
   }
 
+  /// Wipes the offline read cache of every identity after an explicit
+  /// confirmation; the next fetch while online repopulates it.
+  Future<void> _handleClearOfflineData() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await DialogUtils.showConfirmDialog(
+      context,
+      title: l10n.settingsClearOfflineDataConfirmTitle,
+      message: l10n.settingsClearOfflineDataConfirmMessage,
+      confirmText: l10n.settingsClearOfflineData,
+      isDestructive: true,
+    );
+
+    if (!confirmed || !mounted) {
+      return;
+    }
+    final result = await _controller.clearOfflineData();
+    if (!mounted) {
+      return;
+    }
+    switch (result) {
+      case OfflineDataClearResult.cleared:
+        await DialogUtils.showMessage(
+          context,
+          l10n.settingsClearOfflineDataDone,
+        );
+      case OfflineDataClearResult.failed:
+        await DialogUtils.showErrorDialog(
+          context,
+          l10n.settingsClearOfflineDataFailed,
+        );
+      case OfflineDataClearResult.ignored:
+        // A concurrent attempt is already reporting the outcome.
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -197,6 +234,15 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                     (context) => const ActivityHistoryScreen(),
                   );
                 },
+              ),
+              AdaptiveListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.delete_outline,
+                  cupertinoIcon: CupertinoIcons.trash,
+                ),
+                title: l10n.settingsClearOfflineData,
+                subtitle: l10n.settingsClearOfflineDataSubtitle,
+                onTap: _handleClearOfflineData,
               ),
               AdaptiveSwitchListTile(
                 leading: const AdaptiveIcon(

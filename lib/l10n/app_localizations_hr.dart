@@ -31,6 +31,11 @@ class AppLocalizationsHr extends AppLocalizations {
   String get invalidUrl => 'Unesite valjani URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Zadnje ažurirano: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -742,6 +747,28 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Postavke';
+
+  @override
+  String get settingsClearOfflineData => 'Očisti izvanmrežne podatke';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Uklanja izvanmrežnu kopiju podataka poslužitelja s ovog uređaja';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Očistiti izvanmrežne podatke?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Sve izvanmrežne kopije podataka poslužitelja spremljene na ovom uređaju bit će uklonjene. Ništa spremljeno na poslužitelju neće biti izbrisano.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Izvanmrežni podaci očišćeni';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Izvanmrežne podatke nije moguće očistiti. Pokušajte ponovno.';
 
   @override
   String get deviceAccessTitle => 'Pristup uređaju';

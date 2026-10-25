@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/controllers/server_activities_controller.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
 import 'package:endurain/features/server_activities/models/server_activity_page.dart';
@@ -245,6 +246,78 @@ void main() {
   });
 
   test(
+    'cache-served pages expose the cached fetch time for the chip',
+    () async {
+      final connection = ValueNotifier<String?>('account');
+      final repository = _ProvenanceRepository();
+      final controller = ServerActivitiesController(
+        repository: repository,
+        connection: connection,
+      );
+      addTearDown(controller.dispose);
+      addTearDown(connection.dispose);
+
+      final cachedPage = ServerActivityPage(
+        items: [const ServerActivity(id: 1, name: 'Cached', activityType: 1)],
+        page: 1,
+        pageSize: 20,
+        total: 1,
+      );
+      repository.provenance[cachedPage] = OfflineCacheServeInfo(
+        fetchedAt: DateTime.utc(2026, 10, 25, 8),
+      );
+      final initial = controller.refresh();
+      repository.requests.last.complete(cachedPage);
+      await initial;
+
+      expect(controller.items.single.name, 'Cached');
+      expect(controller.cacheFetchedAt, DateTime.utc(2026, 10, 25, 8));
+
+      final livePage = ServerActivityPage(
+        items: [const ServerActivity(id: 2, name: 'Live', activityType: 1)],
+        page: 1,
+        pageSize: 20,
+        total: 1,
+      );
+      final online = controller.refresh();
+      repository.requests.last.complete(livePage);
+      await online;
+
+      expect(controller.cacheFetchedAt, isNull);
+    },
+  );
+
+  test('connection change clears the cached fetch time', () async {
+    final connection = ValueNotifier<String?>('account-a');
+    final repository = _ProvenanceRepository();
+    final controller = ServerActivitiesController(
+      repository: repository,
+      connection: connection,
+    );
+    addTearDown(controller.dispose);
+    addTearDown(connection.dispose);
+
+    final cachedPage = ServerActivityPage(
+      items: [const ServerActivity(id: 1, name: 'Cached', activityType: 1)],
+      page: 1,
+      pageSize: 20,
+      total: 1,
+    );
+    repository.provenance[cachedPage] = OfflineCacheServeInfo(
+      fetchedAt: DateTime.utc(2026, 10, 25, 8),
+    );
+    final initial = controller.refresh();
+    repository.requests.last.complete(cachedPage);
+    await initial;
+    expect(controller.cacheFetchedAt, isNotNull);
+
+    connection.value = 'account-b';
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.cacheFetchedAt, isNull);
+  });
+
+  test(
     'route preview cache evicts old entries after forty activities',
     () async {
       final connection = ValueNotifier<String?>('account');
@@ -314,4 +387,13 @@ class _ImmediateRoutesRepository extends _Repository {
     routeIds.add(activityId);
     return const [];
   }
+}
+
+class _ProvenanceRepository extends _Repository
+    implements OfflineCacheProvenance {
+  final provenance = <ServerActivityPage, OfflineCacheServeInfo>{};
+
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) =>
+      result is ServerActivityPage ? provenance[result] : null;
 }

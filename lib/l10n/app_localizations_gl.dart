@@ -31,6 +31,11 @@ class AppLocalizationsGl extends AppLocalizations {
   String get invalidUrl => 'Introduce un URL válido';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Última actualización: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -742,6 +747,28 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Configuración';
+
+  @override
+  String get settingsClearOfflineData => 'Borrar datos sen conexión';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Elimina a copia sen conexión dos datos do servidor deste dispositivo';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Borrar os datos sen conexión?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Eliminaranse todas as copias sen conexión dos datos do servidor gardadas neste dispositivo. Non se elimina nada gardado no servidor.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Datos sen conexión borrados';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Non se puideron borrar os datos sen conexión. Téntao de novo.';
 
   @override
   String get deviceAccessTitle => 'Acceso ao dispositivo';

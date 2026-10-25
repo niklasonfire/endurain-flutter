@@ -31,6 +31,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get invalidUrl => 'Introduceți un URL valid';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Ultima actualizare: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -742,6 +747,27 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Setări';
+
+  @override
+  String get settingsClearOfflineData => 'Șterge datele offline';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Elimină copia offline a datelor serverului de pe acest dispozitiv';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Ștergi datele offline?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Toate copiile offline ale datelor serverului stocate pe acest dispozitiv vor fi eliminate. Nimic stocat pe server nu va fi șters.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Date offline șterse';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Datele offline nu au putut fi șterse. Încercați din nou.';
 
   @override
   String get deviceAccessTitle => 'Acces la dispozitiv';

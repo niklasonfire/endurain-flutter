@@ -12,8 +12,41 @@ import 'package:endurain/features/server_activities/models/server_activity_query
 import 'package:endurain/features/server_activities/models/server_route_point.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
 
-class ApiServerActivitiesRepository
+/// Server activity fetches that expose their raw decoded JSON envelopes so an
+/// offline read-cache decorator can store a payload exactly as the server
+/// returned it and re-parse it through the same helpers as a live fetch
+/// (ADR-0001, decision D1).
+abstract interface class ServerActivitiesRawSource
     implements ServerActivitiesRepository, ServerActivityGraphRepository {
+  /// Decoded activity-list envelope (`{'items': [...], 'total': int}`) exactly
+  /// as returned by the server.
+  Future<Object?> fetchActivityListEnvelope({
+    ServerActivityQuery query = const ServerActivityQuery(),
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// Decoded activity-types object exactly as returned by the server; its
+  /// keys are the type ids.
+  Future<Object?> fetchActivityTypesEnvelope();
+
+  /// Decoded activity-detail object exactly as returned by the server.
+  Future<Object?> fetchDetailEnvelope(int activityId);
+
+  /// Decoded route-stream object exactly as returned by the server, or
+  /// `null` when the server answered 404 (the no-route state).
+  Future<Object?> fetchRouteStreamEnvelope(int activityId);
+
+  /// Decoded activity streams envelope (`{'items': [...]}`) exactly as
+  /// returned by the server for the activity's graphs.
+  Future<Object?> fetchActivityStreamsEnvelope(int activityId);
+
+  /// Decoded activity laps envelope (`{'items': [...]}`) exactly as returned
+  /// by the server.
+  Future<Object?> fetchActivityLapsEnvelope(int activityId);
+}
+
+class ApiServerActivitiesRepository implements ServerActivitiesRawSource {
   ApiServerActivitiesRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
@@ -69,6 +102,24 @@ class ApiServerActivitiesRepository
     int page = 1,
     int pageSize = 20,
   }) async {
+    final envelope = await fetchActivityListEnvelope(
+      query: query,
+      page: page,
+      pageSize: pageSize,
+    );
+    return parseActivityListEnvelope(
+      envelope: envelope,
+      page: page,
+      pageSize: pageSize,
+    );
+  }
+
+  @override
+  Future<Object?> fetchActivityListEnvelope({
+    ServerActivityQuery query = const ServerActivityQuery(),
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     if (page < 1 || pageSize < 1 || pageSize > 100) {
       throw ArgumentError('Page must be positive; page size must be 1–100.');
     }
@@ -87,23 +138,29 @@ class ApiServerActivitiesRepository
     final userId = _positiveInt(user['id']);
     // One paginated request carries both the rows and the matching total in
     // its response envelope, so list and count are an atomic snapshot.
-    final envelope = _object(
-      await _get(
-        _endpoint(_endpoints.activityListEndpoint(userId), <String, String>{
-          if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
-          if (query.activityType != null) 'type': '${query.activityType}',
-          if (query.startDate != null) 'start_date': _date(query.startDate!),
-          if (query.endDate != null) 'end_date': _date(query.endDate!),
-          'page_number': '$page',
-          'num_records': '$pageSize',
-          'sort_by': 'start_time',
-          'sort_order': 'desc',
-        }),
-        profile,
+    return _get(
+      _endpoint(
+        _endpoints.activityListEndpoint(userId),
+        activityListQueryParameters(
+          query: query,
+          page: page,
+          pageSize: pageSize,
+        ),
       ),
+      profile,
     );
-    final rows = envelope['items'];
-    final count = envelope['total'];
+  }
+
+  /// Parses a decoded activity-list envelope (live or cached) into a
+  /// [ServerActivityPage]; see [ServerActivitiesRawSource].
+  static ServerActivityPage parseActivityListEnvelope({
+    required Object? envelope,
+    required int page,
+    required int pageSize,
+  }) {
+    final map = _object(envelope);
+    final rows = map['items'];
+    final count = map['total'];
     if (rows is! List || count is! int || count < 0) _invalid();
     return ServerActivityPage(
       items: rows.map(_activity).toList(),
@@ -113,36 +170,84 @@ class ApiServerActivitiesRepository
     );
   }
 
+  /// Query parameters of the activity-list request. Shared with the offline
+  /// read cache so a cache key canonicalizes the exact request a live fetch
+  /// performs (decision D2).
+  static Map<String, String> activityListQueryParameters({
+    required ServerActivityQuery query,
+    required int page,
+    required int pageSize,
+  }) => <String, String>{
+    if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
+    if (query.activityType != null) 'type': '${query.activityType}',
+    if (query.startDate != null) 'start_date': _date(query.startDate!),
+    if (query.endDate != null) 'end_date': _date(query.endDate!),
+    'page_number': '$page',
+    'num_records': '$pageSize',
+    'sort_by': 'start_time',
+    'sort_order': 'desc',
+  };
+
   @override
-  Future<List<int>> fetchActivityTypes() async {
+  Future<List<int>> fetchActivityTypes() async =>
+      parseActivityTypesEnvelope(await fetchActivityTypesEnvelope());
+
+  @override
+  Future<Object?> fetchActivityTypesEnvelope() async {
     final profile = await _connection();
-    final result = await _get(_endpoints.activityTypesEndpoint, profile);
-    if (result == null) return const [];
-    final types = _object(result).keys.map((key) => _positiveInt(key)).toList()
-      ..sort();
+    return _get(_endpoints.activityTypesEndpoint, profile);
+  }
+
+  /// Parses a decoded activity-types object (live or cached) into the sorted
+  /// type ids; see [ServerActivitiesRawSource].
+  static List<int> parseActivityTypesEnvelope(Object? envelope) {
+    if (envelope == null) return const [];
+    final types = _object(
+      envelope,
+    ).keys.map((key) => _positiveInt(key)).toList()..sort();
     return List.unmodifiable(types);
   }
 
   @override
-  Future<ServerActivity> fetchDetail(int activityId) async {
+  Future<ServerActivity> fetchDetail(int activityId) async =>
+      parseDetailEnvelope(
+        envelope: await fetchDetailEnvelope(activityId),
+        activityId: activityId,
+      );
+
+  @override
+  Future<Object?> fetchDetailEnvelope(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
-    final result = _activity(
-      await _get(_endpoints.activityDetailEndpoint(activityId), profile),
-    );
+    return _get(_endpoints.activityDetailEndpoint(activityId), profile);
+  }
+
+  /// Parses a decoded activity-detail object (live or cached) into a
+  /// [ServerActivity]; see [ServerActivitiesRawSource].
+  static ServerActivity parseDetailEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) {
+    final result = _activity(envelope);
     if (result.id != activityId) _invalid();
     return result;
   }
 
   @override
-  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async =>
+      parseRouteStreamEnvelope(
+        envelope: await fetchRouteStreamEnvelope(activityId),
+        activityId: activityId,
+      );
+
+  @override
+  Future<Object?> fetchRouteStreamEnvelope(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
     // A missing GPS stream answers 404; that is the no-route state, not a
     // load failure.
-    Object? stream;
     try {
-      stream = await _get(
+      return await _get(
         _endpoints.activityRouteStreamEndpoint(activityId),
         profile,
       );
@@ -151,10 +256,19 @@ class ApiServerActivitiesRepository
           error.code != AppErrorCode.serverActivitiesFetchFailed) {
         rethrow;
       }
-      return const [];
+      return null;
     }
-    if (stream == null) return const [];
-    final data = _object(stream);
+  }
+
+  /// Parses a decoded route-stream object (live or cached) into the route;
+  /// a `null` envelope is the cached no-route state and parses to an empty
+  /// route. See [ServerActivitiesRawSource].
+  static List<ServerRoutePoint> parseRouteStreamEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) {
+    if (envelope == null) return const [];
+    final data = _object(envelope);
     if (data['stream_type'] != 7 || data['activity_id'] != activityId) {
       _invalid();
     }
@@ -192,13 +306,27 @@ class ApiServerActivitiesRepository
   }
 
   @override
-  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
-    final rows = await _detailRows(
-      _endpoints.activityStreamsEndpoint(activityId),
-      activityId,
-    );
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async =>
+      parseGraphsEnvelope(
+        envelope: await fetchActivityStreamsEnvelope(activityId),
+        activityId: activityId,
+      );
+
+  @override
+  Future<Object?> fetchActivityStreamsEnvelope(int activityId) =>
+      _detailEnvelope(
+        _endpoints.activityStreamsEndpoint(activityId),
+        activityId,
+      );
+
+  /// Parses a decoded streams envelope (live or cached) into the activity's
+  /// graphs; see [ServerActivitiesRawSource].
+  static List<ServerActivityGraph> parseGraphsEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) {
     final graphs = <ServerActivityGraph>[];
-    for (final row in rows) {
+    for (final row in _detailRowsFromEnvelope(envelope, activityId)) {
       if (!ServerGraphMetric.values.any(
         (metric) => metric.streamType == row['stream_type'],
       )) {
@@ -213,28 +341,48 @@ class ApiServerActivitiesRepository
 
   @override
   Future<List<ServerActivityLap>> fetchLaps(int activityId) async =>
-      List.unmodifiable(
-        (await _detailRows(
-          _endpoints.activityLapsEndpoint(activityId),
-          activityId,
-        )).map(ServerActivityLap.fromJson),
+      parseLapsEnvelope(
+        envelope: await fetchActivityLapsEnvelope(activityId),
+        activityId: activityId,
       );
 
-  Future<List<Map<String, dynamic>>> _detailRows(
-    String endpoint,
-    int activityId,
-  ) async {
+  /// Query parameters every detail child-collection (streams, laps) request
+  /// uses. Shared with the offline read cache so a cache key canonicalizes
+  /// the exact request a live fetch performs (decision D2).
+  static const Map<String, String> detailRowsQueryParameters = {
+    'page_number': '1',
+    'num_records': '200',
+  };
+
+  @override
+  Future<Object?> fetchActivityLapsEnvelope(int activityId) =>
+      _detailEnvelope(_endpoints.activityLapsEndpoint(activityId), activityId);
+
+  /// Parses a decoded laps envelope (live or cached) into the activity's
+  /// laps; see [ServerActivitiesRawSource].
+  static List<ServerActivityLap> parseLapsEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) => List.unmodifiable(
+    _detailRowsFromEnvelope(
+      envelope,
+      activityId,
+    ).map(ServerActivityLap.fromJson),
+  );
+
+  Future<Object?> _detailEnvelope(String endpoint, int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
     // Child collections are paginated; one maximum-size page covers every
     // stream type and lap of a single activity.
-    final envelope = _object(
-      await _get(
-        _endpoint(endpoint, const {'page_number': '1', 'num_records': '200'}),
-        profile,
-      ),
-    );
-    final result = envelope['items'];
+    return _get(_endpoint(endpoint, detailRowsQueryParameters), profile);
+  }
+
+  static List<Map<String, dynamic>> _detailRowsFromEnvelope(
+    Object? envelope,
+    int activityId,
+  ) {
+    final result = _object(envelope)['items'];
     if (result is! List) _invalid();
     return result.map((value) {
       final row = _object(value);

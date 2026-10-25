@@ -31,6 +31,11 @@ class AppLocalizationsCa extends AppLocalizations {
   String get invalidUrl => 'Introduïu un URL vàlid';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Última actualització: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -745,6 +750,28 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Configuració';
+
+  @override
+  String get settingsClearOfflineData => 'Esborra les dades fora de línia';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Elimina la còpia fora de línia de les dades del servidor d\'aquest dispositiu';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Vols esborrar les dades fora de línia?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'S\'eliminaran totes les còpies fora de línia de les dades del servidor emmagatzemades en aquest dispositiu. No s\'elimina res emmagatzemat al servidor.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Dades fora de línia esborrades';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'No s\'han pogut esborrar les dades fora de línia. Torneu-ho a provar.';
 
   @override
   String get deviceAccessTitle => 'Accés al dispositiu';

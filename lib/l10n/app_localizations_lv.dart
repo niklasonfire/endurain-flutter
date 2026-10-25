@@ -31,6 +31,11 @@ class AppLocalizationsLv extends AppLocalizations {
   String get invalidUrl => 'Ievadiet derīgu URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Pēdējoreiz atjaunināts: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -736,6 +741,28 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get settingsScreen => 'Iestatījumi';
+
+  @override
+  String get settingsClearOfflineData => 'Notīrīt bezsaistes datus';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Noņem servera datu bezsaistes kopiju no šīs ierīces';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Notīrīt bezsaistes datus?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Visas šajā ierīcē saglabātās servera datu bezsaistes kopijas tiks noņemtas. Nekas, kas saglabāts serverī, netiks dzēsts.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Bezsaistes dati notīrīti';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Neizdevās notīrīt bezsaistes datus. Mēģiniet vēlreiz.';
 
   @override
   String get deviceAccessTitle => 'Ierīces piekļuve';

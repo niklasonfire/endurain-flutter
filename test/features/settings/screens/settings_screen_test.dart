@@ -1,3 +1,4 @@
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
@@ -40,6 +41,7 @@ void main() {
 
   SettingsController buildSettingsController({
     ActivityRetentionSettingsRepository? retention,
+    OfflineCacheStore? offlineCache,
   }) => SettingsController(
     packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
     retentionSettingsRepository: retention ?? _FakeActivityRetentionSettings(),
@@ -49,6 +51,7 @@ void main() {
       ),
     ),
     secureStorage: SecureStorageService(),
+    offlineCache: offlineCache ?? _FakeOfflineCacheStore(),
   );
 
   testWidgets('SettingsScreen shows navigation and package version', (
@@ -278,6 +281,180 @@ void main() {
     await tester.pumpAndSettle();
     expect(signInTapped, isTrue);
   });
+
+  group('clear offline data', () {
+    Future<void> pumpSettingsScreen(
+      WidgetTester tester, {
+      required LocaleController localeController,
+      OfflineCacheStore? offlineCache,
+    }) async {
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: TestAppScope(
+            child: SettingsScreen(
+              controller: buildSettingsController(offlineCache: offlineCache),
+              localeController: localeController,
+              urlLauncherService: FakeUrlLauncherService(launched: true),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shows the clear offline data entry', (tester) async {
+      final localeController = buildLocaleController();
+      addTearDown(localeController.dispose);
+
+      await pumpSettingsScreen(tester, localeController: localeController);
+
+      await tester.scrollUntilVisible(
+        find.text(l10n.settingsClearOfflineData),
+        200,
+      );
+      expect(find.text(l10n.settingsClearOfflineData), findsOneWidget);
+      expect(find.text(l10n.settingsClearOfflineDataSubtitle), findsOneWidget);
+    });
+
+    testWidgets('asks for confirmation and wipes the whole cache on confirm', (
+      tester,
+    ) async {
+      final localeController = buildLocaleController();
+      addTearDown(localeController.dispose);
+      final cache = _FakeOfflineCacheStore();
+
+      await pumpSettingsScreen(
+        tester,
+        localeController: localeController,
+        offlineCache: cache,
+      );
+      await tester.scrollUntilVisible(
+        find.text(l10n.settingsClearOfflineData),
+        200,
+      );
+
+      await tester.tap(find.text(l10n.settingsClearOfflineData));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n.settingsClearOfflineDataConfirmTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n.settingsClearOfflineDataConfirmMessage),
+        findsOneWidget,
+      );
+
+      // The tile title and the confirm button share the same label; tap
+      // the one inside the dialog.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text(l10n.settingsClearOfflineData),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(cache.clearAllCalls, 1);
+      expect(find.text(l10n.settingsClearOfflineDataDone), findsOneWidget);
+    });
+
+    testWidgets('canceling the confirmation leaves the cache untouched', (
+      tester,
+    ) async {
+      final localeController = buildLocaleController();
+      addTearDown(localeController.dispose);
+      final cache = _FakeOfflineCacheStore();
+
+      await pumpSettingsScreen(
+        tester,
+        localeController: localeController,
+        offlineCache: cache,
+      );
+      await tester.scrollUntilVisible(
+        find.text(l10n.settingsClearOfflineData),
+        200,
+      );
+
+      await tester.tap(find.text(l10n.settingsClearOfflineData));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.cancel));
+      await tester.pumpAndSettle();
+
+      expect(cache.clearAllCalls, 0);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text(l10n.settingsClearOfflineDataDone), findsNothing);
+    });
+
+    testWidgets('a failing wipe reports the failure to the user', (
+      tester,
+    ) async {
+      final localeController = buildLocaleController();
+      addTearDown(localeController.dispose);
+
+      await pumpSettingsScreen(
+        tester,
+        localeController: localeController,
+        offlineCache: _ThrowingOfflineCacheStore(),
+      );
+      await tester.scrollUntilVisible(
+        find.text(l10n.settingsClearOfflineData),
+        200,
+      );
+
+      await tester.tap(find.text(l10n.settingsClearOfflineData));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text(l10n.settingsClearOfflineData),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.settingsClearOfflineDataFailed), findsOneWidget);
+    });
+  });
+}
+
+class _FakeOfflineCacheStore implements OfflineCacheStore {
+  int clearAllCalls = 0;
+
+  @override
+  Future<void> clearAll() async => clearAllCalls++;
+
+  @override
+  Future<int> clearForProfile(String profileId) async => 0;
+
+  @override
+  Future<OfflineCacheEntry?> read({
+    required String profileId,
+    required String concept,
+    required String query,
+  }) async => null;
+
+  @override
+  Future<void> write(OfflineCacheEntry entry) async {}
+}
+
+class _ThrowingOfflineCacheStore implements OfflineCacheStore {
+  @override
+  Future<void> clearAll() async =>
+      throw StateError('offline cache unavailable');
+
+  @override
+  Future<int> clearForProfile(String profileId) async => 0;
+
+  @override
+  Future<OfflineCacheEntry?> read({
+    required String profileId,
+    required String concept,
+    required String query,
+  }) async => null;
+
+  @override
+  Future<void> write(OfflineCacheEntry entry) async {}
 }
 
 class _FakeActivityRetentionSettings
