@@ -31,6 +31,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get invalidUrl => 'Adjon meg egy érvényes URL-t';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Utoljára frissítve: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

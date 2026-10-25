@@ -9,6 +9,7 @@
   "back": "返回",
   "requiredField": "此欄位為必填",
   "invalidUrl": "請輸入有效的網址",
+  "cacheLastUpdated": "最後更新於 {time}",
   "errorActivityUploadFailed": "無法上傳活動",
   "errorActivityUploadFailedWithDetails": "無法上傳活動：{details}",
   "errorActivityIngestionUnsupportedFormat": "不支援此檔案格式",

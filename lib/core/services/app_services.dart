@@ -20,6 +20,7 @@ import 'package:endurain/core/services/connectivity_service.dart';
 import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/core/services/modules/activity_module.dart';
 import 'package:endurain/core/services/modules/auth_module.dart';
 import 'package:endurain/core/services/modules/health_module.dart';
@@ -30,9 +31,11 @@ import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
+import 'package:endurain/core/services/sqflite_offline_cache_store.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/server_activities/controllers/server_activities_controller.dart';
 import 'package:endurain/features/server_activities/repositories/api_server_activities_repository.dart';
+import 'package:endurain/features/server_activities/repositories/cached_server_activities_repository.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
@@ -126,11 +129,18 @@ class AppServices {
   ServerSettingsService get serverSettings => _auth.serverSettings;
   ApiClient get apiClient => _auth.apiClient;
 
+  /// Offline read cache shared by every server-backed repository (ADR-0001).
+  late final OfflineCacheStore offlineCache = SqfliteOfflineCacheStore();
+
   late final ServerActivitiesRepository serverActivities =
-      ApiServerActivitiesRepository(
-        apiClient: apiClient,
-        sessionStore: authSession,
-        endpoints: _infra.endpoints,
+      CachedServerActivitiesRepository(
+        inner: ApiServerActivitiesRepository(
+          apiClient: apiClient,
+          sessionStore: authSession,
+          endpoints: _infra.endpoints,
+        ),
+        cacheStore: offlineCache,
+        connectionProfile: authSession.getConnectionProfile,
       );
 
   ServerActivitiesController createServerActivitiesController({

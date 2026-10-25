@@ -31,6 +31,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get invalidUrl => 'Ange en giltig URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Senast uppdaterad: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

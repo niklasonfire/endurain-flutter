@@ -9,6 +9,7 @@
   "back": "Zurück",
   "requiredField": "Dieses Feld ist erforderlich",
   "invalidUrl": "Bitte gib eine gültige URL ein",
+  "cacheLastUpdated": "Zuletzt aktualisiert: {time}",
   "errorActivityUploadFailed": "Aktivität konnte nicht hochgeladen werden",
   "errorActivityUploadFailedWithDetails": "Aktivität konnte nicht hochgeladen werden: {details}",
   "errorActivityIngestionUnsupportedFormat": "Das Dateiformat wird nicht unterstützt",

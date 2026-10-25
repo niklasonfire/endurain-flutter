@@ -9,6 +9,7 @@
   "back": "Atgal",
   "requiredField": "Šis laukas privalomas",
   "invalidUrl": "Įveskite galiojantį URL",
+  "cacheLastUpdated": "Paskutinį kartą atnaujinta: {time}",
   "errorActivityUploadFailed": "Nepavyko įkelti veiklos",
   "errorActivityUploadFailedWithDetails": "Nepavyko įkelti veiklos: {details}",
   "errorActivityIngestionUnsupportedFormat": "Failo formatas nepalaikomas",

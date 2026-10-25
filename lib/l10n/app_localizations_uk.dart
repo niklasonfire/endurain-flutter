@@ -31,6 +31,11 @@ class AppLocalizationsUk extends AppLocalizations {
   String get invalidUrl => 'Введіть дійсний URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Останнє оновлення: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

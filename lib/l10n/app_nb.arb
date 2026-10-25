@@ -9,6 +9,7 @@
   "back": "Tilbake",
   "requiredField": "Dette feltet er påkrevd",
   "invalidUrl": "Skriv inn en gyldig URL",
+  "cacheLastUpdated": "Sist oppdatert: {time}",
   "errorActivityUploadFailed": "Kunne ikke laste opp aktiviteten",
   "errorActivityUploadFailedWithDetails": "Kunne ikke laste opp aktiviteten: {details}",
   "errorActivityIngestionUnsupportedFormat": "Filformatet støttes ikke",

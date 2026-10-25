@@ -31,6 +31,11 @@ class AppLocalizationsDa extends AppLocalizations {
   String get invalidUrl => 'Indtast en gyldig URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Sidst opdateret: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

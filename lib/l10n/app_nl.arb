@@ -9,6 +9,7 @@
   "back": "Terug",
   "requiredField": "Dit veld is verplicht",
   "invalidUrl": "Voer een geldige URL in",
+  "cacheLastUpdated": "Laatst bijgewerkt: {time}",
   "errorActivityUploadFailed": "Kan activiteit niet uploaden",
   "errorActivityUploadFailedWithDetails": "Kan activiteit niet uploaden: {details}",
   "errorActivityIngestionUnsupportedFormat": "Het bestandsformaat wordt niet ondersteund",

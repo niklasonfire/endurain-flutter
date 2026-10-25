@@ -9,6 +9,7 @@
   "back": "Tagasi",
   "requiredField": "See väli on kohustuslik",
   "invalidUrl": "Sisestage kehtiv URL",
+  "cacheLastUpdated": "Viimati uuendatud: {time}",
   "errorActivityUploadFailed": "Tegevust ei õnnestunud üles laadida",
   "errorActivityUploadFailedWithDetails": "Tegevust ei õnnestunud üles laadida: {details}",
   "errorActivityIngestionUnsupportedFormat": "Failivormingut ei toetata",

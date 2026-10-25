@@ -9,6 +9,7 @@
   "back": "Назад",
   "requiredField": "Це поле обов'язкове",
   "invalidUrl": "Введіть дійсний URL",
+  "cacheLastUpdated": "Останнє оновлення: {time}",
   "errorActivityUploadFailed": "Не вдалося завантажити активність",
   "errorActivityUploadFailedWithDetails": "Не вдалося завантажити активність: {details}",
   "errorActivityIngestionUnsupportedFormat": "Формат файлу не підтримується",

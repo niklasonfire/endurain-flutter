@@ -9,6 +9,7 @@
   "back": "Takaisin",
   "requiredField": "Tämä kenttä on pakollinen",
   "invalidUrl": "Anna kelvollinen URL-osoite",
+  "cacheLastUpdated": "Viimeksi päivitetty: {time}",
   "errorActivityUploadFailed": "Aktiviteetin lataaminen epäonnistui",
   "errorActivityUploadFailedWithDetails": "Aktiviteetin lataaminen epäonnistui: {details}",
   "errorActivityIngestionUnsupportedFormat": "Tiedostomuotoa ei tueta",

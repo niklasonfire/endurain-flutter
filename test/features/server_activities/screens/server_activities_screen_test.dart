@@ -1,4 +1,5 @@
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/controllers/server_activities_controller.dart';
 import 'package:endurain/features/home/widgets/home_activity_card.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
@@ -240,6 +241,54 @@ void main() {
       connection.dispose();
     },
   );
+
+  testWidgets('offline cached list shows the Last updated chip', (
+    tester,
+  ) async {
+    final connection = ValueNotifier<String?>('account');
+    final repository = _CachedRepository();
+    final controller = ServerActivitiesController(
+      repository: repository,
+      connection: connection,
+    );
+    await tester.pumpWidget(
+      app(ServerActivitiesScreen(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Morning run'), findsOneWidget);
+    expect(find.textContaining('Last updated'), findsOneWidget);
+
+    // Back online: the next refresh comes from the server and hides the chip.
+    repository.serveFromCache = false;
+    await tester.drag(find.byType(ListView), const Offset(0, 350));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Morning run'), findsOneWidget);
+    expect(find.textContaining('Last updated'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    connection.dispose();
+  });
+
+  testWidgets('a live list shows no Last updated chip', (tester) async {
+    final connection = ValueNotifier<String?>('account');
+    final repository = _Repository();
+    final controller = ServerActivitiesController(
+      repository: repository,
+      connection: connection,
+    );
+    await tester.pumpWidget(
+      app(ServerActivitiesScreen(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Morning run'), findsOneWidget);
+    expect(find.textContaining('Last updated'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    connection.dispose();
+  });
 }
 
 class _Repository implements ServerActivitiesRepository {
@@ -341,4 +390,42 @@ class _RetryRouteRepository extends _Repository {
             ServerRoutePoint(latitude: 52.01, longitude: 13.02),
           ];
   }
+}
+
+class _CachedRepository extends _Repository implements OfflineCacheProvenance {
+  bool serveFromCache = true;
+  final _provenance = <ServerActivityPage, OfflineCacheServeInfo>{};
+
+  @override
+  Future<ServerActivityPage> fetchPage({
+    ServerActivityQuery query = const ServerActivityQuery(),
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    queries.add(query);
+    final result = ServerActivityPage(
+      items: [
+        ServerActivity(
+          id: 1,
+          name: 'Morning run',
+          activityType: 1,
+          startTime: DateTime.utc(2026, 10, 17),
+          distanceMeters: 5000,
+        ),
+      ],
+      page: 1,
+      pageSize: 20,
+      total: 1,
+    );
+    if (serveFromCache) {
+      _provenance[result] = OfflineCacheServeInfo(
+        fetchedAt: DateTime.utc(2026, 10, 25, 8),
+      );
+    }
+    return result;
+  }
+
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) =>
+      result is ServerActivityPage ? _provenance[result] : null;
 }

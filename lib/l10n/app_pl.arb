@@ -9,6 +9,7 @@
   "back": "Wstecz",
   "requiredField": "To pole jest wymagane",
   "invalidUrl": "Wprowadź prawidłowy adres URL",
+  "cacheLastUpdated": "Ostatnia aktualizacja: {time}",
   "errorActivityUploadFailed": "Nie udało się przesłać aktywności",
   "errorActivityUploadFailedWithDetails": "Nie udało się przesłać aktywności: {details}",
   "errorActivityIngestionUnsupportedFormat": "Format pliku nie jest obsługiwany",

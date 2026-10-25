@@ -9,6 +9,7 @@
   "back": "Πίσω",
   "requiredField": "Αυτό το πεδίο είναι υποχρεωτικό",
   "invalidUrl": "Εισαγάγετε έγκυρο URL",
+  "cacheLastUpdated": "Τελευταία ενημέρωση: {time}",
   "errorActivityUploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της δραστηριότητας",
   "errorActivityUploadFailedWithDetails": "Δεν ήταν δυνατή η μεταφόρτωση της δραστηριότητας: {details}",
   "errorActivityIngestionUnsupportedFormat": "Η μορφή του αρχείου δεν υποστηρίζεται",

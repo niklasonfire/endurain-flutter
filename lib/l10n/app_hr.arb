@@ -9,6 +9,7 @@
   "back": "Natrag",
   "requiredField": "Ovo je polje obavezno",
   "invalidUrl": "Unesite valjani URL",
+  "cacheLastUpdated": "Zadnje ažurirano: {time}",
   "errorActivityUploadFailed": "Aktivnost nije moguće prenijeti",
   "errorActivityUploadFailedWithDetails": "Aktivnost nije moguće prenijeti: {details}",
   "errorActivityIngestionUnsupportedFormat": "Format datoteke nije podržan",

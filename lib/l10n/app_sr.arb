@@ -9,6 +9,7 @@
   "back": "Назад",
   "requiredField": "Ово поље је обавезно",
   "invalidUrl": "Унесите важећи URL",
+  "cacheLastUpdated": "Последње ажурирање: {time}",
   "errorActivityUploadFailed": "Није могуће отпремити активност",
   "errorActivityUploadFailedWithDetails": "Није могуће отпремити активност: {details}",
   "errorActivityIngestionUnsupportedFormat": "Формат датотеке није подржан",

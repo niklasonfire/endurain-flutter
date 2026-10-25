@@ -9,6 +9,7 @@
   "back": "Retour",
   "requiredField": "Ce champ est obligatoire",
   "invalidUrl": "Veuillez saisir une URL valide",
+  "cacheLastUpdated": "Dernière mise à jour : {time}",
   "errorActivityUploadFailed": "Impossible d'envoyer l'activité",
   "errorActivityUploadFailedWithDetails": "Impossible d'envoyer l'activité : {details}",
   "errorActivityIngestionUnsupportedFormat": "Le format du fichier n'est pas pris en charge",

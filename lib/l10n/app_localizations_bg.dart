@@ -31,6 +31,11 @@ class AppLocalizationsBg extends AppLocalizations {
   String get invalidUrl => 'Въведете валиден URL адрес';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Последно обновено: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

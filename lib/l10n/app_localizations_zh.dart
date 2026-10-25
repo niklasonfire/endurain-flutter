@@ -31,6 +31,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get invalidUrl => '请输入有效的网址';
 
   @override
+  String cacheLastUpdated(String time) {
+    return '最后更新于 $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 
@@ -1710,6 +1715,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get invalidUrl => '請輸入有效的網址';
+
+  @override
+  String cacheLastUpdated(String time) {
+    return '最後更新於 $time';
+  }
 
   @override
   String get errorUpdateIncompatible =>

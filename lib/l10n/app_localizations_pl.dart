@@ -31,6 +31,11 @@ class AppLocalizationsPl extends AppLocalizations {
   String get invalidUrl => 'Wprowadź prawidłowy adres URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Ostatnia aktualizacja: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

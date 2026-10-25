@@ -9,6 +9,7 @@
   "back": "Geri",
   "requiredField": "Bu alan zorunludur",
   "invalidUrl": "Lütfen geçerli bir URL girin",
+  "cacheLastUpdated": "Son güncelleme: {time}",
   "errorActivityUploadFailed": "Etkinlik yüklenemedi",
   "errorActivityUploadFailedWithDetails": "Etkinlik yüklenemedi: {details}",
   "errorActivityIngestionUnsupportedFormat": "Dosya biçimi desteklenmiyor",

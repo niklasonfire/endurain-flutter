@@ -9,6 +9,7 @@
   "back": "Tillbaka",
   "requiredField": "Det här fältet är obligatoriskt",
   "invalidUrl": "Ange en giltig URL",
+  "cacheLastUpdated": "Senast uppdaterad: {time}",
   "errorActivityUploadFailed": "Det gick inte att ladda upp aktiviteten",
   "errorActivityUploadFailedWithDetails": "Det gick inte att ladda upp aktiviteten: {details}",
   "errorActivityIngestionUnsupportedFormat": "Filformatet stöds inte",

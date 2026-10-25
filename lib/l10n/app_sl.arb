@@ -9,6 +9,7 @@
   "back": "Nazaj",
   "requiredField": "To polje je obvezno",
   "invalidUrl": "Vnesite veljaven URL",
+  "cacheLastUpdated": "Nazadnje posodobljeno: {time}",
   "errorActivityUploadFailed": "Aktivnosti ni bilo mogoče naložiti",
   "errorActivityUploadFailedWithDetails": "Aktivnosti ni bilo mogoče naložiti: {details}",
   "errorActivityIngestionUnsupportedFormat": "Oblika datoteke ni podprta",

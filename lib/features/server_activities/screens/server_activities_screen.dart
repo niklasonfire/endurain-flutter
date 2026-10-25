@@ -10,6 +10,7 @@ import 'package:endurain/features/home/widgets/home_activity_card.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:endurain/shared/widgets/cache_last_updated_chip.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -318,6 +319,8 @@ class _ServerActivitiesScreenState extends State<ServerActivitiesScreen>
             l10n.serverActivitiesNewestFirst,
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          if (_controller.cacheFetchedAt != null)
+            CacheLastUpdatedChip(fetchedAt: _controller.cacheFetchedAt!),
           if (_controller.isLoading && _controller.items.isNotEmpty)
             const LinearProgressIndicator(),
           if (_controller.error != null && _controller.items.isNotEmpty)

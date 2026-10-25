@@ -31,6 +31,11 @@ class AppLocalizationsLt extends AppLocalizations {
   String get invalidUrl => 'Įveskite galiojantį URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Paskutinį kartą atnaujinta: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

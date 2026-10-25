@@ -31,6 +31,11 @@ class AppLocalizationsSk extends AppLocalizations {
   String get invalidUrl => 'Zadajte platnú adresu URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Naposledy aktualizované: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

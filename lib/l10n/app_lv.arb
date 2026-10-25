@@ -9,6 +9,7 @@
   "back": "Atpakaļ",
   "requiredField": "Šis lauks ir obligāts",
   "invalidUrl": "Ievadiet derīgu URL",
+  "cacheLastUpdated": "Pēdējoreiz atjaunināts: {time}",
   "errorActivityUploadFailed": "Neizdevās augšupielādēt aktivitāti",
   "errorActivityUploadFailedWithDetails": "Neizdevās augšupielādēt aktivitāti: {details}",
   "errorActivityIngestionUnsupportedFormat": "Faila formāts netiek atbalstīts",

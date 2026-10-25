@@ -9,6 +9,7 @@
   "back": "Späť",
   "requiredField": "Toto pole je povinné",
   "invalidUrl": "Zadajte platnú adresu URL",
+  "cacheLastUpdated": "Naposledy aktualizované: {time}",
   "errorActivityUploadFailed": "Aktivitu sa nepodarilo nahrať",
   "errorActivityUploadFailedWithDetails": "Aktivitu sa nepodarilo nahrať: {details}",
   "errorActivityIngestionUnsupportedFormat": "Formát súboru nie je podporovaný",

@@ -30,7 +30,8 @@
   "@invalidUrl": {
     "description": "Mensagem de validação para URL inválido - Usado em: validators.dart"
   },
-  "@sectionErrors": "=== ERROS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
+    "cacheLastUpdated": "Última atualização: {time}",
+"@sectionErrors": "=== ERROS (core/models/app_exception.dart, core/utils/error_localizations.dart) ===",
   "errorUpdateIncompatible": "Esta compilação não suporta a versão do Android ou arquitetura do dispositivo.",
   "@errorUpdateIncompatible": {
     "description": "Manual APK update error - Used in: core/utils/error_localizations.dart"

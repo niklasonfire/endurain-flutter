@@ -31,6 +31,11 @@ class AppLocalizationsCs extends AppLocalizations {
   String get invalidUrl => 'Zadejte platnou adresu URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Naposledy aktualizováno: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

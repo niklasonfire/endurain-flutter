@@ -9,6 +9,7 @@
   "back": "Atrás",
   "requiredField": "Este campo é obrigatorio",
   "invalidUrl": "Introduce un URL válido",
+  "cacheLastUpdated": "Última actualización: {time}",
   "errorActivityUploadFailed": "Non se puido subir a actividade",
   "errorActivityUploadFailedWithDetails": "Non se puido subir a actividade: {details}",
   "errorActivityIngestionUnsupportedFormat": "O formato do ficheiro non é compatible",

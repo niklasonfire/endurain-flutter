@@ -31,6 +31,11 @@ class AppLocalizationsFi extends AppLocalizations {
   String get invalidUrl => 'Anna kelvollinen URL-osoite';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Viimeksi päivitetty: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

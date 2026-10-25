@@ -9,6 +9,7 @@
   "back": "返回",
   "requiredField": "此字段为必填项",
   "invalidUrl": "请输入有效的网址",
+  "cacheLastUpdated": "最后更新于 {time}",
   "errorActivityUploadFailed": "无法上传活动",
   "errorActivityUploadFailedWithDetails": "无法上传活动：{details}",
   "errorActivityIngestionUnsupportedFormat": "不支持该文件格式",

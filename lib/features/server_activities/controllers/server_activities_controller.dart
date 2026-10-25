@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
+import 'package:endurain/features/server_activities/models/server_activity_page.dart';
 import 'package:endurain/features/server_activities/models/server_activity_query.dart';
 import 'package:endurain/features/server_activities/models/server_route_point.dart';
 import 'package:endurain/features/server_activities/repositories/server_activities_repository.dart';
@@ -39,6 +41,7 @@ class ServerActivitiesController extends SafeNotifier {
   bool _loadingMore = false;
   Object? _error;
   Object? _loadMoreError;
+  DateTime? _cacheFetchedAt;
 
   // Replace immutable snapshots on updates; scrolling can read them without
   // copying the full paginated history for each visible card.
@@ -56,6 +59,11 @@ class ServerActivitiesController extends SafeNotifier {
   bool get hasMore => _hasMore;
   Object? get error => _error;
   Object? get loadMoreError => _loadMoreError;
+
+  /// When the visible list was served from the offline read cache, the time
+  /// its data was last fetched from the server; `null` while the list came
+  /// from the server (or nothing is loaded).
+  DateTime? get cacheFetchedAt => _cacheFetchedAt;
   bool get hasFilters =>
       _query.search.isNotEmpty ||
       _query.activityType != null ||
@@ -74,6 +82,7 @@ class ServerActivitiesController extends SafeNotifier {
     _loadingMore = false;
     _error = null;
     _loadMoreError = null;
+    _cacheFetchedAt = null;
     notify();
     if (!isGuest) unawaited(refresh());
   }
@@ -104,6 +113,7 @@ class ServerActivitiesController extends SafeNotifier {
       _items = _unique(result.items);
       _page = result.page;
       _hasMore = result.hasMore;
+      _cacheFetchedAt = _cacheProvenanceOf(result);
     } catch (error) {
       if (!_isCurrent(generation)) return;
       _error = error;
@@ -214,6 +224,14 @@ class ServerActivitiesController extends SafeNotifier {
     return List.unmodifiable(
       activities.where((activity) => ids.add(activity.id)),
     );
+  }
+
+  DateTime? _cacheProvenanceOf(ServerActivityPage result) {
+    return switch (_repository) {
+      final OfflineCacheProvenance provenance =>
+        provenance.provenanceOf(result)?.fetchedAt,
+      _ => null,
+    };
   }
 
   @override

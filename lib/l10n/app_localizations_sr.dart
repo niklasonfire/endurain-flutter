@@ -31,6 +31,11 @@ class AppLocalizationsSr extends AppLocalizations {
   String get invalidUrl => 'Унесите важећи URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Последње ажурирање: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

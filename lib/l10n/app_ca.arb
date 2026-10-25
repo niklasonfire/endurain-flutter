@@ -9,6 +9,7 @@
   "back": "Enrere",
   "requiredField": "Aquest camp és obligatori",
   "invalidUrl": "Introduïu un URL vàlid",
+  "cacheLastUpdated": "Última actualització: {time}",
   "errorActivityUploadFailed": "No s'ha pogut penjar l'activitat",
   "errorActivityUploadFailedWithDetails": "No s'ha pogut penjar l'activitat: {details}",
   "errorActivityIngestionUnsupportedFormat": "El format del fitxer no és compatible",

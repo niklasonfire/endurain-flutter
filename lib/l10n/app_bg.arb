@@ -9,6 +9,7 @@
   "back": "Назад",
   "requiredField": "Това поле е задължително",
   "invalidUrl": "Въведете валиден URL адрес",
+  "cacheLastUpdated": "Последно обновено: {time}",
   "errorActivityUploadFailed": "Дейността не можа да бъде качена",
   "errorActivityUploadFailedWithDetails": "Дейността не можа да бъде качена: {details}",
   "errorActivityIngestionUnsupportedFormat": "Форматът на файла не се поддържа",

@@ -31,6 +31,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get invalidUrl => 'Εισαγάγετε έγκυρο URL';
 
   @override
+  String cacheLastUpdated(String time) {
+    return 'Τελευταία ενημέρωση: $time';
+  }
+
+  @override
   String get errorUpdateIncompatible =>
       'This build does not support your Android version or device architecture.';
 

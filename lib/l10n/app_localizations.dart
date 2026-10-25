@@ -195,6 +195,12 @@ abstract class AppLocalizations {
   /// **'Please enter a valid URL'**
   String get invalidUrl;
 
+  /// Offline read cache staleness chip - Used in: shared/widgets/cache_last_updated_chip.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated {time}'**
+  String cacheLastUpdated(String time);
+
   /// Manual APK update error - Used in: core/utils/error_localizations.dart
   ///
   /// In en, this message translates to:

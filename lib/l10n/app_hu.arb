@@ -9,6 +9,7 @@
   "back": "Vissza",
   "requiredField": "Ez a mező kötelező",
   "invalidUrl": "Adjon meg egy érvényes URL-t",
+  "cacheLastUpdated": "Utoljára frissítve: {time}",
   "errorActivityUploadFailed": "Nem sikerült feltölteni a tevékenységet",
   "errorActivityUploadFailedWithDetails": "Nem sikerült feltölteni a tevékenységet: {details}",
   "errorActivityIngestionUnsupportedFormat": "A fájlformátum nem támogatott",

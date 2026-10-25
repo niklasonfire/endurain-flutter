@@ -9,6 +9,7 @@
   "back": "Tilbage",
   "requiredField": "Dette felt er påkrævet",
   "invalidUrl": "Indtast en gyldig URL",
+  "cacheLastUpdated": "Sidst opdateret: {time}",
   "errorActivityUploadFailed": "Aktiviteten kunne ikke uploades",
   "errorActivityUploadFailedWithDetails": "Aktiviteten kunne ikke uploades: {details}",
   "errorActivityIngestionUnsupportedFormat": "Filformatet understøttes ikke",
