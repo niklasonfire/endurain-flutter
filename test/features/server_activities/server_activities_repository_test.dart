@@ -59,7 +59,21 @@ void main() {
     );
     pending.complete(
       http.Response(
-        '[{"activity_id":7,"stream_type":1,"stream_waypoints":[{"hr":123}]}]',
+        jsonEncode({
+          'items': [
+            {
+              'activity_id': 7,
+              'stream_type': 1,
+              'stream_waypoints': [
+                {'hr': 123},
+              ],
+            },
+          ],
+          'total': 1,
+          'page': 1,
+          'num_records': 200,
+          'next': null,
+        }),
         200,
       ),
     );
@@ -71,7 +85,19 @@ void main() {
     () async {
       final wrongOwner = repository(
         (_) async => http.Response(
-          '[{"activity_id":8,"stream_type":1,"stream_waypoints":[]}]',
+          jsonEncode({
+            'items': [
+              {
+                'activity_id': 8,
+                'stream_type': 1,
+                'stream_waypoints': <Object>[],
+              },
+            ],
+            'total': 1,
+            'page': 1,
+            'num_records': 200,
+            'next': null,
+          }),
           200,
         ),
       );
@@ -81,7 +107,19 @@ void main() {
       );
       final malformed = repository(
         (_) async => http.Response(
-          '[{"activity_id":7,"stream_type":1,"stream_waypoints":{}}]',
+          jsonEncode({
+            'items': [
+              {
+                'activity_id': 7,
+                'stream_type': 1,
+                'stream_waypoints': <String, Object?>{},
+              },
+            ],
+            'total': 1,
+            'page': 1,
+            'num_records': 200,
+            'next': null,
+          }),
           200,
         ),
       );
@@ -93,16 +131,46 @@ void main() {
     'loads exact stream and lap endpoints and validates account ownership',
     () async {
       final repo = repository((request) async {
-        if (request.url.path ==
-            '/api/v1/activities_streams/activity_id/7/all') {
+        if (request.url.path == '/api/v1/activities/7/streams') {
+          expect(request.url.queryParameters['page_number'], '1');
+          expect(request.url.queryParameters['num_records'], '200');
           return http.Response(
-            '[{"activity_id":7,"stream_type":1,"stream_waypoints":[{"time":"2026-10-18T10:00:00Z","hr":123}]}]',
+            jsonEncode({
+              'items': [
+                {
+                  'activity_id': 7,
+                  'stream_type': 1,
+                  'stream_waypoints': [
+                    {'time': '2026-10-18T10:00:00Z', 'hr': 123},
+                  ],
+                },
+              ],
+              'total': 1,
+              'page': 1,
+              'num_records': 200,
+              'next': null,
+            }),
             200,
           );
         }
-        expect(request.url.path, '/api/v1/activities_laps/activity_id/7/all');
+        expect(request.url.path, '/api/v1/activities/7/laps');
+        expect(request.url.queryParameters['page_number'], '1');
+        expect(request.url.queryParameters['num_records'], '200');
         return http.Response(
-          '[{"activity_id":7,"total_distance":1000,"total_timer_time":300,"avg_heart_rate":145}]',
+          jsonEncode({
+            'items': [
+              {
+                'activity_id': 7,
+                'total_distance': 1000,
+                'total_timer_time': 300,
+                'avg_heart_rate': 145,
+              },
+            ],
+            'total': 1,
+            'page': 1,
+            'num_records': 200,
+            'next': null,
+          }),
           200,
         );
       });
@@ -114,7 +182,17 @@ void main() {
     },
   );
 
-  test('uses numeric profile id and identical encoded filters for count and page; keeps missing metrics null', () async {
+  test(
+    'a missing GPS stream answers 404 and renders the no-route state',
+    () async {
+      final repo = repository(
+        (request) async => http.Response('{"detail":"not found"}', 404),
+      );
+      expect(await repo.fetchRoute(7), isEmpty);
+    },
+  );
+
+  test('loads the by-user list once with envelope total and the renamed name filter; keeps missing metrics null', () async {
     final paths = <String>[];
     final repo = repository((request) async {
       paths.add(request.url.path);
@@ -122,19 +200,32 @@ void main() {
       if (request.url.path.endsWith('/profile')) {
         return http.Response('{"id":42}', 200);
       }
-      expect(request.url.queryParameters['name_search'], 'A & B');
+      expect(request.url.path, '/api/v1/activities/users/42');
+      expect(request.url.queryParameters['name'], 'A & B');
+      expect(request.url.queryParameters['name_search'], isNull);
       expect(request.url.queryParameters['type'], '1');
       expect(request.url.queryParameters['start_date'], '2026-10-01');
       expect(request.url.queryParameters['end_date'], '2026-10-18');
-      if (request.url.path.endsWith('/number')) return http.Response('21', 200);
-      expect(
-        request.url.path,
-        '/api/v1/activities/user/42/page_number/1/num_records/20',
-      );
+      expect(request.url.queryParameters['page_number'], '1');
+      expect(request.url.queryParameters['num_records'], '20');
       expect(request.url.queryParameters['sort_by'], 'start_time');
       expect(request.url.queryParameters['sort_order'], 'desc');
       return http.Response(
-        '[{"id":7,"name":"Morning","activity_type":1,"distance":1000,"average_hr":null}]',
+        jsonEncode({
+          'items': [
+            {
+              'id': 7,
+              'name': 'Morning',
+              'activity_type': 1,
+              'distance': 1000,
+              'average_hr': null,
+            },
+          ],
+          'total': 21,
+          'page': 1,
+          'num_records': 20,
+          'next': 2,
+        }),
         200,
       );
     });
@@ -150,14 +241,11 @@ void main() {
     expect(page.hasMore, isTrue);
     expect(page.items.single.distanceMeters, 1000);
     expect(page.items.single.averageHeartRate, isNull);
-    expect(paths.any((p) => p.contains('streams')), isFalse);
+    expect(paths, ['/api/v1/profile', '/api/v1/activities/users/42']);
   });
   test('maps stream 7 lat/lon, retaining zero and rejecting invalid or absent coordinates', () async {
     final repo = repository((request) async {
-      expect(
-        request.url.path,
-        '/api/v1/activities_streams/activity_id/7/stream_type/7',
-      );
+      expect(request.url.path, '/api/v1/activities/7/streams/7');
       return http.Response(
         jsonEncode({
           'activity_id': 7,
@@ -247,6 +335,48 @@ void main() {
     );
   });
 
+  test('detail renders the start time in the recorded IANA timezone', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"id":7,"name":"Ride","activity_type":2,"start_time":"2026-10-18T15:15:35Z","timezone":"America/New_York"}',
+        200,
+      ),
+    );
+    final detail = await repo.fetchDetail(7);
+    expect(detail.startTime, DateTime.utc(2026, 10, 18, 15, 15, 35));
+    expect(
+      detail.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
+      '2026-10-18 11:15',
+    );
+  });
+
+  test('detail without a timezone field keeps device-local display', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"id":7,"name":"Ride","activity_type":2,"start_time":"2026-10-18T15:15:35Z"}',
+        200,
+      ),
+    );
+    final detail = await repo.fetchDetail(7);
+    expect(
+      detail.displayStartTime!.format(DateFormat('yyyy-MM-dd HH:mm')),
+      DateFormat('yyyy-MM-dd HH:mm')
+          .format(DateTime.utc(2026, 10, 18, 15, 15, 35).toLocal()),
+    );
+  });
+
+  test('recorded timezone cannot resurrect a masked start time', () async {
+    final repo = repository(
+      (request) async => http.Response(
+        '{"id":7,"name":"Ride","activity_type":2,"start_time":null,"timezone":"America/New_York"}',
+        200,
+      ),
+    );
+    final detail = await repo.fetchDetail(7);
+    expect(detail.startTime, isNull);
+    expect(detail.displayStartTime, isNull);
+  });
+
   test(
     'malformed envelopes and server errors surface typed failures',
     () async {
@@ -306,23 +436,25 @@ void main() {
   });
 
   test(
-    'logout during count rejects the result before loading private rows',
+    'logout during the list request rejects the result before rendering rows',
     () async {
-      final countStarted = Completer<void>();
-      final countResponse = Completer<http.Response>();
+      final listStarted = Completer<void>();
+      final listResponse = Completer<http.Response>();
       final paths = <String>[];
       final repo = repository((request) {
         paths.add(request.url.path);
         if (request.url.path.endsWith('/profile')) {
           return Future.value(http.Response('{"id":42}', 200));
         }
-        countStarted.complete();
-        return countResponse.future;
+        listStarted.complete();
+        return listResponse.future;
       });
       final page = repo.fetchPage();
-      await countStarted.future;
+      await listStarted.future;
       await sessions.clear();
-      countResponse.complete(http.Response('1', 200));
+      listResponse.complete(
+        http.Response('{"items":[],"total":0,"page":1,"num_records":20}', 200),
+      );
       await expectLater(
         page,
         throwsA(
@@ -333,7 +465,7 @@ void main() {
           ),
         ),
       );
-      expect(paths, ['/api/v1/profile', '/api/v1/activities/number']);
+      expect(paths, ['/api/v1/profile', '/api/v1/activities/users/42']);
     },
   );
 

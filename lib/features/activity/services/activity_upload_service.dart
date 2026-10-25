@@ -84,11 +84,8 @@ class ActivityUploadConfig {
   const ActivityUploadConfig({
     required this.endpoint,
     required this.fieldName,
-    this.ingestionJobPath = _defaultJobPath,
+    this.ingestionJobPath,
   });
-
-  static String _defaultJobPath(String jobId) =>
-      '/api/v1/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
 
   /// Build from [ApiEndpoints] so a custom `AppConfig.apiBasePath` is
   /// reflected in the upload endpoint path.
@@ -103,10 +100,14 @@ class ActivityUploadConfig {
   final String endpoint;
   final String fieldName;
 
-  /// Builds the status path for an ingestion job id.
-  final String Function(String jobId) ingestionJobPath;
+  /// Builds the status path for an ingestion job id. When omitted, the
+  /// default [ApiEndpoints] ingestion job endpoint is used.
+  final String Function(String jobId)? ingestionJobPath;
 
-  String ingestionJobEndpoint(String jobId) => ingestionJobPath(jobId);
+  String ingestionJobEndpoint(String jobId) =>
+      (ingestionJobPath ?? ApiEndpoints.defaults.activityIngestionJobEndpoint)(
+        jobId,
+      );
 
   bool get isConfigured {
     return endpoint.trim().isNotEmpty && fieldName.trim().isNotEmpty;

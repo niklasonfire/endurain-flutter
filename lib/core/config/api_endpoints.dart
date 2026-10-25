@@ -42,4 +42,34 @@ class ApiEndpoints {
   /// Status of a background ingestion job created by an upload (`202`).
   String activityIngestionJobEndpoint(String jobId) =>
       '$_base/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
+
+  // Activity browsing endpoints
+  String get activityTypesEndpoint => '$_base/activities/types';
+
+  /// Paginated activities of one user; `page_number` and `num_records`
+  /// travel as query parameters and the total comes from the response
+  /// envelope.
+  String activityListEndpoint(int userId) => '$_base/activities/users/$userId';
+  String activityDetailEndpoint(int activityId) =>
+      '$_base/activities/$activityId';
+
+  /// GPS route stream (`stream_type` 7) of one activity.
+  String activityRouteStreamEndpoint(int activityId) =>
+      '$_base/activities/$activityId/streams/7';
+
+  /// Every recorded stream of one activity.
+  String activityStreamsEndpoint(int activityId) =>
+      '$_base/activities/$activityId/streams';
+
+  /// Every recorded lap of one activity.
+  String activityLapsEndpoint(int activityId) =>
+      '$_base/activities/$activityId/laps';
+
+  // Statistics endpoints
+  /// Activity summaries for one period. v0.20.1 moved the period from the
+  /// path into a `period` query parameter on a single summaries resource.
+  String get activitySummariesEndpoint => '$_base/activities/summaries';
+
+  // Goals endpoints
+  String get profileGoalsResultsEndpoint => '$_base/profile/goals/results';
 }

@@ -130,6 +130,7 @@ class AppServices {
       ApiServerActivitiesRepository(
         apiClient: apiClient,
         sessionStore: authSession,
+        endpoints: _infra.endpoints,
       );
 
   ServerActivitiesController createServerActivitiesController({
@@ -142,6 +143,7 @@ class AppServices {
   late final StatisticsRepository statistics = ApiStatisticsRepository(
     apiClient: apiClient,
     sessionStore: authSession,
+    endpoints: _infra.endpoints,
   );
 
   StatisticsController createStatisticsController({
@@ -154,6 +156,7 @@ class AppServices {
   late final GoalsRepository goals = ApiGoalsRepository(
     apiClient: apiClient,
     sessionStore: authSession,
+    endpoints: _infra.endpoints,
   );
 
   HomeController createHomeController({

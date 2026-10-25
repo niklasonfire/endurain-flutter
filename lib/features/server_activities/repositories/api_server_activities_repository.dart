@@ -1,6 +1,7 @@
 import 'package:endurain/features/server_activities/models/server_activity_start_time.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/api_client.dart';
@@ -16,12 +17,14 @@ class ApiServerActivitiesRepository
   ApiServerActivitiesRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
+    ApiEndpoints? endpoints,
   }) : _apiClient = apiClient,
-       _sessionStore = sessionStore;
+       _sessionStore = sessionStore,
+       _endpoints = endpoints ?? ApiEndpoints.defaults;
 
   final ApiClient _apiClient;
   final AuthSessionStore _sessionStore;
-  static const _activities = '/api/v1/activities';
+  final ApiEndpoints _endpoints;
 
   Future<ConnectionProfile> _connection() async {
     final profile = await _sessionStore.getConnectionProfile();
@@ -80,29 +83,30 @@ class ApiServerActivitiesRepository
     final profile = await _connection();
     // accountId can be a UUID; /profile is the source of the numeric user id
     // required by the activity endpoint. Never infer it from credentials.
-    final user = _object(await _get('/api/v1/profile', profile));
+    final user = _object(await _get(_endpoints.profileEndpoint, profile));
     final userId = _positiveInt(user['id']);
-    final filters = <String, String>{
-      if (query.search.trim().isNotEmpty) 'name_search': query.search.trim(),
-      if (query.activityType != null) 'type': '${query.activityType}',
-      if (query.startDate != null) 'start_date': _date(query.startDate!),
-      if (query.endDate != null) 'end_date': _date(query.endDate!),
-    };
-    final count = await _get(
-      _endpoint('$_activities/number', filters),
-      profile,
-    );
-    if (count is! int || count < 0) _invalid();
-    final rows = await _get(
-      _endpoint(
-        '$_activities/user/$userId/page_number/$page/num_records/$pageSize',
-        {...filters, 'sort_by': 'start_time', 'sort_order': 'desc'},
+    // One paginated request carries both the rows and the matching total in
+    // its response envelope, so list and count are an atomic snapshot.
+    final envelope = _object(
+      await _get(
+        _endpoint(_endpoints.activityListEndpoint(userId), <String, String>{
+          if (query.search.trim().isNotEmpty) 'name': query.search.trim(),
+          if (query.activityType != null) 'type': '${query.activityType}',
+          if (query.startDate != null) 'start_date': _date(query.startDate!),
+          if (query.endDate != null) 'end_date': _date(query.endDate!),
+          'page_number': '$page',
+          'num_records': '$pageSize',
+          'sort_by': 'start_time',
+          'sort_order': 'desc',
+        }),
+        profile,
       ),
-      profile,
     );
-    if (rows != null && rows is! List) _invalid();
+    final rows = envelope['items'];
+    final count = envelope['total'];
+    if (rows is! List || count is! int || count < 0) _invalid();
     return ServerActivityPage(
-      items: rows == null ? [] : (rows as List).map(_activity).toList(),
+      items: rows.map(_activity).toList(),
       page: page,
       pageSize: pageSize,
       total: count,
@@ -112,7 +116,7 @@ class ApiServerActivitiesRepository
   @override
   Future<List<int>> fetchActivityTypes() async {
     final profile = await _connection();
-    final result = await _get('$_activities/types', profile);
+    final result = await _get(_endpoints.activityTypesEndpoint, profile);
     if (result == null) return const [];
     final types = _object(result).keys.map((key) => _positiveInt(key)).toList()
       ..sort();
@@ -123,7 +127,9 @@ class ApiServerActivitiesRepository
   Future<ServerActivity> fetchDetail(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
-    final result = _activity(await _get('$_activities/$activityId', profile));
+    final result = _activity(
+      await _get(_endpoints.activityDetailEndpoint(activityId), profile),
+    );
     if (result.id != activityId) _invalid();
     return result;
   }
@@ -132,10 +138,21 @@ class ApiServerActivitiesRepository
   Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
-    final stream = await _get(
-      '/api/v1/activities_streams/activity_id/$activityId/stream_type/7',
-      profile,
-    );
+    // A missing GPS stream answers 404; that is the no-route state, not a
+    // load failure.
+    Object? stream;
+    try {
+      stream = await _get(
+        _endpoints.activityRouteStreamEndpoint(activityId),
+        profile,
+      );
+    } on AppException catch (error) {
+      if (error.statusCode != 404 ||
+          error.code != AppErrorCode.serverActivitiesFetchFailed) {
+        rethrow;
+      }
+      return const [];
+    }
     if (stream == null) return const [];
     final data = _object(stream);
     if (data['stream_type'] != 7 || data['activity_id'] != activityId) {
@@ -176,7 +193,10 @@ class ApiServerActivitiesRepository
 
   @override
   Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
-    final rows = await _detailRows('activities_streams', activityId);
+    final rows = await _detailRows(
+      _endpoints.activityStreamsEndpoint(activityId),
+      activityId,
+    );
     final graphs = <ServerActivityGraph>[];
     for (final row in rows) {
       if (!ServerGraphMetric.values.any(
@@ -195,22 +215,26 @@ class ApiServerActivitiesRepository
   Future<List<ServerActivityLap>> fetchLaps(int activityId) async =>
       List.unmodifiable(
         (await _detailRows(
-          'activities_laps',
+          _endpoints.activityLapsEndpoint(activityId),
           activityId,
         )).map(ServerActivityLap.fromJson),
       );
 
   Future<List<Map<String, dynamic>>> _detailRows(
-    String resource,
+    String endpoint,
     int activityId,
   ) async {
     _validateId(activityId);
     final profile = await _connection();
-    final result = await _get(
-      '/api/v1/$resource/activity_id/$activityId/all',
-      profile,
+    // Child collections are paginated; one maximum-size page covers every
+    // stream type and lap of a single activity.
+    final envelope = _object(
+      await _get(
+        _endpoint(endpoint, const {'page_number': '1', 'num_records': '200'}),
+        profile,
+      ),
     );
-    if (result == null) return const [];
+    final result = envelope['items'];
     if (result is! List) _invalid();
     return result.map((value) {
       final row = _object(value);
@@ -227,6 +251,7 @@ class ApiServerActivitiesRepository
         : ServerActivityStartTime.fromApi(
             timezoneApplied: data['start_time_tz_applied'],
             fallback: data['start_time'],
+            timezone: data['timezone'],
           );
     return ServerActivity(
       id: _positiveInt(data['id']),

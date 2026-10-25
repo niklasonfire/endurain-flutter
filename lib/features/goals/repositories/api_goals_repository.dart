@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
@@ -8,10 +9,13 @@ class ApiGoalsRepository implements GoalsRepository {
   ApiGoalsRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
+    ApiEndpoints? endpoints,
   }) : _api = apiClient,
-       _sessions = sessionStore;
+       _sessions = sessionStore,
+       _endpoints = endpoints ?? ApiEndpoints.defaults;
   final ApiClient _api;
   final AuthSessionStore _sessions;
+  final ApiEndpoints _endpoints;
   @override
   Future<List<GoalProgress>> fetchResults() async {
     final profile = await _sessions.getConnectionProfile();
@@ -19,7 +23,7 @@ class ApiGoalsRepository implements GoalsRepository {
       throw const AppException(AppErrorCode.notAuthenticated);
     }
     final response = await _api.getJson(
-      '/api/v1/profile/goals/results',
+      _endpoints.profileGoalsResultsEndpoint,
       expectedOrigin: profile.origin,
       expectedProfileId: profile.id,
       failureCode: AppErrorCode.serverActivitiesFetchFailed,

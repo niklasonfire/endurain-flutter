@@ -4,10 +4,16 @@ import 'package:endurain/app.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/features/server_activities/models/server_activity_start_time.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
+  // Parse the bundled IANA time zone database up front so the first
+  // server-activities screen renders recorded-zone start times without
+  // paying the one-time parse during its first build.
+  ServerActivityStartTime.ensureTimeZoneDatabase();
+
   // The composition root owns the single production [AppServices] instance and
   // passes it down to the root [App], which exposes it through [AppScope].
   // There is no global instance: widgets obtain services from the scope, and

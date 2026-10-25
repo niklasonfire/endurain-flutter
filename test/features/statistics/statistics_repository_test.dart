@@ -45,7 +45,8 @@ void main() {
     'uses full server aggregate and excludes gym distance from total',
     () async {
       final repo = repository((request) async {
-        expect(request.url.path, '/api/v1/activities_summaries/month');
+        expect(request.url.path, '/api/v1/activities/summaries');
+        expect(request.url.queryParameters['period'], 'month');
         expect(request.url.queryParameters['date'], '2026-10-18');
         return http.Response(
           jsonEncode({
@@ -101,8 +102,16 @@ void main() {
       'running filter preserves aggregate totals for ${period.name}',
       () async {
         final repo = repository((request) async {
-          // v0.19.4 returns display names with a " workout" suffix, but
-          // resolves the type filter against the canonical name ("Run").
+          expect(request.url.path, '/api/v1/activities/summaries');
+          expect(request.url.queryParameters['period'], period.name);
+          // v0.20.1 type_breakdown labels every type with a display name
+          // built by backend set_activity_name_based_on_activity_type
+          // (summary_crud.py): the canonical name plus a trailing
+          // " workout", except "Workout" itself. So the breakdown row for
+          // activity_type_id 1 reads exactly "Run workout". The "type"
+          // filter is resolved server-side against the canonical
+          // ACTIVITY_NAME_TO_ID map (case-insensitive), so the repository
+          // sends the canonical name ("Run") for the filter.
           final type = request.url.queryParameters['type'];
           final hasRun = type == null || type.toLowerCase() == 'run';
           final metrics = {
@@ -152,6 +161,10 @@ void main() {
       },
     );
   }
+  // Keys are the exact v0.20.1 type_breakdown display names
+  // (set_activity_name_based_on_activity_type: canonical name + " workout",
+  // except "Workout"); values are the canonical names the server's
+  // ACTIVITY_NAME_TO_ID filter lookup accepts.
   for (final names in {
     'Run': 'Run',
     'Trail run workout': 'Trail run',
@@ -233,8 +246,9 @@ void main() {
       var requests = 0;
       final repo = repository((request) async {
         requests++;
-        expect(request.url.path, '/api/v1/activities_summaries/year');
+        expect(request.url.path, '/api/v1/activities/summaries');
         expect(request.url.queryParameters, {
+          'period': 'year',
           'year': '2025',
           'type': 'Trail run',
         });

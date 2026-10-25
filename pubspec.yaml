@@ -37,6 +37,13 @@ dependencies:
   # so a transitive resolution cannot pull a breaking intl.
   intl: ^0.20.2
 
+  # IANA time zone database for server activity start times. The v0.20.1
+  # server returns the recording location's zone name alongside a UTC
+  # instant; this pure-Dart database (no platform channels, so tests share
+  # the same data as the app) converts that instant to the zone's wall
+  # clock, DST rules included.
+  timezone: ^0.11.2
+
   # Dart-team stream/async utilities. Used for StreamGroup.merge to fan the
   # per-kind external-sensor streams into the single recording pipeline.
   async: ^2.13.0

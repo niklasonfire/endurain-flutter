@@ -43,10 +43,20 @@ void main() {
           sessionStore: sessions,
           baseClient: BaseHttpClient(
             httpClient: MockClient((request) async {
-              if (request.url.path.endsWith('/all')) {
-                return http.Response('[]', 200);
+              if (request.url.path.endsWith('/streams') ||
+                  request.url.path.endsWith('/laps')) {
+                return http.Response(
+                  jsonEncode({
+                    'items': const <Object>[],
+                    'total': 0,
+                    'page': 1,
+                    'num_records': 200,
+                    'next': null,
+                  }),
+                  200,
+                );
               }
-              if (request.url.path.endsWith('/stream_type/7')) {
+              if (request.url.path.endsWith('/streams/7')) {
                 return http.Response('null', 200);
               }
               return http.Response(
