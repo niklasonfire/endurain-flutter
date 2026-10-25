@@ -173,6 +173,12 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
                         l10n.chartTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
+                      if (_controller.graphCacheFetchedAt != null) ...[
+                        const SizedBox(height: 4),
+                        CacheLastUpdatedChip(
+                          fetchedAt: _controller.graphCacheFetchedAt!,
+                        ),
+                      ],
                       if (_controller.isGraphLoading)
                         const Center(child: AdaptiveLoadingIndicator())
                       else if (_controller.graphError != null)
@@ -190,11 +196,18 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
                         const Center(child: AdaptiveLoadingIndicator())
                       else if (_controller.lapError != null)
                         _retry(l10n.chartLapsFailed, _controller.loadLaps)
-                      else
+                      else ...[
+                        if (_controller.lapCacheFetchedAt != null) ...[
+                          CacheLastUpdatedChip(
+                            fetchedAt: _controller.lapCacheFetchedAt!,
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         ServerActivityLaps(
                           laps: _controller.laps,
                           activityType: _controller.activity!.activityType,
                         ),
+                      ],
                       if (_controller.activity!.description
                               ?.trim()
                               .isNotEmpty ??

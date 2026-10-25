@@ -32,6 +32,8 @@ class ServerActivityDetailController extends SafeNotifier {
   bool _isLapLoading = false;
   int _graphGeneration = 0;
   int _lapGeneration = 0;
+  DateTime? _graphCacheFetchedAt;
+  DateTime? _lapCacheFetchedAt;
   ServerActivity? _activity;
   List<ServerRoutePoint> _route = const [];
   Object? _error;
@@ -49,6 +51,16 @@ class ServerActivityDetailController extends SafeNotifier {
   Object? get lapError => _lapError;
   bool get isGraphLoading => _isGraphLoading;
   bool get isLapLoading => _isLapLoading;
+
+  /// When the graphs were served from the offline read cache, the time they
+  /// were last fetched from the server; `null` while they came from the
+  /// server (or nothing is loaded).
+  DateTime? get graphCacheFetchedAt => _graphCacheFetchedAt;
+
+  /// When the laps were served from the offline read cache, the time they
+  /// were last fetched from the server; `null` while they came from the
+  /// server (or nothing is loaded).
+  DateTime? get lapCacheFetchedAt => _lapCacheFetchedAt;
 
   ServerActivity? get activity => _activity;
   List<ServerRoutePoint> get route => _route;
@@ -116,12 +128,14 @@ class ServerActivityDetailController extends SafeNotifier {
     final generation = ++_graphGeneration;
     _isGraphLoading = true;
     _graphError = null;
+    _graphCacheFetchedAt = null;
     notify();
     try {
       final result = await (repository as ServerActivityGraphRepository)
           .fetchGraphs(activityId);
       if (_valid && generation == _graphGeneration) {
         _graphs = List.unmodifiable(result);
+        _graphCacheFetchedAt = _cacheProvenanceOf(result);
       }
     } catch (error) {
       if (_valid && generation == _graphGeneration) _graphError = error;
@@ -139,12 +153,14 @@ class ServerActivityDetailController extends SafeNotifier {
     final generation = ++_lapGeneration;
     _isLapLoading = true;
     _lapError = null;
+    _lapCacheFetchedAt = null;
     notify();
     try {
       final result = await (repository as ServerActivityGraphRepository)
           .fetchLaps(activityId);
       if (_valid && generation == _lapGeneration) {
         _laps = List.unmodifiable(result);
+        _lapCacheFetchedAt = _cacheProvenanceOf(result);
       }
     } catch (error) {
       if (_valid && generation == _lapGeneration) _lapError = error;
@@ -154,6 +170,14 @@ class ServerActivityDetailController extends SafeNotifier {
         notify();
       }
     }
+  }
+
+  DateTime? _cacheProvenanceOf(Object result) {
+    return switch (_repository) {
+      final OfflineCacheProvenance provenance =>
+        provenance.provenanceOf(result)?.fetchedAt,
+      _ => null,
+    };
   }
 
   bool get _valid => !isDisposed && !_accountChanged;
@@ -170,6 +194,8 @@ class ServerActivityDetailController extends SafeNotifier {
     _lapError = null;
     _isGraphLoading = false;
     _isLapLoading = false;
+    _graphCacheFetchedAt = null;
+    _lapCacheFetchedAt = null;
     _activity = null;
     _route = const [];
     _error = null;
@@ -178,14 +204,6 @@ class ServerActivityDetailController extends SafeNotifier {
     _routeLoading = false;
     _cacheFetchedAt = null;
     notify();
-  }
-
-  DateTime? _cacheProvenanceOf(ServerActivity result) {
-    return switch (_repository) {
-      final OfflineCacheProvenance provenance =>
-        provenance.provenanceOf(result)?.fetchedAt,
-      _ => null,
-    };
   }
 
   @override

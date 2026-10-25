@@ -2,6 +2,7 @@ import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/server_activities/models/server_activity_graph.dart';
 import 'package:endurain/features/server_activities/repositories/server_activity_graph_repository.dart';
+import 'package:endurain/shared/widgets/cache_last_updated_chip.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:endurain/features/server_activities/controllers/server_activity_detail_controller.dart';
 import 'package:endurain/features/server_activities/models/server_activity.dart';
@@ -236,6 +237,55 @@ void main() {
     controller.dispose();
     connection.dispose();
   });
+
+  testWidgets(
+    'graphs served from the offline cache render with the last-updated chip',
+    (tester) async {
+      tester.platformDispatcher.localeTestValue = const Locale('en', 'US');
+      addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+      tester.view.physicalSize = const Size(420, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final connection = ValueNotifier<String?>('a');
+      final repository = _CachedGraphsRepository();
+      final controller = ServerActivityDetailController(
+        activityId: 7,
+        repository: repository,
+        connection: connection,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ServerActivityDetailScreen(
+            activityId: 7,
+            controller: controller,
+            tileServerUrlProvider: () async =>
+                'https://tiles.example/{z}/{x}/{y}.png',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chips = find.byType(CacheLastUpdatedChip);
+      expect(chips, findsNWidgets(2));
+      await tester.scrollUntilVisible(chips.first, 200);
+      await tester.pumpAndSettle();
+      final chipText = tester
+          .widget<Text>(
+            find.descendant(of: chips.first, matching: find.byType(Text)),
+          )
+          .data;
+      expect(chipText, startsWith('Last updated'));
+      expect(find.byKey(const ValueKey('chart-heartRate')), findsOneWidget);
+      expect(find.text('Could not load the graphs.'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      connection.dispose();
+    },
+  );
 }
 
 class _Repository implements ServerActivitiesRepository {
@@ -340,4 +390,45 @@ class _CachedDetailRepository extends _Repository
   OfflineCacheServeInfo? provenanceOf(Object result) => result == _cached
       ? OfflineCacheServeInfo(fetchedAt: DateTime.utc(2026, 10, 25, 8))
       : null;
+}
+
+class _CachedGraphsRepository extends _Repository
+    implements ServerActivityGraphRepository, OfflineCacheProvenance {
+  final _provenance = <Object, OfflineCacheServeInfo>{};
+
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) => _provenance[result];
+
+  @override
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
+    final graphs = [
+      ServerActivityGraph.fromJson({
+        'stream_type': 1,
+        'stream_waypoints': [
+          {'time': '2026-10-18T10:00:00Z', 'hr': 121},
+        ],
+      }),
+    ];
+    _provenance[graphs] = OfflineCacheServeInfo(
+      fetchedAt: DateTime.utc(2026, 10, 25, 9),
+    );
+    return graphs;
+  }
+
+  @override
+  Future<List<ServerActivityLap>> fetchLaps(int activityId) async {
+    const laps = [
+      ServerActivityLap(
+        distanceMeters: 1000,
+        seconds: 300,
+        speed: 3,
+        heartRate: 120,
+        isRest: false,
+      ),
+    ];
+    _provenance[laps] = OfflineCacheServeInfo(
+      fetchedAt: DateTime.utc(2026, 10, 25, 9),
+    );
+    return laps;
+  }
 }
