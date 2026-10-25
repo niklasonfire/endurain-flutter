@@ -30,6 +30,29 @@ Object? _listEnvelope(List<Map<String, Object?>> rows, int total) => {
 const _runRow = {'id': 1, 'activity_type': 1, 'name': 'Morning run'};
 const _rideRow = {'id': 2, 'activity_type': 4, 'name': 'Evening ride'};
 
+const _hrStreamRow = {
+  'activity_id': 7,
+  'stream_type': 1,
+  'stream_waypoints': [
+    {'time': '2026-10-18T10:00:00Z', 'hr': 123},
+  ],
+};
+
+const _lapRow = {
+  'activity_id': 7,
+  'total_distance': 1000,
+  'total_timer_time': 300,
+  'avg_heart_rate': 145,
+};
+
+Object? _detailEnvelope(List<Map<String, Object?>> rows) => {
+  'items': rows,
+  'total': rows.length,
+  'page': 1,
+  'num_records': 200,
+  'next': null,
+};
+
 class _FakeStore implements OfflineCacheStore {
   final Map<String, OfflineCacheEntry> entries = {};
 
@@ -77,24 +100,30 @@ class _FakeStore implements OfflineCacheStore {
 class _FakeRawSource implements ServerActivitiesRawSource {
   Object? listEnvelope;
   Object? typesEnvelope = const {'1': 'Run', '4': 'Ride'};
+  Object? streamsEnvelope;
+  Object? lapsEnvelope;
 
   /// Error thrown by the list/types envelope fetches, simulating a fetch
   /// failure (network, session, format, ...).
   AppException? listError;
   AppException? typesError;
+  AppException? streamsError;
+  AppException? lapsError;
 
   int listCalls = 0;
   int typesCalls = 0;
+  int streamsCalls = 0;
+  int lapsCalls = 0;
   final listRequests =
       <({ServerActivityQuery query, int page, int pageSize})>[];
   int detailCalls = 0;
   int routeCalls = 0;
-  int graphsCalls = 0;
-  int lapsCalls = 0;
 
   void goOffline() {
     listError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
     typesError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
+    streamsError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
+    lapsError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
   }
 
   @override
@@ -116,6 +145,22 @@ class _FakeRawSource implements ServerActivitiesRawSource {
     final error = typesError;
     if (error != null) throw error;
     return typesEnvelope;
+  }
+
+  @override
+  Future<Object?> fetchActivityStreamsEnvelope(int activityId) async {
+    streamsCalls++;
+    final error = streamsError;
+    if (error != null) throw error;
+    return streamsEnvelope;
+  }
+
+  @override
+  Future<Object?> fetchActivityLapsEnvelope(int activityId) async {
+    lapsCalls++;
+    final error = lapsError;
+    if (error != null) throw error;
+    return lapsEnvelope;
   }
 
   @override
@@ -145,16 +190,12 @@ class _FakeRawSource implements ServerActivitiesRawSource {
   }
 
   @override
-  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
-    graphsCalls++;
-    return const [];
-  }
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) =>
+      throw UnimplementedError();
 
   @override
-  Future<List<ServerActivityLap>> fetchLaps(int activityId) async {
-    lapsCalls++;
-    return const [];
-  }
+  Future<List<ServerActivityLap>> fetchLaps(int activityId) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -381,22 +422,179 @@ void main() {
       DateTime.utc(2026, 10, 25, 9),
     );
   });
-
   test(
-    'detail, route, graphs, and laps pass through to the inner repository',
+    'a successful graph fetch stores the raw streams envelope for the activity',
     () async {
       final repository = makeRepository();
+      inner.streamsEnvelope = _detailEnvelope(const [_hrStreamRow]);
 
-      await repository.fetchDetail(1);
-      await repository.fetchRoute(1);
-      await repository.fetchGraphs(1);
-      await repository.fetchLaps(1);
+      final graphs = await repository.fetchGraphs(7);
 
-      expect(inner.detailCalls, 1);
-      expect(inner.routeCalls, 1);
-      expect(inner.graphsCalls, 1);
-      expect(inner.lapsCalls, 1);
+      expect(graphs.single.metric, ServerGraphMetric.heartRate);
+      expect(graphs.single.points().single.value, 123);
+      expect(repository.provenanceOf(graphs), isNull);
+      final entry = store.entries.values.single;
+      expect(entry.profileId, _profileA.id);
+      expect(entry.concept, 'activity-streams:7');
+      expect(entry.payload, _detailEnvelope(const [_hrStreamRow]));
+      expect(entry.fetchedAt, DateTime.utc(2026, 10, 25, 9));
+      expect(
+        entry.query,
+        canonicalCacheQuery(const {'page_number': '1', 'num_records': '200'}),
+      );
+    },
+  );
+
+  test(
+    'graph fetches offline fall back to the cached envelope with provenance',
+    () async {
+      final repository = makeRepository();
+      inner.streamsEnvelope = _detailEnvelope(const [_hrStreamRow]);
+      await repository.fetchGraphs(7);
+      inner.goOffline();
+      inner.streamsEnvelope = null;
+
+      final graphs = await repository.fetchGraphs(7);
+
+      expect(inner.streamsCalls, 2);
+      expect(graphs.single.metric, ServerGraphMetric.heartRate);
+      expect(graphs.single.points().single.value, 123);
+      expect(
+        repository.provenanceOf(graphs)!.fetchedAt,
+        DateTime.utc(2026, 10, 25, 9),
+      );
+    },
+  );
+
+  test('every successful graph fetch refreshes the cached copy', () async {
+    final repository = makeRepository();
+    inner.streamsEnvelope = _detailEnvelope(const [_hrStreamRow]);
+    await repository.fetchGraphs(7);
+    now = DateTime.utc(2026, 10, 25, 10);
+
+    await repository.fetchGraphs(7);
+
+    expect(
+      store.entries.values.single.fetchedAt,
+      DateTime.utc(2026, 10, 25, 10),
+    );
+  });
+
+  test('laps are written through and served offline with provenance', () async {
+    final repository = makeRepository();
+    inner.lapsEnvelope = _detailEnvelope(const [_lapRow]);
+
+    final laps = await repository.fetchLaps(7);
+
+    expect(laps.single.distanceMeters, 1000);
+    expect(repository.provenanceOf(laps), isNull);
+    final entry = store.entries.values.single;
+    expect(entry.concept, 'activity-laps:7');
+    expect(entry.payload, _detailEnvelope(const [_lapRow]));
+
+    inner.goOffline();
+    inner.lapsEnvelope = null;
+    final cachedLaps = await repository.fetchLaps(7);
+    expect(cachedLaps.single.heartRate, 145);
+    expect(
+      repository.provenanceOf(cachedLaps)!.fetchedAt,
+      DateTime.utc(2026, 10, 25, 9),
+    );
+  });
+
+  test(
+    'cached graphs are never served for another activity or identity',
+    () async {
+      final repository = makeRepository();
+      inner.streamsEnvelope = _detailEnvelope(const [_hrStreamRow]);
+      await repository.fetchGraphs(7);
+      inner.goOffline();
+
+      await expectLater(
+        repository.fetchGraphs(8),
+        throwsA(isA<AppException>()),
+      );
+      profile = _profileB;
+      await expectLater(
+        repository.fetchGraphs(7),
+        throwsA(isA<AppException>()),
+      );
+    },
+  );
+
+  test('graph failures other than being unreachable never fall back', () async {
+    final repository = makeRepository();
+    inner.streamsEnvelope = _detailEnvelope(const [_hrStreamRow]);
+    await repository.fetchGraphs(7);
+
+    inner.streamsError = const AppException(AppErrorCode.sessionExpired);
+    await expectLater(
+      repository.fetchGraphs(7),
+      throwsA(
+        isA<AppException>().having(
+          (error) => error.code,
+          'code',
+          AppErrorCode.sessionExpired,
+        ),
+      ),
+    );
+    inner.streamsError = const AppException(
+      AppErrorCode.serverActivitiesFetchFailed,
+      statusCode: 500,
+    );
+    await expectLater(
+      repository.fetchGraphs(7),
+      throwsA(
+        isA<AppException>().having((error) => error.statusCode, 'status', 500),
+      ),
+    );
+  });
+
+  test(
+    'graphs and laps never fetched online degrade to the fetch failure',
+    () async {
+      final repository = makeRepository();
+      inner.goOffline();
+
+      await expectLater(
+        repository.fetchGraphs(7),
+        throwsA(isA<AppException>()),
+      );
+      await expectLater(repository.fetchLaps(7), throwsA(isA<AppException>()));
       expect(store.entries, isEmpty);
     },
   );
+
+  test('guest mode never reads the graph cache', () async {
+    final repository = makeRepository();
+    inner.streamsEnvelope = _detailEnvelope(const [_hrStreamRow]);
+    await repository.fetchGraphs(7);
+    profile = null;
+    inner.streamsError = const AppException(AppErrorCode.notAuthenticated);
+    store.readCalls = 0;
+
+    await expectLater(
+      repository.fetchGraphs(7),
+      throwsA(
+        isA<AppException>().having(
+          (error) => error.code,
+          'code',
+          AppErrorCode.notAuthenticated,
+        ),
+      ),
+    );
+
+    expect(store.readCalls, 0);
+  });
+
+  test('detail and route pass through to the inner repository', () async {
+    final repository = makeRepository();
+
+    await repository.fetchDetail(1);
+    await repository.fetchRoute(1);
+
+    expect(inner.detailCalls, 1);
+    expect(inner.routeCalls, 1);
+    expect(store.entries, isEmpty);
+  });
 }

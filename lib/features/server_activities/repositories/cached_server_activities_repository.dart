@@ -16,9 +16,8 @@ import 'package:endurain/features/server_activities/repositories/server_activiti
 /// Every successful fetch writes the raw server envelope to the offline read
 /// cache; a fetch that fails because the server could not be reached falls
 /// back to the cached payload of the **active identity** only, re-parsed
-/// through the same helpers as a live fetch. Everything else — detail, route,
-/// graphs, laps — passes straight through until later tickets extend the
-/// cache to them.
+/// through the same helpers as a live fetch. Detail and route pass straight
+/// through until their ticket extends the cache to them.
 class CachedServerActivitiesRepository
     implements
         ServerActivitiesRepository,
@@ -36,7 +35,6 @@ class CachedServerActivitiesRepository
 
   static const String _listConcept = 'activity-list';
   static const String _typesConcept = 'activity-types';
-
   final ServerActivitiesRawSource _inner;
   final OfflineCacheStore _cacheStore;
   final Future<ConnectionProfile?> Function() _connectionProfile;
@@ -151,11 +149,73 @@ class CachedServerActivitiesRepository
 
   @override
   Future<List<ServerActivityGraph>> fetchGraphs(int activityId) =>
-      _inner.fetchGraphs(activityId);
+      _fetchThroughCache(
+        concept: 'activity-streams:$activityId',
+        query: canonicalCacheQuery(
+          ApiServerActivitiesRepository.detailRowsQueryParameters,
+        ),
+        fetchEnvelope: () => _inner.fetchActivityStreamsEnvelope(activityId),
+        parse: (envelope) => ApiServerActivitiesRepository.parseGraphsEnvelope(
+          envelope: envelope,
+          activityId: activityId,
+        ),
+      );
 
   @override
   Future<List<ServerActivityLap>> fetchLaps(int activityId) =>
-      _inner.fetchLaps(activityId);
+      _fetchThroughCache(
+        concept: 'activity-laps:$activityId',
+        query: canonicalCacheQuery(
+          ApiServerActivitiesRepository.detailRowsQueryParameters,
+        ),
+        fetchEnvelope: () => _inner.fetchActivityLapsEnvelope(activityId),
+        parse: (envelope) => ApiServerActivitiesRepository.parseLapsEnvelope(
+          envelope: envelope,
+          activityId: activityId,
+        ),
+      );
+
+  /// Cache-through fetch of one raw envelope (decision D1): a live fetch is
+  /// written to the cache for the active identity; a fetch that fails
+  /// because the server was unreachable falls back to the cached payload of
+  /// the same identity, re-parsed through the same helper as a live fetch.
+  Future<T> _fetchThroughCache<T extends Object>({
+    required String concept,
+    required String query,
+    required Future<Object?> Function() fetchEnvelope,
+    required T Function(Object? envelope) parse,
+  }) async {
+    Object? envelope;
+    try {
+      envelope = await fetchEnvelope();
+    } on AppException catch (error) {
+      final cached = await _serveFromCache(
+        error,
+        concept: concept,
+        query: query,
+      );
+      if (cached != null) {
+        return _markCacheServed(parse(cached.payload), cached.fetchedAt);
+      }
+      rethrow;
+    }
+    // Re-resolve the identity after the await: the session may have changed
+    // while the request was in flight. The inner repository already rejects a
+    // mid-fetch switch, so this only guards the cache write's key.
+    final profile = await _connectionProfile();
+    if (profile != null) {
+      await _cacheStore.write(
+        OfflineCacheEntry(
+          profileId: profile.id,
+          concept: concept,
+          query: query,
+          payload: envelope,
+          fetchedAt: _clock().toUtc(),
+        ),
+      );
+    }
+    return parse(envelope);
+  }
 
   /// Reads the cache for the active identity after a failed fetch.
   ///

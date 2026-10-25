@@ -29,6 +29,14 @@ abstract interface class ServerActivitiesRawSource
   /// Decoded activity-types object exactly as returned by the server; its
   /// keys are the type ids.
   Future<Object?> fetchActivityTypesEnvelope();
+
+  /// Decoded activity streams envelope (`{'items': [...]}`) exactly as
+  /// returned by the server for the activity's graphs.
+  Future<Object?> fetchActivityStreamsEnvelope(int activityId);
+
+  /// Decoded activity laps envelope (`{'items': [...]}`) exactly as returned
+  /// by the server.
+  Future<Object?> fetchActivityLapsEnvelope(int activityId);
 }
 
 class ApiServerActivitiesRepository implements ServerActivitiesRawSource {
@@ -262,13 +270,27 @@ class ApiServerActivitiesRepository implements ServerActivitiesRawSource {
   }
 
   @override
-  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async {
-    final rows = await _detailRows(
-      _endpoints.activityStreamsEndpoint(activityId),
-      activityId,
-    );
+  Future<List<ServerActivityGraph>> fetchGraphs(int activityId) async =>
+      parseGraphsEnvelope(
+        envelope: await fetchActivityStreamsEnvelope(activityId),
+        activityId: activityId,
+      );
+
+  @override
+  Future<Object?> fetchActivityStreamsEnvelope(int activityId) =>
+      _detailEnvelope(
+        _endpoints.activityStreamsEndpoint(activityId),
+        activityId,
+      );
+
+  /// Parses a decoded streams envelope (live or cached) into the activity's
+  /// graphs; see [ServerActivitiesRawSource].
+  static List<ServerActivityGraph> parseGraphsEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) {
     final graphs = <ServerActivityGraph>[];
-    for (final row in rows) {
+    for (final row in _detailRowsFromEnvelope(envelope, activityId)) {
       if (!ServerGraphMetric.values.any(
         (metric) => metric.streamType == row['stream_type'],
       )) {
@@ -283,28 +305,48 @@ class ApiServerActivitiesRepository implements ServerActivitiesRawSource {
 
   @override
   Future<List<ServerActivityLap>> fetchLaps(int activityId) async =>
-      List.unmodifiable(
-        (await _detailRows(
-          _endpoints.activityLapsEndpoint(activityId),
-          activityId,
-        )).map(ServerActivityLap.fromJson),
+      parseLapsEnvelope(
+        envelope: await fetchActivityLapsEnvelope(activityId),
+        activityId: activityId,
       );
 
-  Future<List<Map<String, dynamic>>> _detailRows(
-    String endpoint,
-    int activityId,
-  ) async {
+  /// Query parameters every detail child-collection (streams, laps) request
+  /// uses. Shared with the offline read cache so a cache key canonicalizes
+  /// the exact request a live fetch performs (decision D2).
+  static const Map<String, String> detailRowsQueryParameters = {
+    'page_number': '1',
+    'num_records': '200',
+  };
+
+  @override
+  Future<Object?> fetchActivityLapsEnvelope(int activityId) =>
+      _detailEnvelope(_endpoints.activityLapsEndpoint(activityId), activityId);
+
+  /// Parses a decoded laps envelope (live or cached) into the activity's
+  /// laps; see [ServerActivitiesRawSource].
+  static List<ServerActivityLap> parseLapsEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) => List.unmodifiable(
+    _detailRowsFromEnvelope(
+      envelope,
+      activityId,
+    ).map(ServerActivityLap.fromJson),
+  );
+
+  Future<Object?> _detailEnvelope(String endpoint, int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
     // Child collections are paginated; one maximum-size page covers every
     // stream type and lap of a single activity.
-    final envelope = _object(
-      await _get(
-        _endpoint(endpoint, const {'page_number': '1', 'num_records': '200'}),
-        profile,
-      ),
-    );
-    final result = envelope['items'];
+    return _get(_endpoint(endpoint, detailRowsQueryParameters), profile);
+  }
+
+  static List<Map<String, dynamic>> _detailRowsFromEnvelope(
+    Object? envelope,
+    int activityId,
+  ) {
+    final result = _object(envelope)['items'];
     if (result is! List) _invalid();
     return result.map((value) {
       final row = _object(value);
