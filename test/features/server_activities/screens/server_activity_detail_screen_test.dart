@@ -172,6 +172,72 @@ void main() {
     },
   );
 
+  testWidgets('a cached detail shows the Last updated chip', (tester) async {
+    tester.view.physicalSize = const Size(420, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final connection = ValueNotifier<String?>('a');
+    final controller = ServerActivityDetailController(
+      activityId: 7,
+      repository: _CachedDetailRepository(),
+      connection: connection,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ServerActivityDetailScreen(
+          activityId: 7,
+          controller: controller,
+          tileServerUrlProvider: () async =>
+              'https://tiles.example/{z}/{x}/{y}.png',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Cached training'), findsOneWidget);
+    expect(find.textContaining('Last updated'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    connection.dispose();
+  });
+
+  testWidgets('a live detail shows no Last updated chip', (tester) async {
+    tester.view.physicalSize = const Size(420, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final connection = ValueNotifier<String?>('a');
+    final controller = ServerActivityDetailController(
+      activityId: 7,
+      repository: _Repository(),
+      connection: connection,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ServerActivityDetailScreen(
+          activityId: 7,
+          controller: controller,
+          tileServerUrlProvider: () async =>
+              'https://tiles.example/{z}/{x}/{y}.png',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Indoor training'), findsOneWidget);
+    expect(find.textContaining('Last updated'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    connection.dispose();
+  });
+
   testWidgets(
     'graphs served from the offline cache render with the last-updated chip',
     (tester) async {
@@ -306,6 +372,24 @@ class _PlaybackRepository extends _Repository
   ];
   @override
   Future<List<ServerActivityLap>> fetchLaps(int activityId) async => [];
+}
+
+class _CachedDetailRepository extends _Repository
+    implements OfflineCacheProvenance {
+  static const _cached = ServerActivity(
+    id: 7,
+    name: 'Cached training',
+    activityType: 10,
+    timerSeconds: 1800,
+  );
+
+  @override
+  Future<ServerActivity> fetchDetail(int activityId) async => _cached;
+
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) => result == _cached
+      ? OfflineCacheServeInfo(fetchedAt: DateTime.utc(2026, 10, 25, 8))
+      : null;
 }
 
 class _CachedGraphsRepository extends _Repository

@@ -16,8 +16,7 @@ import 'package:endurain/features/server_activities/repositories/server_activiti
 /// Every successful fetch writes the raw server envelope to the offline read
 /// cache; a fetch that fails because the server could not be reached falls
 /// back to the cached payload of the **active identity** only, re-parsed
-/// through the same helpers as a live fetch. Detail and route pass straight
-/// through until their ticket extends the cache to them.
+/// through the same helpers as a live fetch.
 class CachedServerActivitiesRepository
     implements
         ServerActivitiesRepository,
@@ -35,6 +34,11 @@ class CachedServerActivitiesRepository
 
   static const String _listConcept = 'activity-list';
   static const String _typesConcept = 'activity-types';
+  static const String _detailConceptPrefix = 'activity-detail:';
+  static const String _routeConceptPrefix = 'activity-route:';
+  static const String _streamsConceptPrefix = 'activity-streams:';
+  static const String _lapsConceptPrefix = 'activity-laps:';
+
   final ServerActivitiesRawSource _inner;
   final OfflineCacheStore _cacheStore;
   final Future<ConnectionProfile?> Function() _connectionProfile;
@@ -50,7 +54,7 @@ class CachedServerActivitiesRepository
     ServerActivityQuery query = const ServerActivityQuery(),
     int page = 1,
     int pageSize = 20,
-  }) async {
+  }) {
     final canonicalQuery = canonicalCacheQuery(
       ApiServerActivitiesRepository.activityListQueryParameters(
         query: query,
@@ -58,99 +62,59 @@ class CachedServerActivitiesRepository
         pageSize: pageSize,
       ),
     );
-    Object? envelope;
-    try {
-      envelope = await _inner.fetchActivityListEnvelope(
+    return _fetchThroughCache(
+      concept: _listConcept,
+      query: canonicalQuery,
+      fetchEnvelope: () => _inner.fetchActivityListEnvelope(
         query: query,
         page: page,
         pageSize: pageSize,
-      );
-    } on AppException catch (error) {
-      final cached = await _serveFromCache(
-        error,
-        concept: _listConcept,
-        query: canonicalQuery,
-      );
-      if (cached != null) {
-        final result = ApiServerActivitiesRepository.parseActivityListEnvelope(
-          envelope: cached.payload,
-          page: page,
-          pageSize: pageSize,
-        );
-        return _markCacheServed(result, cached.fetchedAt);
-      }
-      rethrow;
-    }
-    // Re-resolve the identity after the await: the session may have changed
-    // while the request was in flight. The inner repository already rejects a
-    // mid-fetch switch, so this only guards the cache write's key.
-    final profile = await _connectionProfile();
-    if (profile != null) {
-      await _cacheStore.write(
-        OfflineCacheEntry(
-          profileId: profile.id,
-          concept: _listConcept,
-          query: canonicalQuery,
-          payload: envelope,
-          fetchedAt: _clock().toUtc(),
-        ),
-      );
-    }
-    return ApiServerActivitiesRepository.parseActivityListEnvelope(
-      envelope: envelope,
-      page: page,
-      pageSize: pageSize,
+      ),
+      parse: (envelope) =>
+          ApiServerActivitiesRepository.parseActivityListEnvelope(
+            envelope: envelope,
+            page: page,
+            pageSize: pageSize,
+          ),
     );
   }
 
   @override
-  Future<List<int>> fetchActivityTypes() async {
-    Object? envelope;
-    try {
-      envelope = await _inner.fetchActivityTypesEnvelope();
-    } on AppException catch (error) {
-      final cached = await _serveFromCache(
-        error,
-        concept: _typesConcept,
-        query: '',
-      );
-      if (cached != null) {
-        return _markCacheServed(
-          ApiServerActivitiesRepository.parseActivityTypesEnvelope(
-            cached.payload,
-          ),
-          cached.fetchedAt,
-        );
-      }
-      rethrow;
-    }
-    final profile = await _connectionProfile();
-    if (profile != null) {
-      await _cacheStore.write(
-        OfflineCacheEntry(
-          profileId: profile.id,
-          concept: _typesConcept,
-          query: '',
-          payload: envelope,
-          fetchedAt: _clock().toUtc(),
-        ),
-      );
-    }
-    return ApiServerActivitiesRepository.parseActivityTypesEnvelope(envelope);
-  }
+  Future<List<int>> fetchActivityTypes() => _fetchThroughCache(
+    concept: _typesConcept,
+    query: '',
+    fetchEnvelope: _inner.fetchActivityTypesEnvelope,
+    parse: ApiServerActivitiesRepository.parseActivityTypesEnvelope,
+  );
 
   @override
-  Future<ServerActivity> fetchDetail(int activityId) =>
-      _inner.fetchDetail(activityId);
+  Future<ServerActivity> fetchDetail(int activityId) => _fetchThroughCache(
+    concept: '$_detailConceptPrefix$activityId',
+    query: '',
+    fetchEnvelope: () => _inner.fetchDetailEnvelope(activityId),
+    parse: (envelope) => ApiServerActivitiesRepository.parseDetailEnvelope(
+      envelope: envelope,
+      activityId: activityId,
+    ),
+  );
 
   @override
   Future<List<ServerRoutePoint>> fetchRoute(int activityId) =>
-      _inner.fetchRoute(activityId);
+      _fetchThroughCache(
+        concept: '$_routeConceptPrefix$activityId',
+        query: '',
+        fetchEnvelope: () => _inner.fetchRouteStreamEnvelope(activityId),
+        parse: (envelope) =>
+            ApiServerActivitiesRepository.parseRouteStreamEnvelope(
+              envelope: envelope,
+              activityId: activityId,
+            ),
+      );
 
   @override
   Future<List<ServerActivityGraph>> fetchGraphs(int activityId) =>
       _fetchThroughCache(
-        concept: 'activity-streams:$activityId',
+        concept: '$_streamsConceptPrefix$activityId',
         query: canonicalCacheQuery(
           ApiServerActivitiesRepository.detailRowsQueryParameters,
         ),
@@ -164,7 +128,7 @@ class CachedServerActivitiesRepository
   @override
   Future<List<ServerActivityLap>> fetchLaps(int activityId) =>
       _fetchThroughCache(
-        concept: 'activity-laps:$activityId',
+        concept: '$_lapsConceptPrefix$activityId',
         query: canonicalCacheQuery(
           ApiServerActivitiesRepository.detailRowsQueryParameters,
         ),

@@ -30,6 +30,27 @@ Object? _listEnvelope(List<Map<String, Object?>> rows, int total) => {
 const _runRow = {'id': 1, 'activity_type': 1, 'name': 'Morning run'};
 const _rideRow = {'id': 2, 'activity_type': 4, 'name': 'Evening ride'};
 
+final _routeStream = {
+  'stream_type': 7,
+  'activity_id': 1,
+  'stream_waypoints': [
+    {'lat': 52, 'lon': 13},
+  ],
+};
+
+final _lapsEnvelope = {
+  'items': [
+    {
+      'activity_id': 1,
+      'total_distance': 1000,
+      'total_timer_time': 300,
+      'enhanced_avg_speed': 3,
+      'avg_heart_rate': 120,
+      'intensity': 'active',
+    },
+  ],
+};
+
 const _hrStreamRow = {
   'activity_id': 7,
   'stream_type': 1,
@@ -100,28 +121,34 @@ class _FakeStore implements OfflineCacheStore {
 class _FakeRawSource implements ServerActivitiesRawSource {
   Object? listEnvelope;
   Object? typesEnvelope = const {'1': 'Run', '4': 'Ride'};
+  Object? detailEnvelope;
+  Object? routeEnvelope;
   Object? streamsEnvelope;
   Object? lapsEnvelope;
 
-  /// Error thrown by the list/types envelope fetches, simulating a fetch
-  /// failure (network, session, format, ...).
+  /// Error thrown by the envelope fetches, simulating a fetch failure
+  /// (network, session, format, ...).
   AppException? listError;
   AppException? typesError;
+  AppException? detailError;
+  AppException? routeError;
   AppException? streamsError;
   AppException? lapsError;
 
   int listCalls = 0;
   int typesCalls = 0;
+  int detailCalls = 0;
+  int routeCalls = 0;
   int streamsCalls = 0;
   int lapsCalls = 0;
   final listRequests =
       <({ServerActivityQuery query, int page, int pageSize})>[];
-  int detailCalls = 0;
-  int routeCalls = 0;
 
   void goOffline() {
     listError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
     typesError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
+    detailError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
+    routeError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
     streamsError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
     lapsError = const AppException(AppErrorCode.serverActivitiesFetchFailed);
   }
@@ -145,6 +172,22 @@ class _FakeRawSource implements ServerActivitiesRawSource {
     final error = typesError;
     if (error != null) throw error;
     return typesEnvelope;
+  }
+
+  @override
+  Future<Object?> fetchDetailEnvelope(int activityId) async {
+    detailCalls++;
+    final error = detailError;
+    if (error != null) throw error;
+    return detailEnvelope;
+  }
+
+  @override
+  Future<Object?> fetchRouteStreamEnvelope(int activityId) async {
+    routeCalls++;
+    final error = routeError;
+    if (error != null) throw error;
+    return routeEnvelope;
   }
 
   @override
@@ -174,20 +217,12 @@ class _FakeRawSource implements ServerActivitiesRawSource {
   Future<List<int>> fetchActivityTypes() => throw UnimplementedError();
 
   @override
-  Future<ServerActivity> fetchDetail(int activityId) async {
-    detailCalls++;
-    return ApiServerActivitiesRepository.parseActivityListEnvelope(
-      envelope: _listEnvelope(const [_runRow], 1),
-      page: 1,
-      pageSize: 20,
-    ).items.single;
-  }
+  Future<ServerActivity> fetchDetail(int activityId) =>
+      throw UnimplementedError();
 
   @override
-  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
-    routeCalls++;
-    return const [ServerRoutePoint(latitude: 1, longitude: 2)];
-  }
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) =>
+      throw UnimplementedError();
 
   @override
   Future<List<ServerActivityGraph>> fetchGraphs(int activityId) =>
@@ -422,6 +457,167 @@ void main() {
       DateTime.utc(2026, 10, 25, 9),
     );
   });
+
+  test('activity detail is written through and served offline', () async {
+    final repository = makeRepository();
+    inner.detailEnvelope = _runRow;
+
+    final activity = await repository.fetchDetail(1);
+
+    expect(activity.id, 1);
+    expect(activity.name, 'Morning run');
+    expect(repository.provenanceOf(activity), isNull);
+    final entry = store.entries.values.single;
+    expect(entry.profileId, _profileA.id);
+    expect(entry.concept, 'activity-detail:1');
+    expect(entry.query, '');
+    expect(entry.payload, _runRow);
+    expect(entry.fetchedAt, DateTime.utc(2026, 10, 25, 9));
+
+    inner.goOffline();
+    inner.detailEnvelope = null;
+    final cached = await repository.fetchDetail(1);
+
+    expect(inner.detailCalls, 2);
+    expect(cached.name, 'Morning run');
+    expect(
+      repository.provenanceOf(cached)!.fetchedAt,
+      DateTime.utc(2026, 10, 25, 9),
+    );
+  });
+
+  test(
+    'a detail never fetched while online surfaces the fetch failure',
+    () async {
+      final repository = makeRepository();
+      inner.goOffline();
+
+      await expectLater(
+        repository.fetchDetail(1),
+        throwsA(isA<AppException>()),
+      );
+      expect(store.readCalls, 1);
+      expect(store.entries, isEmpty);
+    },
+  );
+
+  test('cached detail of another identity is never served', () async {
+    final repository = makeRepository();
+    inner.detailEnvelope = _runRow;
+    await repository.fetchDetail(1);
+    profile = _profileB;
+    inner.goOffline();
+
+    await expectLater(repository.fetchDetail(1), throwsA(isA<AppException>()));
+    expect(store.entries.values.single.profileId, _profileA.id);
+  });
+
+  test(
+    'session and authentication failures on detail never fall back',
+    () async {
+      final repository = makeRepository();
+      inner.detailEnvelope = _runRow;
+      await repository.fetchDetail(1);
+
+      for (final code in [
+        AppErrorCode.sessionExpired,
+        AppErrorCode.notAuthenticated,
+      ]) {
+        inner.detailError = AppException(code);
+        await expectLater(
+          repository.fetchDetail(1),
+          throwsA(
+            isA<AppException>().having((error) => error.code, 'code', code),
+          ),
+        );
+      }
+    },
+  );
+
+  test(
+    'the route is written through and the no-route state is cached',
+    () async {
+      final repository = makeRepository();
+      inner.routeEnvelope = _routeStream;
+
+      final route = await repository.fetchRoute(1);
+
+      expect(route, hasLength(1));
+      var entry = store.entries.values.single;
+      expect(entry.concept, 'activity-route:1');
+      expect(entry.query, '');
+      expect(entry.payload, _routeStream);
+      expect(repository.provenanceOf(route), isNull);
+
+      // A GPS-less activity answers 404; the empty route caches like any
+      // success, so it degrades to "no route" offline instead of an error.
+      inner.routeEnvelope = null;
+      expect(await repository.fetchRoute(1), isEmpty);
+      entry = store.entries.values.single;
+      expect(entry.payload, isNull);
+
+      inner.goOffline();
+      final cached = await repository.fetchRoute(1);
+
+      expect(inner.routeCalls, 3);
+      expect(cached, isEmpty);
+      expect(
+        repository.provenanceOf(cached)!.fetchedAt,
+        DateTime.utc(2026, 10, 25, 9),
+      );
+    },
+  );
+
+  test('laps are written through and served offline', () async {
+    final repository = makeRepository();
+    inner.lapsEnvelope = _lapsEnvelope;
+
+    final laps = await repository.fetchLaps(1);
+
+    expect(laps.single.distanceMeters, 1000);
+    expect(laps.single.heartRate, 120);
+    expect(repository.provenanceOf(laps), isNull);
+    final entry = store.entries.values.single;
+    expect(entry.concept, 'activity-laps:1');
+    expect(
+      entry.query,
+      canonicalCacheQuery(const {'page_number': '1', 'num_records': '200'}),
+    );
+    expect(entry.payload, _lapsEnvelope);
+
+    inner.goOffline();
+    final cached = await repository.fetchLaps(1);
+
+    expect(inner.lapsCalls, 2);
+    expect(cached.single.distanceMeters, 1000);
+    expect(
+      repository.provenanceOf(cached)!.fetchedAt,
+      DateTime.utc(2026, 10, 25, 9),
+    );
+  });
+
+  test('laps are written through and served offline with provenance', () async {
+    final repository = makeRepository();
+    inner.lapsEnvelope = _detailEnvelope(const [_lapRow]);
+
+    final laps = await repository.fetchLaps(7);
+
+    expect(laps.single.distanceMeters, 1000);
+    expect(repository.provenanceOf(laps), isNull);
+    final entry = store.entries.values.single;
+    expect(entry.concept, 'activity-laps:7');
+    expect(entry.payload, _detailEnvelope(const [_lapRow]));
+
+    inner.goOffline();
+    inner.lapsEnvelope = null;
+    final cachedLaps = await repository.fetchLaps(7);
+    expect(cachedLaps.single.heartRate, 145);
+    expect(
+      repository.provenanceOf(cachedLaps)!.fetchedAt,
+      DateTime.utc(2026, 10, 25, 9),
+    );
+  });
+
   test(
     'a successful graph fetch stores the raw streams envelope for the activity',
     () async {
@@ -477,28 +673,6 @@ void main() {
     expect(
       store.entries.values.single.fetchedAt,
       DateTime.utc(2026, 10, 25, 10),
-    );
-  });
-
-  test('laps are written through and served offline with provenance', () async {
-    final repository = makeRepository();
-    inner.lapsEnvelope = _detailEnvelope(const [_lapRow]);
-
-    final laps = await repository.fetchLaps(7);
-
-    expect(laps.single.distanceMeters, 1000);
-    expect(repository.provenanceOf(laps), isNull);
-    final entry = store.entries.values.single;
-    expect(entry.concept, 'activity-laps:7');
-    expect(entry.payload, _detailEnvelope(const [_lapRow]));
-
-    inner.goOffline();
-    inner.lapsEnvelope = null;
-    final cachedLaps = await repository.fetchLaps(7);
-    expect(cachedLaps.single.heartRate, 145);
-    expect(
-      repository.provenanceOf(cachedLaps)!.fetchedAt,
-      DateTime.utc(2026, 10, 25, 9),
     );
   });
 
@@ -585,16 +759,5 @@ void main() {
     );
 
     expect(store.readCalls, 0);
-  });
-
-  test('detail and route pass through to the inner repository', () async {
-    final repository = makeRepository();
-
-    await repository.fetchDetail(1);
-    await repository.fetchRoute(1);
-
-    expect(inner.detailCalls, 1);
-    expect(inner.routeCalls, 1);
-    expect(store.entries, isEmpty);
   });
 }

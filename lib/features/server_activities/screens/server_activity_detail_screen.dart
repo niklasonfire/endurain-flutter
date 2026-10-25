@@ -115,6 +115,10 @@ class _ServerActivityDetailScreenState extends State<ServerActivityDetailScreen>
                           l10n.serverActivityDetailFailed,
                           _controller.load,
                         ),
+                      if (_controller.cacheFetchedAt != null)
+                        CacheLastUpdatedChip(
+                          fetchedAt: _controller.cacheFetchedAt!,
+                        ),
                       _header(_controller.activity!, l10n),
                       const SizedBox(height: 16),
                       _metrics(_controller.activity!, l10n),

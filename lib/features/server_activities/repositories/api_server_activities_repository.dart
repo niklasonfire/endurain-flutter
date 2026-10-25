@@ -30,6 +30,13 @@ abstract interface class ServerActivitiesRawSource
   /// keys are the type ids.
   Future<Object?> fetchActivityTypesEnvelope();
 
+  /// Decoded activity-detail object exactly as returned by the server.
+  Future<Object?> fetchDetailEnvelope(int activityId);
+
+  /// Decoded route-stream object exactly as returned by the server, or
+  /// `null` when the server answered 404 (the no-route state).
+  Future<Object?> fetchRouteStreamEnvelope(int activityId);
+
   /// Decoded activity streams envelope (`{'items': [...]}`) exactly as
   /// returned by the server for the activity's graphs.
   Future<Object?> fetchActivityStreamsEnvelope(int activityId);
@@ -202,25 +209,45 @@ class ApiServerActivitiesRepository implements ServerActivitiesRawSource {
   }
 
   @override
-  Future<ServerActivity> fetchDetail(int activityId) async {
+  Future<ServerActivity> fetchDetail(int activityId) async =>
+      parseDetailEnvelope(
+        envelope: await fetchDetailEnvelope(activityId),
+        activityId: activityId,
+      );
+
+  @override
+  Future<Object?> fetchDetailEnvelope(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
-    final result = _activity(
-      await _get(_endpoints.activityDetailEndpoint(activityId), profile),
-    );
+    return _get(_endpoints.activityDetailEndpoint(activityId), profile);
+  }
+
+  /// Parses a decoded activity-detail object (live or cached) into a
+  /// [ServerActivity]; see [ServerActivitiesRawSource].
+  static ServerActivity parseDetailEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) {
+    final result = _activity(envelope);
     if (result.id != activityId) _invalid();
     return result;
   }
 
   @override
-  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async {
+  Future<List<ServerRoutePoint>> fetchRoute(int activityId) async =>
+      parseRouteStreamEnvelope(
+        envelope: await fetchRouteStreamEnvelope(activityId),
+        activityId: activityId,
+      );
+
+  @override
+  Future<Object?> fetchRouteStreamEnvelope(int activityId) async {
     _validateId(activityId);
     final profile = await _connection();
     // A missing GPS stream answers 404; that is the no-route state, not a
     // load failure.
-    Object? stream;
     try {
-      stream = await _get(
+      return await _get(
         _endpoints.activityRouteStreamEndpoint(activityId),
         profile,
       );
@@ -229,10 +256,19 @@ class ApiServerActivitiesRepository implements ServerActivitiesRawSource {
           error.code != AppErrorCode.serverActivitiesFetchFailed) {
         rethrow;
       }
-      return const [];
+      return null;
     }
-    if (stream == null) return const [];
-    final data = _object(stream);
+  }
+
+  /// Parses a decoded route-stream object (live or cached) into the route;
+  /// a `null` envelope is the cached no-route state and parses to an empty
+  /// route. See [ServerActivitiesRawSource].
+  static List<ServerRoutePoint> parseRouteStreamEnvelope({
+    required Object? envelope,
+    required int activityId,
+  }) {
+    if (envelope == null) return const [];
+    final data = _object(envelope);
     if (data['stream_type'] != 7 || data['activity_id'] != activityId) {
       _invalid();
     }
