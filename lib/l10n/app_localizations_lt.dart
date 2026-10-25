@@ -739,6 +739,28 @@ class AppLocalizationsLt extends AppLocalizations {
   String get settingsScreen => 'Nustatymai';
 
   @override
+  String get settingsClearOfflineData => 'Išvalyti offline duomenis';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Pašalina serverio duomenų offline kopiją iš šio įrenginio';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Išvalyti offline duomenis?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Visos šiame įrenginyje saugomos serverio duomenų offline kopijos bus pašalintos. Serveryje saugomi duomenys nebus ištrinti.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline duomenys išvalyti';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Nepavyko išvalyti offline duomenų. Bandykite dar kartą.';
+
+  @override
   String get deviceAccessTitle => 'Prieiga prie įrenginio';
 
   @override

@@ -747,6 +747,28 @@ class AppLocalizationsSr extends AppLocalizations {
   String get settingsScreen => 'Подешавања';
 
   @override
+  String get settingsClearOfflineData => 'Обриши податке ван мреже';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Уклања офлајн копију података сервера са овог уређаја';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Обрисати податке ван мреже?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Све офлајн копије података сервера сачуване на овом уређају биће уклоњене. Ништа сачувано на серверу неће бити обрисано.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Подаци ван мреже су обрисани';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Податке ван мреже није могуће обрисати. Покушајте поново.';
+
+  @override
   String get deviceAccessTitle => 'Приступ уређају';
 
   @override

@@ -750,6 +750,28 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsScreen => 'Impostazioni';
 
   @override
+  String get settingsClearOfflineData => 'Cancella i dati offline';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Rimuove la copia offline dei dati del server da questo dispositivo';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Cancellare i dati offline?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Tutte le copie offline dei dati del server salvate su questo dispositivo verranno rimosse. Nessun dato salvato sul server viene eliminato.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Dati offline cancellati';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Impossibile cancellare i dati offline. Riprova.';
+
+  @override
   String get deviceAccessTitle => 'Accesso al dispositivo';
 
   @override

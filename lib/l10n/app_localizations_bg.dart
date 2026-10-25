@@ -747,6 +747,28 @@ class AppLocalizationsBg extends AppLocalizations {
   String get settingsScreen => 'Настройки';
 
   @override
+  String get settingsClearOfflineData => 'Изчисти офлайн данните';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Премахва офлайн копието на данните от сървъра от това устройство';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Изчисти ли офлайн данните?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Всички офлайн копия на данни от сървъра, запазени на това устройство, ще бъдат премахнати. Нищо, запазено на сървъра, няма да бъде изтрито.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Офлайн данните са изчистени';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Офлайн данните не можаха да бъдат изчистени. Опитайте отново.';
+
+  @override
   String get deviceAccessTitle => 'Достъп до устройството';
 
   @override

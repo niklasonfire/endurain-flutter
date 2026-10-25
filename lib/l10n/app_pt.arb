@@ -905,6 +905,12 @@
     "description": "Atribuição da marca registada apresentada no rodapé das configurações - Usado em: settings_screen.dart"
   },
   "settingsScreen": "Configurações",
+  "settingsClearOfflineData": "Limpar dados offline",
+  "settingsClearOfflineDataSubtitle": "Remove a cópia offline dos dados do servidor deste dispositivo",
+  "settingsClearOfflineDataConfirmTitle": "Limpar os dados offline?",
+  "settingsClearOfflineDataConfirmMessage": "Todas as cópias offline dos dados do servidor guardadas neste dispositivo serão removidas. Nada guardado no servidor é eliminado.",
+  "settingsClearOfflineDataDone": "Dados offline limpos",
+  "settingsClearOfflineDataFailed": "Não foi possível limpar os dados offline. Tente novamente.",
   "@settingsScreen": {
     "description": "Título do ecrã de configurações - Usado em: settings_screen.dart"
   },

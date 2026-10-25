@@ -751,6 +751,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsScreen => 'Réglages';
 
   @override
+  String get settingsClearOfflineData => 'Effacer les données hors ligne';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Supprime la copie hors ligne de vos données du serveur de cet appareil';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Effacer les données hors ligne ?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Toutes les copies hors ligne des données du serveur stockées sur cet appareil seront supprimées. Aucune donnée stockée sur le serveur n\'est supprimée.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Données hors ligne effacées';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Impossible d\'effacer les données hors ligne. Veuillez réessayer.';
+
+  @override
   String get deviceAccessTitle => 'Accès aux appareils';
 
   @override

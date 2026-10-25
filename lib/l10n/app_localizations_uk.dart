@@ -745,6 +745,27 @@ class AppLocalizationsUk extends AppLocalizations {
   String get settingsScreen => 'Налаштування';
 
   @override
+  String get settingsClearOfflineData => 'Очистити офлайн-дані';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Видаляє офлайн-копію даних сервера з цього пристрою';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Очистити офлайн-дані?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Усі збережені на цьому пристрої офлайн-копії даних сервера буде видалено. Нічого збереженого на сервері не видаляється.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Офлайн-дані очищено';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Не вдалося очистити офлайн-дані. Спробуйте ще раз.';
+
+  @override
   String get deviceAccessTitle => 'Доступ до пристрою';
 
   @override

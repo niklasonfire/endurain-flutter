@@ -747,6 +747,27 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsScreen => 'Nastavení';
 
   @override
+  String get settingsClearOfflineData => 'Vymazat offline data';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Odebere offline kopii dat serveru z tohoto zařízení';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Vymazat offline data?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Všechny offline kopie dat serveru uložené v tomto zařízení budou odebrány. Nic uloženého na serveru se nesmaže.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline data vymazána';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Offline data se nepodařilo vymazat. Zkuste to znovu.';
+
+  @override
   String get deviceAccessTitle => 'Přístup k zařízení';
 
   @override

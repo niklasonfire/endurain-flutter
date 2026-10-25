@@ -736,6 +736,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsScreen => 'Ayarlar';
 
   @override
+  String get settingsClearOfflineData => 'Çevrimdışı verileri temizle';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Sunucu verilerinin çevrimdışı kopyasını bu cihazdan kaldırır';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Çevrimdışı veriler temizlensin mi?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Bu cihazda depolanan tüm sunucu verisi çevrimdışı kopyaları kaldırılacak. Sunucuda depolanan hiçbir şey silinmez.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Çevrimdışı veriler temizlendi';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Çevrimdışı veriler temizlenemedi. Lütfen tekrar deneyin.';
+
+  @override
   String get deviceAccessTitle => 'Cihaz erişimi';
 
   @override

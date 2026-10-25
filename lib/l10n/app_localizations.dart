@@ -1407,6 +1407,42 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsScreen;
 
+  /// Clear offline data settings entry and confirmation button - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Clear offline data'**
+  String get settingsClearOfflineData;
+
+  /// Subtitle for the clear offline data settings entry - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the offline copy of your server data from this device'**
+  String get settingsClearOfflineDataSubtitle;
+
+  /// Title of the clear offline data confirmation dialog - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Clear offline data?'**
+  String get settingsClearOfflineDataConfirmTitle;
+
+  /// Message of the clear offline data confirmation dialog - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'All offline copies of server data stored on this device will be removed. Nothing stored on the server is deleted.'**
+  String get settingsClearOfflineDataConfirmMessage;
+
+  /// Completion message after the offline data was cleared - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Offline data cleared'**
+  String get settingsClearOfflineDataDone;
+
+  /// Error message when clearing the offline data failed - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear the offline data. Please try again.'**
+  String get settingsClearOfflineDataFailed;
+
   /// Settings entry and screen title for mobile permissions - Used in: settings_screen.dart, device_access_screen.dart
   ///
   /// In en, this message translates to:

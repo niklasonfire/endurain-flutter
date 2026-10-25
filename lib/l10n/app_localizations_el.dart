@@ -754,6 +754,29 @@ class AppLocalizationsEl extends AppLocalizations {
   String get settingsScreen => 'Ρυθμίσεις';
 
   @override
+  String get settingsClearOfflineData => 'Εκκαθάριση δεδομένων εκτός σύνδεσης';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Αφαιρεί από τη συσκευή την αντιγραφή των δεδομένων του διακομιστή για χρήση εκτός σύνδεσης';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Να γίνει εκκαθάριση των δεδομένων εκτός σύνδεσης;';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Όλες οι αντιγραφές των δεδομένων του διακομιστή για χρήση εκτός σύνδεσης που είναι αποθηκευμένες σε αυτή τη συσκευή θα αφαιρεθούν. Δεν διαγράφεται τίποτα από όσα είναι αποθηκευμένα στον διακομιστή.';
+
+  @override
+  String get settingsClearOfflineDataDone =>
+      'Τα δεδομένα εκτός σύνδεσης καθαρίστηκαν';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Δεν ήταν δυνατή η εκκαθάριση των δεδομένων εκτός σύνδεσης. Δοκιμάστε ξανά.';
+
+  @override
   String get deviceAccessTitle => 'Πρόσβαση στη συσκευή';
 
   @override

@@ -745,6 +745,29 @@ class AppLocalizationsSl extends AppLocalizations {
   String get settingsScreen => 'Nastavitve';
 
   @override
+  String get settingsClearOfflineData => 'Počisti podatke brez povezave';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Odstrani kopijo podatkov strežnika brez povezave s te naprave';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle =>
+      'Počistiti podatke brez povezave?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Vse kopije podatkov strežnika brez povezave, shranjene na tej napravi, bodo odstranjene. Na strežniku shranjeni podatki ne bodo izbrisani.';
+
+  @override
+  String get settingsClearOfflineDataDone =>
+      'Podatki brez povezave so počiščeni';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Podatkov brez povezave ni bilo mogoče počistiti. Poskusite znova.';
+
+  @override
   String get deviceAccessTitle => 'Dostop do naprave';
 
   @override

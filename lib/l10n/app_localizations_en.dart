@@ -737,6 +737,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsScreen => 'Settings';
 
   @override
+  String get settingsClearOfflineData => 'Clear offline data';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Remove the offline copy of your server data from this device';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Clear offline data?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'All offline copies of server data stored on this device will be removed. Nothing stored on the server is deleted.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline data cleared';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Could not clear the offline data. Please try again.';
+
+  @override
   String get deviceAccessTitle => 'Device access';
 
   @override

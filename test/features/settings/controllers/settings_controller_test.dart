@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -16,12 +19,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MeasurementSystemController measurement;
+  late _FakeOfflineCacheStore offlineCache;
   late _FakeRetentionSettings retention;
 
   SettingsController buildController({
     PackageInfoService? packageInfo,
     ActivityRetentionSettingsRepository? retentionRepository,
     SecureStorageService? storage,
+    OfflineCacheStore? cacheStore,
   }) {
     return SettingsController(
       packageInfoService:
@@ -29,6 +34,7 @@ void main() {
       retentionSettingsRepository: retentionRepository ?? retention,
       measurementSystemController: measurement,
       secureStorage: storage ?? SecureStorageService(),
+      offlineCache: cacheStore ?? offlineCache,
     );
   }
 
@@ -37,6 +43,7 @@ void main() {
       'server_url': 'https://endurain.example.test',
     });
     retention = _FakeRetentionSettings();
+    offlineCache = _FakeOfflineCacheStore();
     measurement = MeasurementSystemController(
       repository: MeasurementSettingsRepository(
         preferences: FakePreferencesStore(),
@@ -165,6 +172,50 @@ void main() {
     });
   });
 
+  group('SettingsController.clearOfflineData', () {
+    test('clears the whole offline read cache of every identity', () async {
+      final controller = buildController();
+      addTearDown(controller.dispose);
+
+      final cleared = await controller.clearOfflineData();
+
+      expect(cleared, isTrue);
+      expect(offlineCache.clearAllCalls, 1);
+      expect(controller.isClearingOfflineData, isFalse);
+    });
+
+    test(
+      'reports failure and clears the busy state when the wipe fails',
+      () async {
+        final controller = buildController(
+          cacheStore: _ThrowingOfflineCacheStore(),
+        );
+        addTearDown(controller.dispose);
+
+        final cleared = await controller.clearOfflineData();
+
+        expect(cleared, isFalse);
+        expect(controller.isClearingOfflineData, isFalse);
+      },
+    );
+
+    test('ignores concurrent attempts while a clear is in flight', () async {
+      final slowCache = _SlowOfflineCacheStore();
+      final controller = buildController(cacheStore: slowCache);
+      addTearDown(controller.dispose);
+
+      final first = controller.clearOfflineData();
+      expect(controller.isClearingOfflineData, isTrue);
+
+      final second = await controller.clearOfflineData();
+
+      expect(second, isFalse);
+      slowCache.completeClear();
+      expect(await first, isTrue);
+      expect(slowCache.clearAllCalls, 1);
+    });
+  });
+
   test('does not notify after dispose', () async {
     final controller = buildController();
     var notifications = 0;
@@ -175,6 +226,71 @@ void main() {
 
     expect(notifications, 0);
   });
+}
+
+class _FakeOfflineCacheStore implements OfflineCacheStore {
+  int clearAllCalls = 0;
+
+  @override
+  Future<void> clearAll() async => clearAllCalls++;
+
+  @override
+  Future<int> clearForProfile(String profileId) async => 0;
+
+  @override
+  Future<OfflineCacheEntry?> read({
+    required String profileId,
+    required String concept,
+    required String query,
+  }) async => null;
+
+  @override
+  Future<void> write(OfflineCacheEntry entry) async {}
+}
+
+class _ThrowingOfflineCacheStore implements OfflineCacheStore {
+  @override
+  Future<void> clearAll() async =>
+      throw StateError('offline cache unavailable');
+
+  @override
+  Future<int> clearForProfile(String profileId) async => 0;
+
+  @override
+  Future<OfflineCacheEntry?> read({
+    required String profileId,
+    required String concept,
+    required String query,
+  }) async => null;
+
+  @override
+  Future<void> write(OfflineCacheEntry entry) async {}
+}
+
+class _SlowOfflineCacheStore implements OfflineCacheStore {
+  int clearAllCalls = 0;
+  final Completer<void> _completer = Completer<void>();
+
+  void completeClear() => _completer.complete();
+
+  @override
+  Future<void> clearAll() async {
+    clearAllCalls++;
+    await _completer.future;
+  }
+
+  @override
+  Future<int> clearForProfile(String profileId) async => 0;
+
+  @override
+  Future<OfflineCacheEntry?> read({
+    required String profileId,
+    required String concept,
+    required String query,
+  }) async => null;
+
+  @override
+  Future<void> write(OfflineCacheEntry entry) async {}
 }
 
 class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {

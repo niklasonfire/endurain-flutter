@@ -20,6 +20,7 @@ import 'package:endurain/core/services/connectivity_service.dart';
 import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/services/offline_cache_identity_wiper.dart';
 import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/core/services/modules/activity_module.dart';
 import 'package:endurain/core/services/modules/auth_module.dart';
@@ -79,7 +80,17 @@ import 'package:endurain/features/settings/controllers/settings_controller.dart'
 /// - activity → health: the local-history controller's default health-import
 ///   cleanup is injected here (see [createLocalActivityHistoryController]).
 class AppServices {
-  AppServices({this.config = AppConfig.defaults});
+  AppServices({this.config = AppConfig.defaults}) {
+    // Offline read cache lifecycle (ADR-0001): the cache belongs to the active
+    // identity, so wipe the identity being left on logout/server switch. The
+    // subscription outlives this constructor: the session store's notifier
+    // keeps the wiper's listener (and thereby the wiper) alive for the app's
+    // lifetime.
+    OfflineCacheIdentityWiper(
+      cacheStore: offlineCache,
+      connectionChanges: authSession.connectionChanges,
+    );
+  }
 
   /// Runtime configuration shared by every service.
   final AppConfig config;
@@ -310,6 +321,7 @@ class AppServices {
       retentionSettingsRepository: _activity.retentionSettings,
       measurementSystemController: _infra.measurementSystemController,
       secureStorage: _infra.secureStorage,
+      offlineCache: offlineCache,
     );
   }
 

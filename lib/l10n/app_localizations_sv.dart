@@ -748,6 +748,27 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsScreen => 'Inställningar';
 
   @override
+  String get settingsClearOfflineData => 'Rensa offline-data';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Tar bort offline-kopian av dina serverdata från den här enheten';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Rensa offline-data?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Alla offline-kopior av serverdata som lagras på den här enheten tas bort. Ingenting som lagras på servern tas bort.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline-data rensat';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Det gick inte att rensa offline-data. Försök igen.';
+
+  @override
   String get deviceAccessTitle => 'Enhetsåtkomst';
 
   @override

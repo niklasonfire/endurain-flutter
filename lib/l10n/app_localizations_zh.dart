@@ -697,6 +697,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsScreen => '设置';
 
   @override
+  String get settingsClearOfflineData => '清除离线数据';
+
+  @override
+  String get settingsClearOfflineDataSubtitle => '从此设备移除服务器数据的离线副本';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => '要清除离线数据吗？';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      '此设备上存储的所有服务器数据离线副本都将被移除。不会删除服务器上存储的任何内容。';
+
+  @override
+  String get settingsClearOfflineDataDone => '离线数据已清除';
+
+  @override
+  String get settingsClearOfflineDataFailed => '无法清除离线数据。请重试。';
+
+  @override
   String get deviceAccessTitle => '设备接入';
 
   @override
@@ -2382,6 +2401,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsScreen => '設定';
+
+  @override
+  String get settingsClearOfflineData => '清除離線資料';
+
+  @override
+  String get settingsClearOfflineDataSubtitle => '從此裝置移除伺服器資料的離線副本';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => '要清除離線資料嗎？';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      '此裝置上儲存的所有伺服器資料離線副本都將被移除。不會刪除伺服器上儲存的任何內容。';
+
+  @override
+  String get settingsClearOfflineDataDone => '離線資料已清除';
+
+  @override
+  String get settingsClearOfflineDataFailed => '無法清除離線資料。請再試一次。';
 
   @override
   String get deviceAccessTitle => '裝置存取';

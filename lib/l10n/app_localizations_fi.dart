@@ -748,6 +748,27 @@ class AppLocalizationsFi extends AppLocalizations {
   String get settingsScreen => 'Asetukset';
 
   @override
+  String get settingsClearOfflineData => 'Tyhjennä offline-data';
+
+  @override
+  String get settingsClearOfflineDataSubtitle =>
+      'Poistaa palvelindatan offline-kopion tältä laitteelta';
+
+  @override
+  String get settingsClearOfflineDataConfirmTitle => 'Tyhjennä offline-data?';
+
+  @override
+  String get settingsClearOfflineDataConfirmMessage =>
+      'Kaikki tälle laitteelle tallennetut palvelindatan offline-kopiot poistetaan. Palvelimelle tallennettua dataa ei poisteta.';
+
+  @override
+  String get settingsClearOfflineDataDone => 'Offline-data tyhjennetty';
+
+  @override
+  String get settingsClearOfflineDataFailed =>
+      'Offline-datan tyhjennys epäonnistui. Yritä uudelleen.';
+
+  @override
   String get deviceAccessTitle => 'Laitteen käyttöoikeus';
 
   @override
