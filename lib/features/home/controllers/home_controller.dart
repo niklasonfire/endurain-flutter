@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/goals/models/goal_progress.dart';
@@ -48,6 +49,12 @@ class HomeController extends SafeNotifier {
   Object? statisticsError;
   Object? activitiesError;
   Object? goalsError;
+  DateTime? _goalsCacheFetchedAt;
+
+  /// When the rendered goals were last fetched from the server while they
+  /// were served from the offline read cache; `null` when they came from
+  /// the server (ADR-0001).
+  DateTime? get goalsCacheFetchedAt => _goalsCacheFetchedAt;
   bool statisticsLoading = false;
   bool activitiesLoading = false;
   bool goalsLoading = false;
@@ -64,6 +71,7 @@ class HomeController extends SafeNotifier {
     goals = const [];
     pendingUploads = 0;
     statisticsError = activitiesError = goalsError = null;
+    _goalsCacheFetchedAt = null;
     statisticsLoading = activitiesLoading = goalsLoading = false;
     _lastRefresh = null;
     notify();
@@ -177,6 +185,10 @@ class HomeController extends SafeNotifier {
           return interval != 0 ? interval : a.id.compareTo(b.id);
         });
       if (_current(generation)) goals = List.unmodifiable(ordered);
+      // Null for a live fetch, so a server-served refresh clears the chip.
+      if (_current(generation)) {
+        _goalsCacheFetchedAt = _goals.offlineCacheFetchedAtOf(result);
+      }
     } catch (error) {
       if (_current(generation)) goalsError = error;
     } finally {

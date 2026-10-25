@@ -4,6 +4,7 @@ import 'package:endurain/features/updates/controllers/update_controller.dart';
 import 'package:endurain/features/updates/services/update_installer.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
+import 'package:endurain/features/goals/repositories/cached_goals_repository.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
 import 'package:endurain/features/goals/repositories/api_goals_repository.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -174,10 +175,14 @@ class AppServices {
     connection: authSession.connectionChanges,
   );
 
-  late final GoalsRepository goals = ApiGoalsRepository(
-    apiClient: apiClient,
-    sessionStore: authSession,
-    endpoints: _infra.endpoints,
+  late final GoalsRepository goals = CachedGoalsRepository(
+    inner: ApiGoalsRepository(
+      apiClient: apiClient,
+      sessionStore: authSession,
+      endpoints: _infra.endpoints,
+    ),
+    cacheStore: offlineCache,
+    connectionProfile: authSession.getConnectionProfile,
   );
 
   HomeController createHomeController({
