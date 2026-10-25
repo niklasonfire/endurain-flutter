@@ -83,10 +83,7 @@ void main() {
       // Every consumer (statistics tab, home summaries) must share the
       // cache-through decorator so a fetch viewed online also serves offline
       // (ADR-0001).
-      expect(
-        identical(services.statistics, services.statistics),
-        isTrue,
-      );
+      expect(identical(services.statistics, services.statistics), isTrue);
       expect(services.statistics, isA<CachedStatisticsRepository>());
     });
   });

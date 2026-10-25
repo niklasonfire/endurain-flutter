@@ -63,10 +63,7 @@ class ApiStatisticsRepository implements StatisticsRawSource {
   @override
   Future<ActivityStatistics> fetch(StatisticsQuery query) async {
     final envelope = await fetchStatisticsEnvelope(query);
-    return parseStatisticsEnvelope(
-      envelope: envelope,
-      period: query.period,
-    );
+    return parseStatisticsEnvelope(envelope: envelope, period: query.period);
   }
 
   @override
