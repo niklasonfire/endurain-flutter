@@ -1,4 +1,5 @@
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/home/screens/home_screen.dart';
 import 'package:endurain/features/home/widgets/home_activity_card.dart';
@@ -158,6 +159,30 @@ class ApiSportGoals implements GoalsRepository {
             ),
           )
           .toList();
+}
+
+/// Goals repository that reports which results came from the offline read
+/// cache, like CachedGoalsRepository.
+class OfflineCachedGoals implements GoalsRepository, OfflineCacheProvenance {
+  DateTime? fromCache;
+  @override
+  Future<List<GoalProgress>> fetchResults() async => List.generate(
+    4,
+    (i) => GoalProgress(
+      id: i,
+      interval: 'weekly',
+      activityType: 'Run',
+      goalType: 'distance',
+      startDate: DateTime.utc(2026, 10, 12),
+      endDate: DateTime.utc(2026, 10, 18),
+      achieved: 18400,
+      target: 25000,
+      percentage: 73.6,
+    ),
+  );
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) =>
+      fromCache == null ? null : OfflineCacheServeInfo(fetchedAt: fromCache!);
 }
 
 void main() {
@@ -336,6 +361,59 @@ void main() {
       expect(find.text('$label · Wöchentlich'), findsOneWidget);
     }
     expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    connection.dispose();
+  });
+  testWidgets('offline cached goals show the Last updated chip', (
+    tester,
+  ) async {
+    final connection = ValueNotifier<String?>('account');
+    final goals = OfflineCachedGoals();
+    final controller = HomeController(
+      statisticsRepository: SampleStatistics(),
+      activitiesRepository: SampleActivities(),
+      goalsRepository: goals,
+      connection: connection,
+      now: () => DateTime.utc(2026, 10, 18),
+    );
+    await tester.pumpWidget(
+      TestAppScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HomeScreen(
+            controller: controller,
+            onRecordActivity: () {},
+            onOpenActivities: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('All goals'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('Last updated'), findsNothing);
+
+    // Offline: the goals come from the offline read cache and the chip marks
+    // them, in the home section and in the All goals screen.
+    goals.fromCache = DateTime.utc(2026, 10, 17, 12);
+    await controller.refresh();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Last updated'), findsOneWidget);
+    await tester.tap(find.text('All goals'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Last updated'), findsOneWidget);
+
+    // Back online: the next refresh comes from the server and hides the chip.
+    goals.fromCache = null;
+    await controller.refresh();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Last updated'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     controller.dispose();
     connection.dispose();
