@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/statistics/controllers/statistics_controller.dart';
 import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
 import 'package:endurain/features/statistics/repositories/api_statistics_repository.dart';
+import 'package:endurain/features/statistics/repositories/cached_statistics_repository.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/app_infrastructure.dart';
@@ -161,10 +162,14 @@ class AppServices {
     connection: authSession.connectionChanges,
   );
 
-  late final StatisticsRepository statistics = ApiStatisticsRepository(
-    apiClient: apiClient,
-    sessionStore: authSession,
-    endpoints: _infra.endpoints,
+  late final StatisticsRepository statistics = CachedStatisticsRepository(
+    inner: ApiStatisticsRepository(
+      apiClient: apiClient,
+      sessionStore: authSession,
+      endpoints: _infra.endpoints,
+    ),
+    cacheStore: offlineCache,
+    connectionProfile: authSession.getConnectionProfile,
   );
 
   StatisticsController createStatisticsController({
