@@ -16,8 +16,6 @@ class ApiGoalsRepository implements GoalsRawSource {
   final ApiClient _api;
   final AuthSessionStore _sessions;
   final ApiEndpoints _endpoints;
-  Future<List<GoalProgress>> fetchResults() async =>
-      parseResultsEnvelope(await fetchResultsEnvelope());
 
   @override
   Future<Object?> fetchResultsEnvelope() async {

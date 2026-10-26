@@ -56,7 +56,9 @@ void main() {
           200,
         );
       });
-      final goal = (await repo.fetchResults()).single;
+      final goal = ApiGoalsRepository.parseResultsEnvelope(
+        await repo.fetchResultsEnvelope(),
+      ).single;
       expect(goal.target, 7200);
       expect(goal.achieved, 5400);
       expect(goal.progress, .75);
@@ -66,6 +68,11 @@ void main() {
   );
   test('server null represents no goals', () async {
     final repo = repository((request) async => http.Response('null', 200));
-    expect(await repo.fetchResults(), isEmpty);
+    expect(
+      ApiGoalsRepository.parseResultsEnvelope(
+        await repo.fetchResultsEnvelope(),
+      ),
+      isEmpty,
+    );
   });
 }
