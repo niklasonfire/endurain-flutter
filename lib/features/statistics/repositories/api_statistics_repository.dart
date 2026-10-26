@@ -6,15 +6,6 @@ import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/features/statistics/models/activity_statistics.dart';
 import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
 
-/// Server statistics fetches that expose their raw decoded JSON envelopes so
-/// an offline read-cache decorator can store a payload exactly as the server
-/// returned it and re-parse it through the same helpers as a live fetch
-/// (ADR-0001, decision D1).
-abstract interface class StatisticsRawSource implements StatisticsRepository {
-  /// Decoded activities-summaries object exactly as returned by the server.
-  Future<Object?> fetchStatisticsEnvelope(StatisticsQuery query);
-}
-
 class ApiStatisticsRepository implements StatisticsRawSource {
   ApiStatisticsRepository({
     required ApiClient apiClient,
@@ -60,7 +51,9 @@ class ApiStatisticsRepository implements StatisticsRawSource {
     required StatisticsPeriod period,
   }) => StatisticsResponseAdapter.decode(envelope, period);
 
-  @override
+  /// Fetches the summaries envelope live and parses it; the offline
+  /// read-cache decorator performs the same steps, sharing these helpers
+  /// (ADR-0001, decision D1).
   Future<ActivityStatistics> fetch(StatisticsQuery query) async {
     final envelope = await fetchStatisticsEnvelope(query);
     return parseStatisticsEnvelope(envelope: envelope, period: query.period);

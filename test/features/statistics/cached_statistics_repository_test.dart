@@ -4,6 +4,7 @@ import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/statistics/models/activity_statistics.dart';
 import 'package:endurain/features/statistics/repositories/api_statistics_repository.dart';
 import 'package:endurain/features/statistics/repositories/cached_statistics_repository.dart';
+import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _profileA = ConnectionProfile(
@@ -139,10 +140,6 @@ class _FakeRawSource implements StatisticsRawSource {
     if (error != null) throw error;
     return envelope ?? _summaryEnvelope(period: query.period);
   }
-
-  @override
-  Future<ActivityStatistics> fetch(StatisticsQuery query) =>
-      throw UnimplementedError();
 }
 
 void main() {
