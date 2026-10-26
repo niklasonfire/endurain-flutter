@@ -443,7 +443,6 @@ void main() {
       AppErrorCode.sessionExpired,
       AppErrorCode.notAuthenticated,
       AppErrorCode.unexpectedResponseFormat,
-      AppErrorCode.transientAuthUnavailable,
     ]) {
       inner.listError = AppException(code);
       await expectLater(

@@ -223,14 +223,22 @@ class CachedServerActivitiesRepository
   }
 
   /// A failure is offline-cache-worthy only when the server could not be
-  /// reached at all: the fetch failure or a timeout, with no HTTP status —
-  /// a status means the server answered, and session, authentication,
-  /// format, and transient-refresh errors keep their live meaning instead of
-  /// being masked by stale data (decision D3, pitfalls 5 and 8).
+  /// reached at all, with no HTTP status — a status means the server answered,
+  /// and session, authentication, and format errors keep their live meaning
+  /// instead of being masked by stale data (decision D3, pitfalls 5 and 8).
+  ///
+  /// `transientAuthUnavailable` belongs here too: the ApiClient throws it only
+  /// when the session is retained and still matches the expected profile, but
+  /// a token refresh could not complete. Offline, an access token inside the
+  /// proactive-refresh window makes every fetch fail this way — after an app
+  /// restart without network — so excluding it would leave the cache unserved
+  /// in exactly the case it exists for. Identity-terminating errors
+  /// (`notAuthenticated`, `sessionExpired`) still return `false`.
   static bool _isOfflineFetchFailure(AppException error) {
     if (error.statusCode != null) return false;
     return error.code == AppErrorCode.serverActivitiesFetchFailed ||
-        error.code == AppErrorCode.requestTimeout;
+        error.code == AppErrorCode.requestTimeout ||
+        error.code == AppErrorCode.transientAuthUnavailable;
   }
 
   T _markCacheServed<T extends Object>(T result, DateTime fetchedAt) {

@@ -279,7 +279,6 @@ void main() {
       AppErrorCode.sessionExpired,
       AppErrorCode.notAuthenticated,
       AppErrorCode.unexpectedResponseFormat,
-      AppErrorCode.transientAuthUnavailable,
     ]) {
       inner.error = AppException(code);
       await expectLater(

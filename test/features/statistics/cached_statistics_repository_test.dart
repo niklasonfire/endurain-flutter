@@ -245,6 +245,26 @@ void main() {
   });
 
   test(
+    'a transient token-refresh failure falls back to the cached payload',
+    () async {
+      // An offline restart with an access token inside the proactive-refresh
+      // window fails every fetch with transientAuthUnavailable: the session is
+      // retained, so the identity's cached copy must still be served.
+      final repository = makeRepository();
+      await repository.fetch(_query());
+      inner.error = const AppException(AppErrorCode.transientAuthUnavailable);
+
+      final result = await repository.fetch(_query());
+
+      expect(result.totals.count, 1);
+      expect(
+        repository.provenanceOf(result)!.fetchedAt,
+        DateTime.utc(2026, 10, 25, 9),
+      );
+    },
+  );
+
+  test(
     'a cached summary is only served for its own period, date, and sport',
     () async {
       final repository = makeRepository();
@@ -331,7 +351,6 @@ void main() {
         AppErrorCode.sessionExpired,
         AppErrorCode.notAuthenticated,
         AppErrorCode.unexpectedResponseFormat,
-        AppErrorCode.transientAuthUnavailable,
       ]) {
         inner.error = AppException(code);
         await expectLater(
