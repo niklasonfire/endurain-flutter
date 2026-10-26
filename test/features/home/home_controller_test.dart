@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 
 import 'dart:async';
 
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/home/controllers/home_controller.dart';
 import 'package:endurain/features/goals/models/goal_progress.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
@@ -281,6 +282,71 @@ void main() {
     controller.dispose();
     connection.dispose();
   });
+  test('goals served from the offline cache expose their fetch time', () async {
+    final connection = ValueNotifier<String?>('a');
+    final repository = Summary();
+    final goals = OfflineAwareGoals();
+    final controller = HomeController(
+      statisticsRepository: repository,
+      activitiesRepository: Activities(),
+      goalsRepository: goals,
+      connection: connection,
+    );
+    final initial = controller.refresh();
+    repository.requests.single.complete(ActivityStatistics.empty);
+    await initial;
+    expect(controller.goalsCacheFetchedAt, isNull);
+
+    goals.fromCache = DateTime.utc(2026, 10, 25, 9);
+    final refreshed = controller.refresh();
+    repository.requests.last.complete(ActivityStatistics.empty);
+    await refreshed;
+    expect(controller.goalsCacheFetchedAt, DateTime.utc(2026, 10, 25, 9));
+
+    goals.fromCache = null;
+    final live = controller.refresh();
+    repository.requests.last.complete(ActivityStatistics.empty);
+    await live;
+    expect(controller.goalsCacheFetchedAt, isNull);
+    controller.dispose();
+    connection.dispose();
+  });
+  test('an account switch clears the goals cache timestamp', () async {
+    final connection = ValueNotifier<String?>('a');
+    final repository = Summary();
+    final goals = OfflineAwareGoals();
+    final controller = HomeController(
+      statisticsRepository: repository,
+      activitiesRepository: Activities(),
+      goalsRepository: goals,
+      connection: connection,
+    );
+    goals.fromCache = DateTime.utc(2026, 10, 25, 9);
+    final loading = controller.refresh();
+    repository.requests.single.complete(ActivityStatistics.empty);
+    await loading;
+    expect(controller.goalsCacheFetchedAt, DateTime.utc(2026, 10, 25, 9));
+
+    // The new identity fetches live; the old identity's timestamp must not
+    // survive the account switch.
+    goals.fromCache = null;
+    connection.value = 'b';
+    await Future<void>.delayed(Duration.zero);
+    expect(controller.goalsCacheFetchedAt, isNull);
+    controller.dispose();
+    connection.dispose();
+  });
+}
+
+/// Goals repository that reports which results came from the offline read
+/// cache, like CachedGoalsRepository.
+class OfflineAwareGoals implements GoalsRepository, OfflineCacheProvenance {
+  DateTime? fromCache;
+  @override
+  Future<List<GoalProgress>> fetchResults() async => const [];
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) =>
+      fromCache == null ? null : OfflineCacheServeInfo(fetchedAt: fromCache!);
 }
 
 class VariableGoals implements GoalsRepository {

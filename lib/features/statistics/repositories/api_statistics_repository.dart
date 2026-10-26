@@ -6,7 +6,7 @@ import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/features/statistics/models/activity_statistics.dart';
 import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
 
-class ApiStatisticsRepository implements StatisticsRepository {
+class ApiStatisticsRepository implements StatisticsRawSource {
   ApiStatisticsRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
@@ -24,14 +24,14 @@ class ApiStatisticsRepository implements StatisticsRepository {
   static String _sportFilterName(String name) =>
       name.trim().replaceFirst(RegExp(r' workout$', caseSensitive: false), '');
 
-  @override
-  Future<ActivityStatistics> fetch(StatisticsQuery query) async {
-    final profile = await _sessions.getConnectionProfile();
-    if (profile == null) {
-      throw const AppException(AppErrorCode.notAuthenticated);
-    }
+  /// Query parameters of the summaries request. Shared with the offline read
+  /// cache so a cache key canonicalizes the exact request a live fetch
+  /// performs (decision D2).
+  static Map<String, String> statisticsQueryParameters({
+    required StatisticsQuery query,
+  }) {
     final date = query.date;
-    final params = <String, String>{
+    return <String, String>{
       // v0.20.1 moved the period from the path into a `period` query
       // parameter on the single summaries resource.
       'period': query.period.name,
@@ -42,10 +42,33 @@ class ApiStatisticsRepository implements StatisticsRepository {
             '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
       if (query.sport != null) 'type': _sportFilterName(query.sport!.apiName),
     };
+  }
+
+  /// Parses a decoded summaries envelope (live or cached) into
+  /// [ActivityStatistics]; see [StatisticsRawSource].
+  static ActivityStatistics parseStatisticsEnvelope({
+    required Object? envelope,
+    required StatisticsPeriod period,
+  }) => StatisticsResponseAdapter.decode(envelope, period);
+
+  /// Fetches the summaries envelope live and parses it; the offline
+  /// read-cache decorator performs the same steps, sharing these helpers
+  /// (ADR-0001, decision D1).
+  Future<ActivityStatistics> fetch(StatisticsQuery query) async {
+    final envelope = await fetchStatisticsEnvelope(query);
+    return parseStatisticsEnvelope(envelope: envelope, period: query.period);
+  }
+
+  @override
+  Future<Object?> fetchStatisticsEnvelope(StatisticsQuery query) async {
+    final profile = await _sessions.getConnectionProfile();
+    if (profile == null) {
+      throw const AppException(AppErrorCode.notAuthenticated);
+    }
     final response = await _api.getJson(
       Uri(
         path: _endpoints.activitySummariesEndpoint,
-        queryParameters: params,
+        queryParameters: statisticsQueryParameters(query: query),
       ).toString(),
       expectedOrigin: profile.origin,
       expectedProfileId: profile.id,
@@ -55,6 +78,6 @@ class ApiStatisticsRepository implements StatisticsRepository {
     if (current?.id != profile.id || current?.origin != profile.origin) {
       throw const AppException(AppErrorCode.sessionExpired);
     }
-    return StatisticsResponseAdapter.decode(response, query.period);
+    return response;
   }
 }

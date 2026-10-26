@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 import 'package:endurain/features/statistics/models/activity_statistics.dart';
 import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
@@ -19,13 +20,21 @@ class StatisticsController extends SafeNotifier {
   ActivityStatistics? statistics;
   Object? error;
   bool isLoading = false;
+  DateTime? _cacheFetchedAt;
   int _generation = 0;
   bool get isGuest => _connection.value == null;
+
+  /// When the visible statistics were served from the offline read cache,
+  /// the time its data was last fetched from the server; `null` while the
+  /// data came from the server (or nothing is loaded).
+  DateTime? get cacheFetchedAt => _cacheFetchedAt;
+
   void _connectionChanged() {
     _generation++;
     statistics = null;
     error = null;
     isLoading = false;
+    _cacheFetchedAt = null;
     query = StatisticsQuery();
     notify();
     if (!isGuest) unawaited(refresh());
@@ -45,7 +54,10 @@ class StatisticsController extends SafeNotifier {
     notify();
     try {
       final result = await _repository.fetch(query);
-      if (_current(generation)) statistics = result;
+      if (_current(generation)) {
+        statistics = result;
+        _cacheFetchedAt = _repository.offlineCacheFetchedAtOf(result);
+      }
     } catch (failure) {
       if (_current(generation)) error = failure;
     } finally {

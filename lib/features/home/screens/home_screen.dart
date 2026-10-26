@@ -11,6 +11,7 @@ import 'package:endurain/features/home/widgets/home_activity_card.dart';
 import 'package:endurain/features/server_activities/screens/server_activity_detail_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/widgets/cache_last_updated_chip.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -101,6 +102,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                       if (controller.goalsLoading) const AdaptiveProgressBar(),
                       if (controller.goalsError != null) _error(context),
+                      if (controller.goalsCacheFetchedAt != null)
+                        CacheLastUpdatedChip(
+                          fetchedAt: controller.goalsCacheFetchedAt!,
+                        ),
                       if (controller.visibleGoals.isEmpty &&
                           !controller.goalsLoading)
                         _notice(
@@ -260,6 +265,8 @@ class _AllGoalsScreen extends StatelessWidget {
           children: [
             if (controller.goalsLoading) const AdaptiveProgressBar(),
             if (controller.goalsError != null) _error(context),
+            if (controller.goalsCacheFetchedAt != null)
+              CacheLastUpdatedChip(fetchedAt: controller.goalsCacheFetchedAt!),
             if (controller.goals.isEmpty)
               _notice(
                 context,

@@ -1,4 +1,5 @@
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/core/services/offline_cache_store.dart';
 import 'package:endurain/features/statistics/controllers/statistics_controller.dart';
 import 'package:endurain/features/statistics/models/activity_statistics.dart';
 import 'package:endurain/features/statistics/repositories/statistics_repository.dart';
@@ -41,6 +42,30 @@ class Repository implements StatisticsRepository {
         StatisticsSport(id: 19, apiName: 'Strength training', metrics: gym),
       ],
     );
+  }
+}
+
+/// Repository whose results carry offline read-cache provenance, like the
+/// cached statistics repository does when it serves a cached view.
+class CachedServingRepository extends Repository
+    implements OfflineCacheProvenance {
+  final Expando<OfflineCacheServeInfo> _provenance = Expando();
+
+  /// When set, the next result is marked as served from the offline read
+  /// cache at this time; a live result otherwise.
+  DateTime? servedFetchedAt;
+
+  @override
+  OfflineCacheServeInfo? provenanceOf(Object result) => _provenance[result];
+
+  @override
+  Future<ActivityStatistics> fetch(StatisticsQuery query) async {
+    final result = await super.fetch(query);
+    final fetchedAt = servedFetchedAt;
+    if (fetchedAt != null) {
+      _provenance[result] = OfflineCacheServeInfo(fetchedAt: fetchedAt);
+    }
+    return result;
   }
 }
 
@@ -114,4 +139,31 @@ void main() {
       connection.dispose();
     },
   );
+
+  testWidgets('a cached statistics view renders with the last-updated chip', (
+    tester,
+  ) async {
+    final repository = CachedServingRepository()
+      ..servedFetchedAt = DateTime(2026, 10, 25, 9);
+    final connection = ValueNotifier<String?>('account');
+    final controller = StatisticsController(
+      repository: repository,
+      connection: connection,
+    );
+    await tester.pumpWidget(app(StatisticsScreen(controller: controller)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gesamtdistanz'), findsOneWidget);
+    expect(find.textContaining('Zuletzt aktualisiert'), findsOneWidget);
+
+    repository.servedFetchedAt = null;
+    await controller.refresh();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Zuletzt aktualisiert'), findsNothing);
+    expect(find.text('Gesamtdistanz'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    connection.dispose();
+  });
 }

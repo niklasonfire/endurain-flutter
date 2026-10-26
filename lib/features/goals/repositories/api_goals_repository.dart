@@ -5,7 +5,7 @@ import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/features/goals/models/goal_progress.dart';
 import 'package:endurain/features/goals/repositories/goals_repository.dart';
 
-class ApiGoalsRepository implements GoalsRepository {
+class ApiGoalsRepository implements GoalsRawSource {
   ApiGoalsRepository({
     required ApiClient apiClient,
     required AuthSessionStore sessionStore,
@@ -16,8 +16,9 @@ class ApiGoalsRepository implements GoalsRepository {
   final ApiClient _api;
   final AuthSessionStore _sessions;
   final ApiEndpoints _endpoints;
+
   @override
-  Future<List<GoalProgress>> fetchResults() async {
+  Future<Object?> fetchResultsEnvelope() async {
     final profile = await _sessions.getConnectionProfile();
     if (profile == null) {
       throw const AppException(AppErrorCode.notAuthenticated);
@@ -32,10 +33,16 @@ class ApiGoalsRepository implements GoalsRepository {
     if (current?.id != profile.id || current?.origin != profile.origin) {
       throw const AppException(AppErrorCode.sessionExpired);
     }
+    return response;
+  }
+
+  /// Parses the raw goals results envelope into [GoalProgress] rows; see
+  /// [GoalsRawSource].
+  static List<GoalProgress> parseResultsEnvelope(Object? envelope) {
     // Endurain returns JSON null when the user has no remaining goals.
-    if (response == null) return const [];
-    if (response is! List) _invalid();
-    return List.unmodifiable(response.map(_decode));
+    if (envelope == null) return const [];
+    if (envelope is! List) _invalid();
+    return List.unmodifiable(envelope.map(_decode));
   }
 
   static GoalProgress _decode(Object? row) {

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
+import 'package:endurain/features/statistics/repositories/cached_statistics_repository.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -74,6 +75,16 @@ void main() {
         isTrue,
       );
       expect(services.localActivities, isA<LocalActivityRepository>());
+    });
+
+    test('statistics is wired through the offline read cache', () {
+      final services = AppServices();
+
+      // Every consumer (statistics tab, home summaries) must share the
+      // cache-through decorator so a fetch viewed online also serves offline
+      // (ADR-0001).
+      expect(identical(services.statistics, services.statistics), isTrue);
+      expect(services.statistics, isA<CachedStatisticsRepository>());
     });
   });
 }
