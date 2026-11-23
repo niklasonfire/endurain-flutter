@@ -73,7 +73,13 @@ class ActivityRecorderServiceTest {
             controllers.add(it)
         }
 
-    private fun fix(latitude: Double, timeMillis: Long = System.currentTimeMillis(), altitude: Double? = null, speed: Float? = null) {
+    private fun fix(
+        latitude: Double,
+        timeMillis: Long = System.currentTimeMillis(),
+        altitude: Double? = null,
+        speed: Float? = null,
+        verticalAccuracy: Float? = null,
+    ) {
         shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(1))
         shadowOf(locations).simulateLocation(Location(LocationManager.GPS_PROVIDER).apply {
             this.latitude = latitude
@@ -81,6 +87,7 @@ class ActivityRecorderServiceTest {
             time = timeMillis
             accuracy = 5f
             if (altitude != null) this.altitude = altitude
+            if (verticalAccuracy != null) verticalAccuracyMeters = verticalAccuracy
             if (speed != null) this.speed = speed
             elapsedRealtimeNanos = android.os.SystemClock.elapsedRealtimeNanos()
         })
@@ -117,13 +124,23 @@ class ActivityRecorderServiceTest {
         controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_START), 0, 1)
         assertEquals(1, shadowOf(manager).listeners.size)
 
+        fix(41.0999, altitude = 180.0, verticalAccuracy = 60f)
+        val firstPoint = store.readPoints().single()
+        assertEquals(180.0, firstPoint.gpsElevationMeters!!, 0.01)
+        assertNull(firstPoint.elevationMeters)
+
         pressure(manager, sensor, 1000f)
-        fix(41.1, altitude = 100.0)
+        fix(41.1, altitude = 180.0, verticalAccuracy = 60f)
+        assertNull(store.readPoints().last().elevationMeters)
+        for (index in 1..3) {
+            pressure(manager, sensor, 1000f)
+            fix(41.1 + index * 0.0001, altitude = 100.0, verticalAccuracy = 5f)
+        }
         pressure(manager, sensor, 1000f)
-        fix(41.1001, altitude = 120.0)
-        assertEquals(listOf(100.0, 100.0), store.readPoints().map { it.elevationMeters })
+        fix(41.1004, altitude = 120.0, verticalAccuracy = 60f)
         val emitted = events.last { it["type"] == "pointBatchAvailable" }["points"] as List<*>
         assertEquals(100.0, (emitted.last() as Map<*, *>)["ele"])
+        assertNull((emitted.last() as Map<*, *>)["vAcc"])
         assertEquals(1000.0, store.readPoints().last().pressureHpa!!, 0.0)
 
         store.saveSession(session(ActiveActivitySessionData.STATUS_PAUSED))
@@ -133,17 +150,17 @@ class ActivityRecorderServiceTest {
         store.saveSession(session())
         controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_RESUME), 0, 3)
         pressure(manager, sensor, 1000f)
-        fix(41.1002, altitude = 150.0)
+        fix(41.1005, altitude = 150.0)
         assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
         pressure(manager, sensor, 900f, SensorManager.SENSOR_STATUS_UNRELIABLE)
-        fix(41.1003, altitude = 150.0)
+        fix(41.1006, altitude = 150.0)
         assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
         assertNull(store.readPoints().last().pressureHpa)
         pressure(manager, sensor, 990f)
-        fix(41.1004, altitude = 150.0)
+        fix(41.1007, altitude = 150.0)
         assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
         pressure(manager, sensor, Float.NaN)
-        fix(41.1005, altitude = 150.0)
+        fix(41.1008, altitude = 150.0)
         assertNull(store.readPoints().last().pressureHpa)
         controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_STOP), 0, 4)
         assertTrue(shadowOf(manager).listeners.isEmpty())
@@ -158,10 +175,18 @@ class ActivityRecorderServiceTest {
         val controller = service()
         controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_START), 0, 1)
         val start = System.currentTimeMillis()
+        for (index in 0..2) {
+            pressure(manager, sensor, 1000f)
+            fix(
+                41.09998 + index * 0.00001,
+                start + index * 1_000,
+                altitude = 100.0,
+                speed = 1f,
+                verticalAccuracy = 5f,
+            )
+        }
         pressure(manager, sensor, 1000f)
-        fix(41.1, start, altitude = 100.0, speed = 1f)
-        pressure(manager, sensor, 1000f)
-        fix(41.1, start + 2_000, altitude = 120.0, speed = 0f)
+        fix(41.1, start + 4_000, altitude = 120.0, speed = 0f)
         assertTrue(store.loadSession()!!.pausedAutomatically)
         assertTrue(shadowOf(manager).listeners.isEmpty())
         val count = store.pointCount()
@@ -191,8 +216,9 @@ class ActivityRecorderServiceTest {
             val controller = service()
             controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_START), 0, 1)
             fix(41.1, altitude = 100.0)
-            fix(41.1001, altitude = 110.0)
+            fix(41.1001, altitude = 110.0, verticalAccuracy = 8f)
             assertEquals(listOf(100.0, 110.0), store.readPoints().map { it.elevationMeters })
+            assertEquals(8.0, store.readPoints().last().verticalAccuracyMeters!!, 0.01)
             assertNull(store.readPoints().last().pressureHpa)
             controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_STOP), 0, 2)
         }
