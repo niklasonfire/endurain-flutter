@@ -351,6 +351,36 @@ class RecordingElevationEstimatorTest {
         assertEquals(100.0, noSensorAfterRestart.elevation(120.0, nanos(1)).elevationMeters!!, 0.0)
     }
     @Test
+    fun weakGpsBeforePressureResumesDoesNotInventAClimb() {
+        val previous = RecordedActivityPointData(
+            timestamp = "2026-10-22T13:00:00.000Z", latitude = 50.0, longitude = 7.0,
+            segmentIndex = 0, elevationMeters = 100.0, gpsElevationMeters = 120.0,
+            pressureHpa = 1000.0, gpsElevationOffsetMeters = -20.0,
+        )
+        val restored = RecordedActivityPointData.tryParseLine(previous.toJsonLine())
+        val estimator = RecordingElevationEstimator(restored)
+        val weak = estimator.elevation(150.0, nanos(1), 60.0, pressureSensorRegistered = true)
+        assertNull(weak.elevationMeters)
+        assertEquals(150.0, weak.gpsElevationMeters!!, 0.0)
+        assertEquals(100.0, weak.lastElevationMeters!!, 0.0)
+        assertEquals(-20.0, weak.gpsOffsetMeters!!, 0.0)
+
+        estimator.onPressure(995.0, nanos(2))
+        val resumed = estimator.elevation(150.0, nanos(2), 60.0, pressureSensorRegistered = true)
+        assertEquals(100.0, resumed.elevationMeters!!, 0.0)
+        assertEquals(995.0, resumed.pressureHpa!!, 0.0)
+        assertEquals(-20.0, resumed.gpsOffsetMeters!!, 0.0)
+
+        val silent = RecordingElevationEstimator(restored)
+        assertNull(silent.elevation(150.0, nanos(1), 60.0, pressureSensorRegistered = true).elevationMeters)
+        assertEquals(
+            130.0,
+            silent.elevation(150.0, nanos(3), 60.0, pressureSensorRegistered = true).elevationMeters!!,
+            0.0,
+        )
+    }
+
+    @Test
     fun gpsFirstRecoveryKeepsHeightAndReanchorsFreshPressure() {
         val estimator = RecordingElevationEstimator(RecordedActivityPointData(
             timestamp = "2026-10-22T13:00:00.000Z", latitude = 50.0, longitude = 7.0,

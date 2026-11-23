@@ -140,10 +140,14 @@ internal class RecordingElevationEstimator(previous: RecordedActivityPointData? 
             }
         } else {
             resetPressureReference()
-            if (pressureSensorRegistered && !receivedPressureResult && !hasBarometricReference &&
+            // On resume, a weak GPS fix must not displace the saved height
+            // before a registered pressure sensor has had a chance to wake up.
+            val needsPressure = !hasBarometricReference ||
+                (awaitingResumeAnchor && !hasUsableAccuracy(gpsVerticalAccuracyMeters))
+            if (pressureSensorRegistered && !receivedPressureResult && needsPressure &&
                 timestampNanos >= 0 && calibrationElapsedNanos(timestampNanos) < INITIAL_PRESSURE_WAIT_NANOS
             ) {
-                return Reading(null, gps, lastElevationMeters = lastElevation)
+                return Reading(null, gps, gpsOffsetMeters = gpsOffset, lastElevationMeters = lastElevation)
             }
         }
 
