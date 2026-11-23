@@ -150,7 +150,7 @@ class ActivityRecorderServiceTest {
         store.saveSession(session())
         controller.get().onStartCommand(Intent().setAction(ActivityRecorderService.ACTION_RESUME), 0, 3)
         pressure(manager, sensor, 1000f)
-        fix(41.1005, altitude = 150.0)
+        fix(41.1005, altitude = 150.0, verticalAccuracy = 5f)
         assertEquals(100.0, store.readPoints().last().elevationMeters!!, 0.01)
         pressure(manager, sensor, 900f, SensorManager.SENSOR_STATUS_UNRELIABLE)
         fix(41.1006, altitude = 150.0)
@@ -192,7 +192,13 @@ class ActivityRecorderServiceTest {
         val count = store.pointCount()
         pressure(manager, sensor, 990f)
         for (index in 1..3) {
-            fix(41.1 + index * 0.00001, start + 10_000 + index * 1_000, altitude = 150.0, speed = 1f)
+            fix(
+                41.1 + index * 0.00001,
+                start + 10_000 + index * 1_000,
+                altitude = 150.0,
+                speed = 1f,
+                verticalAccuracy = 5f,
+            )
         }
         assertEquals(ActiveActivitySessionData.STATUS_RECORDING, store.loadSession()!!.status)
         assertEquals(count + 1, store.pointCount())
