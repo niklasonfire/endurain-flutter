@@ -117,6 +117,68 @@ class RecordingElevationEstimatorTest {
     }
 
     @Test
+    fun slowCorrectionReducesWeatherDrift() {
+        val estimator = RecordingElevationEstimator()
+        calibrateAt(estimator, 100.0)
+        var height = 100.0
+        for (second in 3L..1202L) {
+            // Air pressure falls on flat ground, mimicking a 12 m climb over ten minutes.
+            val weatherDrift = ((second - 2L) / 50.0).coerceAtMost(12.0)
+            estimator.onPressure(pressureAt(weatherDrift), nanos(second))
+            height = estimator.elevation(100.0, nanos(second), 5.0).elevationMeters!!
+            if (second == 602L) assertTrue("Gradual correction: $height", height in 103.0..107.0)
+        }
+        assertEquals(100.0, height, 1.0)
+    }
+
+    @Test
+    fun driftCorrectionFavorsMoreAccurateGpsAndPreservesClimbs() {
+        fun withGpsAccuracy(accuracy: Double): Double {
+            val estimator = RecordingElevationEstimator()
+            calibrateAt(estimator, 100.0)
+            var height = 100.0
+            for (second in 3L..602L) {
+                estimator.onPressure(1000.0, nanos(second))
+                height = estimator.elevation(106.0, nanos(second), accuracy).elevationMeters!!
+            }
+            return height
+        }
+
+        assertTrue(withGpsAccuracy(5.0) > withGpsAccuracy(12.0) + 2.0)
+        assertEquals(100.0, withGpsAccuracy(25.0), 0.0)
+
+        val estimator = RecordingElevationEstimator()
+        calibrateAt(estimator, 100.0)
+        var height = 100.0
+        for (second in 3L..62L) {
+            val climb = (second - 2L) * 0.5
+            val gpsNoise = if (second % 2 == 0L) -4.0 else 4.0
+            estimator.onPressure(pressureAt(climb), nanos(second))
+            height = estimator.elevation(100.0 + climb + gpsNoise, nanos(second), 5.0).elevationMeters!!
+        }
+        assertEquals(130.0, height, 2.0)
+    }
+
+    @Test
+    fun gpsReturningAfterAWeakOrSparsePeriodDoesNotJump() {
+        val estimator = RecordingElevationEstimator()
+        calibrateAt(estimator, 100.0)
+        for (second in 3L..302L) {
+            estimator.onPressure(1000.0, nanos(second))
+            estimator.elevation(null, nanos(second))
+        }
+        estimator.onPressure(1000.0, nanos(303))
+        val next = estimator.elevation(125.0, nanos(303), 5.0).elevationMeters!!
+        assertTrue(next in 100.0..100.1)
+        assertEquals(next, estimator.elevation(125.0, nanos(303), 5.0).elevationMeters!!, 0.0)
+        assertEquals(next, estimator.elevation(125.0, nanos(302), 5.0).elevationMeters!!, 0.0)
+
+        for (second in 304L..602L) estimator.onPressure(1000.0, nanos(second))
+        val sparse = estimator.elevation(130.0, nanos(602), 5.0).elevationMeters!!
+        assertTrue(sparse in next..next + 0.5)
+    }
+
+    @Test
     fun noPressureLeavesGpsUnchanged() {
         val estimator = RecordingElevationEstimator()
         for ((index, gps) in listOf(100.0, 105.0, 98.0, 110.0).withIndex()) {

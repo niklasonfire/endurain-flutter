@@ -5,7 +5,8 @@ import kotlin.math.exp
 import kotlin.math.pow
 
 /**
- * Uses pressure for relative height and GPS for the initial absolute reference.
+ * Uses pressure for relative height and GPS to set the absolute reference and
+ * slowly correct pressure drift.
  * Without fresh pressure, GPS continues on the same height reference. Keeping
  * the inputs with each durable point lets a restarted recorder restore it.
  * All timestamps use Android's elapsed-realtime clock, not wall time.
@@ -32,6 +33,7 @@ internal class RecordingElevationEstimator(previous: RecordedActivityPointData? 
     private var firstCalibrationFixTimeNanos: Long? = null
     private var receivedPressureResult = false
     private var gpsHandoff: GpsHandoff? = null
+    private var lastBarometricFixTimeNanos: Long? = null
     private var filteredPressure: Double? = null
     private var pressureTimestampNanos: Long? = null
     private var lastElevation = (previous?.elevationMeters ?: previous?.elevationReferenceMeters)
@@ -111,7 +113,12 @@ internal class RecordingElevationEstimator(previous: RecordedActivityPointData? 
             val reference = referenceElevation
             val baseline = referencePressure
             if (reference != null && baseline != null) {
-                val height = reference + pressureHeightChange(pressure, baseline) + handoffOffset(timestampNanos)
+                val pressureHeight = reference + pressureHeightChange(pressure, baseline)
+                val correction = driftAdjustment(
+                    pressureHeight, gps, gpsVerticalAccuracyMeters, timestampNanos, pressureTime,
+                )
+                referenceElevation = reference + correction
+                val height = pressureHeight + correction + handoffOffset(timestampNanos)
                 lastElevation = height
                 if (gps != null) gpsOffset = height - gps
                 awaitingResumeAnchor = false
@@ -192,11 +199,37 @@ internal class RecordingElevationEstimator(previous: RecordedActivityPointData? 
         return handoff.initialOffsetMeters * (1 - elapsed.coerceAtLeast(0) / GPS_HANDOFF_DURATION_NANOS)
     }
 
+    private fun driftAdjustment(
+        pressureElevationMeters: Double,
+        gps: Double?,
+        gpsVerticalAccuracyMeters: Double?,
+        timestampNanos: Long,
+        pressureTimeNanos: Long,
+    ): Double {
+        val previousTime = lastBarometricFixTimeNanos
+        if (previousTime != null && timestampNanos <= previousTime) return 0.0
+
+        // Count elapsed time even when GPS is weak, so the next good fix does
+        // not apply one correction for the whole stretch of missing data.
+        lastBarometricFixTimeNanos = timestampNanos
+        if (previousTime == null || gps == null ||
+            abs(timestampNanos - pressureTimeNanos) > MAX_GPS_PRESSURE_SEPARATION_NANOS
+        ) return 0.0
+        val accuracy = gpsVerticalAccuracyMeters?.takeIf(::hasUsableAccuracy) ?: return 0.0
+
+        val elapsed = (timestampNanos - previousTime).coerceAtMost(MAX_DRIFT_INTERVAL_NANOS)
+        val weight = (FULL_WEIGHT_ACCURACY_METERS / accuracy).coerceAtMost(1.0).pow(2)
+        val alpha = 1 - exp(-elapsed * weight / DRIFT_TIME_CONSTANT_NANOS)
+        val gpsResidual = (gps - pressureElevationMeters).coerceIn(-MAX_GPS_RESIDUAL_METERS, MAX_GPS_RESIDUAL_METERS)
+        return alpha * gpsResidual
+    }
+
     private fun resetPressureReference() {
         referencePressure = null
         referenceElevation = null
         anchorSamples.clear()
         gpsHandoff = null
+        lastBarometricFixTimeNanos = null
     }
 
     companion object {
@@ -209,6 +242,10 @@ internal class RecordingElevationEstimator(previous: RecordedActivityPointData? 
         private const val REQUIRED_ANCHOR_SAMPLES = 3
         private const val MAX_VERTICAL_ACCURACY_METERS = 15.0
         private const val GPS_HANDOFF_DURATION_NANOS = 30_000_000_000.0
+        private const val DRIFT_TIME_CONSTANT_NANOS = 300_000_000_000.0
+        private const val MAX_DRIFT_INTERVAL_NANOS = 5_000_000_000L
+        private const val FULL_WEIGHT_ACCURACY_METERS = 5.0
+        private const val MAX_GPS_RESIDUAL_METERS = 25.0
 
         private fun pressureHeightChange(pressure: Double, baseline: Double) =
             44330.0 * (1 - (pressure / baseline).pow(0.190294957))
