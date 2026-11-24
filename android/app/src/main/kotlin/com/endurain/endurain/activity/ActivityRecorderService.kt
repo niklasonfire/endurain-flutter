@@ -499,7 +499,8 @@ class ActivityRecorderService : Service() {
         }
         lastPointEpochMillis = nowMillis
 
-        val elevation = barometer.elevation(location)
+        val gpsVerticalAccuracy = verticalAccuracy(location)
+        val elevation = barometer.elevation(location, gpsVerticalAccuracy)
         val point = RecordedActivityPointData(
             timestamp = IsoTime.format(Date(nowMillis)),
             latitude = location.latitude,
@@ -513,7 +514,7 @@ class ActivityRecorderService : Service() {
             horizontalAccuracyMeters =
                 if (location.hasAccuracy()) location.accuracy.toDouble() else null,
             // GPS vertical accuracy does not describe the barometric estimate.
-            verticalAccuracyMeters = if (elevation.pressureHpa == null) verticalAccuracy(location) else null,
+            verticalAccuracyMeters = gpsVerticalAccuracy.takeIf { elevation.pressureHpa == null },
             headingDegrees = if (location.hasBearing()) location.bearing.toDouble() else null,
             headingAccuracyDegrees = bearingAccuracy(location),
             speedMetersPerSecond = if (location.hasSpeed()) location.speed.toDouble() else null,

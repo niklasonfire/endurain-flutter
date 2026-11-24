@@ -57,8 +57,13 @@ internal class RecordingBarometer(private val manager: SensorManager?) : SensorE
         }
     }
 
-    fun elevation(location: Location): RecordingElevationEstimator.Reading = estimator.elevation(
-        location.altitude.takeIf { location.hasAltitude() },
-        location.elapsedRealtimeNanos,
+    fun elevation(
+        location: Location,
+        gpsVerticalAccuracyMeters: Double?,
+    ): RecordingElevationEstimator.Reading = estimator.elevation(
+        gpsElevationMeters = location.altitude.takeIf { location.hasAltitude() },
+        timestampNanos = location.elapsedRealtimeNanos,
+        gpsVerticalAccuracyMeters = gpsVerticalAccuracyMeters,
+        pressureSensorRegistered = registered,
     )
 }
